@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>my-react-three-app</title>
+    
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <py-config>
+      [[fetch]]
+      files = ["/spiel.py"]
+    </py-config>
+
+    <py-script>
+      import js
+      from spiel import *
+      
+      # ===================================================================
+      # DIESE ZEILE ERSTELLT UNSERE ZUVERLÄSSIGE BRÜCKE:
+      # Wir erstellen eine globale JS-Funktion namens 'runPython'
+      # und verbinden sie mit unserer Python-Funktion 'code_ausfuehren'.
+      js.window.runPython = code_ausfuehren
+      # ===================================================================
+      
+      print("Python ist bereit und die 'runPython'-Brücke wurde erstellt.")
+    </py-script>
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
