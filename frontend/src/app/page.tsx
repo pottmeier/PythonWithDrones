@@ -21,6 +21,37 @@ export default function Home() {
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
+  useEffect(() => {
+    async function initPython() {
+      console.log("🔄 Lade Pyodide...");
+
+      const pyodide = await window.loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+      });
+
+      while (typeof window.moveDrone !== "function") {
+        console.log("Warte auf moveDrone...");
+        await new Promise((r) => setTimeout(r, 50));
+      }
+
+      const response = await fetch("/game.py");
+      const pythonCode = await response.text();
+      await pyodide.runPythonAsync(pythonCode);
+
+      window.runPython = async (code: string) => {
+        try {
+          return await pyodide.runPythonAsync(code);
+        } catch (err) {
+          console.error("Fehler im Python-Code:", err);
+        }
+      };
+
+      console.log("Python + Bibliothek geladen!");
+    }
+
+    initPython();
+  }, []);
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
