@@ -8,6 +8,7 @@ import { TaskCard } from "@/components/task-card";
 import { TestCard } from "@/components/test-card";
 import { CodeCard } from "@/components/code-card";
 import { LevelProgress } from "@/components/level-progress";
+import Scene from "@/components/scene";
 
 export default function Home() {
   const [code, setCode] = useState("");
@@ -34,7 +35,11 @@ export default function Home() {
           <main className="flex-1 p-4 flex flex-col gap-4">
             <div className="flex flex-1 gap-4">
               <TaskCard title="Aufgabe" />
-              <div className="flex-[2] min-h-[50vh] bg-gray-100 dark:bg-gray-900 p-4"></div>
+              <div className="flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
+                <div className="w-full max-h-[400px] aspect-square">
+                  <Scene />
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-1 gap-4">
