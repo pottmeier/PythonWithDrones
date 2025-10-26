@@ -1,10 +1,19 @@
 ---
-name: Level request
-about: Describe this issue template's purpose here.
-title: ''
+name: Level Request
+about: Suggest a new level for PythonWithDrones.
+title: "[Level] <Titel>"
 labels: level request
-assignees: ''
-
+assignees: ""
 ---
 
-**What is the goal of this level?**
+## Title
+- <title>
+
+## Summary
+- <What is the idea? What do you want to implement?>
+
+## Goals
+- <Python/CS-Concepts>
+
+## Core Mechanics
+- <Navigation (move/turn/move_to)>
