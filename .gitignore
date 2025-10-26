@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#python
+.venv
+venv
+.pytest_cache
+__pycache__
+*.egg-info

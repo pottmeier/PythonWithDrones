@@ -1,0 +1,30 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# Distribution name (can use hyphens)
+name = "python-with-drones"
+version = "0.1.0"
+description = "Drone game utilities"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Jonas Pottmeier", email = "jonas.pottmeier@gmail.com" }]
+# Add runtime deps if any, e.g.:
+dependencies = ["pytest==8.4.2","js==1.0"]
+
+# Tell setuptools to find packages under src/
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*"]
+
+# Optional: include non-Python files inside your package
+# [tool.setuptools.package-data]
+# python_with_drones = ["py.typed", "data/*.json"]
+
+# pytest defaults (keeps repo root clean; pytest will read from here)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::UserWarning:pkg_resources" ]
