@@ -9,16 +9,21 @@ interface CodeCardProps {
 }
 
 export function CodeCard({ code, setCode }: CodeCardProps) {
-  const runCode = async () => {
+  const runCode = () => {
     if (typeof window.runPython === "function") {
       try {
-        await window.runPython(code.trim());
-      } catch (error) {
-        console.error("Fehler beim Ausführen des Python-Codes:", error);
+        window.runPython(code);
+      } catch (e) {
+        console.error(
+          "Fehler beim Aufruf der Brückenfunktion 'window.runPython':",
+          e
+        );
       }
     } else {
-      console.warn("Die Python-Brücke ist noch nicht bereit!");
-      alert("Python ist noch nicht geladen. Bitte warten.");
+      console.error("Die Python-Brücke 'window.runPython' ist nicht bereit.");
+      alert(
+        "Die Python-JavaScript-Brücke ist noch nicht bereit. Bitte warten."
+      );
     }
   };
 
