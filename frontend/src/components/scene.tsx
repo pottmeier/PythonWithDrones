@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
-import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
+import Grid, { GRID_SIZE, TILE_SIZE, TILE_MARGIN } from "./grid";
 
 export default function Scene() {
   const [gridPosition, setGridPosition] = useState<[number, number]>([0, 0]);
@@ -18,33 +19,52 @@ export default function Scene() {
   }, [gridPosition]);
 
   useEffect(() => {
-    if (!window.moveDrone) {
-      window.moveDrone = (direction: string) => {
-        console.log(`Bewege Drohne in Richtung: ${direction}`);
-        setGridPosition((prevPos) => {
-          const newGridPos: [number, number] = [...prevPos] as [number, number];
+    const moveQueue: string[] = [];
+    let isMoving = false;
 
-          if (direction === "rechts") newGridPos[0] += 1;
-          if (direction === "links") newGridPos[0] -= 1;
-          if (direction === "hoch") newGridPos[1] -= 1;
-          if (direction === "runter") newGridPos[1] += 1;
+    async function processQueue() {
+      if (isMoving || moveQueue.length === 0) return;
+      isMoving = true;
 
-          return newGridPos;
-        });
-      };
+      const direction = moveQueue.shift();
+      setGridPosition((prev) => {
+        const newPos = [...prev] as [number, number];
+        if (direction === "rechts") newPos[0] += 1;
+        if (direction === "links") newPos[0] -= 1;
+        if (direction === "hoch") newPos[1] -= 1;
+        if (direction === "runter") newPos[1] += 1;
+        return newPos;
+      });
+
+      await new Promise((r) => setTimeout(r, 500)); // Animationspause
+      isMoving = false;
+      processQueue();
     }
+
+    window.moveDrone = (direction: string) => {
+      moveQueue.push(direction);
+      processQueue();
+    };
   }, []);
 
   return (
     <Canvas
       className="w-full h-full"
       shadows
-      camera={{ position: [0, 20, 0], fov: 50 }}
+      camera={{ position: [0, 20, 0], fov: GRID_SIZE * 7 }}
+      style={{ borderRadius: 8 }}
     >
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
       <Grid />
       <Drone position={worldPosition} />
+      <OrbitControls
+        enableRotate={true}
+        enablePan={false}
+        enableZoom={true}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2 - 0.3}
+      />
     </Canvas>
   );
 }
