@@ -16,7 +16,7 @@ export function CodeEditor({ code, setCode }: CodeEditorProps) {
       <textarea
         spellCheck={false}
         autoCorrect="off"
-        autoCapitalize="off"
+        autoCapitalize="none"
         className="flex-1 p-4 bg-transparent focus:outline-none font-mono resize-none leading-relaxed"
         value={code}
         onChange={(e) => setCode(e.target.value)}
