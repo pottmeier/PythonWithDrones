@@ -2,9 +2,12 @@
 
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
+import { useRouter } from "next/router";
+
+const { basePath } = useRouter();
 
 export default function Tile(props: any) {
-  const { scene } = useGLTF("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/tile.glb"); //TODO: Change this into variable model call
+  const { scene } = useGLTF(`${basePath}/models/tile.glb`); //TODO: Change this into variable model call
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -20,4 +23,4 @@ export default function Tile(props: any) {
   );
 }
 
-useGLTF.preload("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/tile.glb"); //TODO: Change this into variable model call
+useGLTF.preload(`${basePath}/models/tile.glb`); //TODO: Change this into variable model call
