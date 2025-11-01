@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
 export default function Tile(props: any) {
-  const { scene } = useGLTF("/tile.glb");
+  const { scene } = useGLTF("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/tile.glb"); //TODO: Change this into variable model call
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -20,4 +20,4 @@ export default function Tile(props: any) {
   );
 }
 
-useGLTF.preload("/tile.glb");
+useGLTF.preload("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/tile.glb"); //TODO: Change this into variable model call
