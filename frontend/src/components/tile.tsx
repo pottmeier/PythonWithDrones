@@ -2,9 +2,8 @@
 
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
-import { useRouter } from "next/router";
 
-const { basePath } = useRouter();
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export default function Tile(props: any) {
   const { scene } = useGLTF(`${basePath}/models/tile.glb`); //TODO: Change this into variable model call

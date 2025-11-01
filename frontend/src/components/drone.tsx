@@ -1,10 +1,9 @@
 "use client";
 
-import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
-const { basePath } = useRouter();
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export default function Drone({
   position,
