@@ -1,10 +1,17 @@
 "use client";
 
+import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
-export default function Drone({ position }: { position: [number, number, number] }) {
-  const { scene } = useGLTF("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/drone.glb"); //TODO: Change this into variable model call
+const { basePath } = useRouter();
+
+export default function Drone({
+  position,
+}: {
+  position: [number, number, number];
+}) {
+  const { scene } = useGLTF(`${basePath}/models/drone.glb`); //TODO: Change this into variable model call
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -16,4 +23,4 @@ export default function Drone({ position }: { position: [number, number, number]
   return <primitive object={clonedScene} position={position} scale={0.25} />;
 }
 
-useGLTF.preload("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/drone.glb"); //TODO: Change this into variable model call
+useGLTF.preload(`${basePath}/models/drone.glb`); //TODO: Change this into variable model call
