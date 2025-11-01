@@ -9,5 +9,8 @@ module.exports = {
   // Optional: if deploying to https://<user>.github.io/<repo>
   basePath: isPages ? `/${repo}` : undefined,
   assetPrefix: isPages ? `/${repo}/` : undefined,
-  trailingSlash: true          // avoids some 404s on Pages
+  trailingSlash: true,          // avoids some 404s on Pages
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isPages ? `/${repo}` : '',
+  },
 }
