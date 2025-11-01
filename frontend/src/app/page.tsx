@@ -11,6 +11,8 @@ import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function Home() {
   const [code, setCode] = useState("");
   const [dark, setDark] = useState(true);
@@ -67,7 +69,7 @@ export default function Home() {
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
       });
 
-      const response = await fetch("/game.py");
+      const response = await fetch(`${basePath}/python/game.py`);
       const pythonCode = await response.text();
       await pyodide.runPythonAsync(pythonCode);
 
