@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
 export default function Drone({ position }: { position: [number, number, number] }) {
-  const { scene } = useGLTF("/drone.glb");
+  const { scene } = useGLTF("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/drone.glb"); //TODO: Change this into variable model call
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -16,4 +16,4 @@ export default function Drone({ position }: { position: [number, number, number]
   return <primitive object={clonedScene} position={position} scale={0.25} />;
 }
 
-useGLTF.preload("/drone.glb");
+useGLTF.preload("https://github.com/pottmeier/PythonWithDrones/blob/main/frontend/public/drone.glb"); //TODO: Change this into variable model call
