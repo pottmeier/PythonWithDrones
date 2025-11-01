@@ -1,7 +1,7 @@
 // frontend/next.config.js
 /** @type {import('next').NextConfig} */
 const isPages = process.env.GITHUB_ACTIONS === 'true'
-const repo = process.env.GITHUB_REPOSITORY?.split('/')[1] || ''
+const repo = 'PythonWithDrones'
 
 module.exports = {
   output: 'export',            // required for App Router static export
