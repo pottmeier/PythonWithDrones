@@ -93,7 +93,7 @@ export default function Home() {
 
           <main className="flex-1 p-4 flex flex-col gap-4">
             <div className="flex flex-col md:flex-row flex-1 gap-4">
-              <TaskCard title="Aufgabe" />
+              <TaskCard title="Task" />
 
               <div className="w-full md:flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
                 <div className="w-full max-h-[400px] aspect-square flex justify-center items-center">
@@ -101,7 +101,7 @@ export default function Home() {
                     <Scene />
                   ) : (
                     <div className="flex flex-col justify-center items-center text-gray-700 dark:text-gray-200 text-md h-full font-mono">
-                      <Spinner className="mb-2" /> Lade Pyodide...
+                      <Spinner className="mb-2" /> Loading...
                     </div>
                   )}
                 </div>
