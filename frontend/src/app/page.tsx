@@ -11,7 +11,7 @@ import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function Home() {
   const [code, setCode] = useState("");
@@ -36,8 +36,6 @@ export default function Home() {
       isMoving = true;
 
       const direction = moveQueue.shift();
-      // Hier prüfen, ob Scene GridPosition-Setter verfügbar ist
-      // Da Scene später gerendert wird, nutzen wir window.setGridPosition aus Scene
       if (window.setGridPosition) {
         window.setGridPosition((prev: [number, number]) => {
           const newPos = [...prev] as [number, number];
@@ -94,23 +92,23 @@ export default function Home() {
           </header>
 
           <main className="flex-1 p-4 flex flex-col gap-4">
-            <div className="flex flex-1 gap-4">
-              <TaskCard title="Aufgabe" />
-              <div className="flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
+            <div className="flex flex-col md:flex-row flex-1 gap-4">
+              <TaskCard title="Task" />
+
+              <div className="w-full md:flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
                 <div className="w-full max-h-[400px] aspect-square flex justify-center items-center">
                   {pyodideLoaded ? (
                     <Scene />
                   ) : (
                     <div className="flex flex-col justify-center items-center text-gray-700 dark:text-gray-200 text-md h-full font-mono">
-                      <Spinner className="mb-2" />{" "}
-                      Lade Pyodide...
+                      <Spinner className="mb-2" /> Loading...
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-1 gap-4">
+            <div className="flex flex-col md:flex-row flex-1 gap-4">
               <TestCard title="Tests" />
               <CodeCard code={code} setCode={setCode} />
             </div>
