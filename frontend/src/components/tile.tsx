@@ -15,7 +15,7 @@ export default function Tile(props: any) {
 
   return (
     <group {...props}>
-      <primitive object={clonedScene} scale={0.25} />
+      <primitive object={clonedScene} scale={1} />
     </group>
   );
 }
