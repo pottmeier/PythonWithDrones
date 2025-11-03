@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
+import { toast } from "sonner";
 
 interface CodeCardProps {
   code: string;
@@ -9,21 +10,31 @@ interface CodeCardProps {
 }
 
 export function CodeCard({ code, setCode }: CodeCardProps) {
-  const runCode = () => {
-    if (typeof window.runPython === "function") {
-      try {
-        window.runPython(code);
-      } catch (e) {
-        console.error(
-          "Fehler beim Aufruf der Brückenfunktion 'window.runPython':",
-          e
-        );
+  const runCode = async () => {
+    if (typeof window.runPython !== "function") {
+      toast.warning("⚠️ Python-Engine ist noch nicht bereit. Bitte warten.");
+      return;
+    }
+
+    try {
+      await window.runPython(code);
+    } catch (err: any) {
+      console.error("Python runtime error:", err);
+
+      let msg = "Unbekannter Python-Fehler";
+
+      if (err && typeof err.toString === "function") {
+        const lines = err
+          .toString()
+          .split("\n")
+          .map((l: any) => l.trim());
+        const pythonErrorLine = lines
+          .reverse()
+          .find((l: any) => l.match(/(Error|Exception):/));
+        if (pythonErrorLine) msg = pythonErrorLine;
       }
-    } else {
-      console.error("Die Python-Brücke 'window.runPython' ist nicht bereit.");
-      alert(
-        "Die Python-JavaScript-Brücke ist noch nicht bereit. Bitte warten."
-      );
+
+      toast.error(`${msg}`);
     }
   };
 
