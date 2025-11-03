@@ -10,6 +10,7 @@ import { CodeCard } from "@/components/code-card";
 import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
+import { Toaster } from "sonner";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -121,6 +122,7 @@ export default function Home() {
           />
         </div>
       </div>
+      <Toaster position="bottom-left" richColors closeButton />
     </SidebarProvider>
   );
 }
