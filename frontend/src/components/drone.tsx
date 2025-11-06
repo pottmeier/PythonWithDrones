@@ -2,24 +2,54 @@
 
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
+import { useSpring, animated, config } from "@react-spring/three";
+import Rotor from "./rotor"; 
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-
-export default function Drone({
-  position,
-}: {
+interface DroneProps {
   position: [number, number, number];
-}) {
-  const { scene } = useGLTF(`${basePath}/models/drone.glb`); //TODO: Change this into variable model call
+  onAnimationComplete: () => void;
+}
+//const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; //Try without basepath first
+
+export default function Drone({ position, onAnimationComplete }: DroneProps) {
+  const { scene } = useGLTF(`/models/drone_body.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
     clonedScene.traverse((child: any) => {
-      if (child.isMesh) child.castShadow = true;
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
     });
   }, [clonedScene]);
 
-  return <primitive object={clonedScene} position={position} scale={0.25} />;
+  // --- ANIMATION LOGIC ---
+  const [spring, api] = useSpring(() => ({
+    from: { position: position }, 
+    config: config.gentle,
+  }));
+
+  // --- THIS IS THE CORRECTED LOGIC ---
+  useEffect(() => {
+    api.start({
+      to: { position: position },
+      reset: false,
+      onRest: () => {
+        onAnimationComplete();
+      },
+    });
+  }, [position, api, onAnimationComplete]);
+
+  return (
+    <animated.group position={spring.position}>
+      <primitive object={clonedScene} scale={0.5} />
+      <Rotor position={[4, 3.5, 4]} /> 
+      <Rotor position={[-4, 3.5, 4]} />  
+      <Rotor position={[4, 3.5, -4]} />  
+      <Rotor position={[-4, 3.5, -4]} /> 
+    </animated.group>
+  );
 }
 
-useGLTF.preload(`${basePath}/models/drone.glb`); //TODO: Change this into variable model call
+useGLTF.preload("/models/drone_body.glb");
+useGLTF.preload("/models/rotor.glb");
