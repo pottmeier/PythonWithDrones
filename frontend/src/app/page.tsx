@@ -10,6 +10,9 @@ import { CodeCard } from "@/components/code-card";
 import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
+import { Toaster } from "sonner";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 import { TILE_SIZE, TILE_MARGIN, GRID_SIZE } from "@/components/grid";
 
 export default function Home() {
@@ -37,7 +40,7 @@ export default function Home() {
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
       });
 
-      const response = await fetch("/python/game.py");
+      const response = await fetch(`${basePath}/python/game.py`);
       const pythonCode = await response.text();
       await pyodide.runPythonAsync(pythonCode);
 
@@ -99,7 +102,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-1 gap-4">
+            <div className="flex flex-col md:flex-row flex-1 gap-4">
               <TestCard title="Tests" />
               <CodeCard code={code} setCode={setCode} />
             </div>
@@ -112,6 +115,7 @@ export default function Home() {
           />
         </div>
       </div>
+      <Toaster position="bottom-left" richColors closeButton />
     </SidebarProvider>
   );
 }

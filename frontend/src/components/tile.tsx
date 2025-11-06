@@ -3,6 +3,8 @@
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
+//const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; //Try without basepath first
+
 export default function Tile(props: any) {
   const { scene } = useGLTF("/models/tile.glb");
   const clonedScene = scene.clone();

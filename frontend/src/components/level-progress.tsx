@@ -24,7 +24,7 @@ export function LevelProgress({
         Previous
       </Button>
 
-      <div className="relative flex-1 mx-20 h-6 flex items-center">
+      <div className="hidden md:flex relative flex-1 mx-20 h-6 items-center">
         <Progress
           value={progressValue}
           className="h-2 rounded-full bg-white dark:bg-gray-600"
