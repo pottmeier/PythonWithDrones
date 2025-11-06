@@ -4,15 +4,24 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
-import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
+import Grid, { TILE_SIZE, TILE_MARGIN, GRID_SIZE } from "./grid";
+import { FoldVertical } from "lucide-react";
 
-// No more props needed for position or callbacks!
 export default function Scene() {
-  // All state now lives safely inside the component that uses it.
   const [gridPosition, setGridPosition] = useState<[number, number]>([0, 0]);
-  const [worldPosition, setWorldPosition] = useState<[number, number, number]>([0, 0.5, 0]);
+  const [worldPosition, setWorldPosition] = useState<[number, number, number]>([
+    0, 0.5, 0,
+  ]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
+  const controlsRef = useRef<any>(null);
+
+  // Camera Settings
+  const START_POSITION: [number, number, number] = [0, 75, 150];
+  const PAN_FACTOR = 2;
+  const limit = ((GRID_SIZE - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, min), max);
 
   useEffect(() => {
     const newX = gridPosition[0] * (TILE_SIZE + TILE_MARGIN);
@@ -51,31 +60,61 @@ export default function Scene() {
   }, [processNextMoveInQueue]);
 
   return (
-    <Canvas
-      className="w-full h-full"
-      shadows
-      camera={{ position: [0, 15, 15], fov: 7 * 7 }}
-      style={{ borderRadius: 8 }}
-    >
-      <ambientLight intensity={0.5} />
-      <directionalLight 
-        position={[10, 20, 10]} 
-        intensity={1.5} 
-        castShadow 
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-left={-60}
-        shadow-camera-right={60}
-        shadow-camera-top={60}
-        shadow-camera-bottom={-60}
+    <div className="relative w-full h-full">
+      <Canvas
+        className="w-full h-full"
+        shadows
+        camera={{ position: START_POSITION, fov: 50 }}
+        style={{ borderRadius: 8 }}
+      >
+        <ambientLight intensity={0.5} />
+        <directionalLight
+          position={[10, 20, 10]}
+          intensity={1.5}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-left={-60}
+          shadow-camera-right={60}
+          shadow-camera-top={60}
+          shadow-camera-bottom={-60}
+        />
+        <Grid />
+        <Drone
+          position={worldPosition}
+          onAnimationComplete={handleAnimationComplete}
+        />
+        <OrbitControls
+          ref={controlsRef}
+          enablePan
+          panSpeed={1}
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI / 2 - 0.3}
+          onChange={() => {
+            const c = controlsRef.current;
+            if (!c) return;
+            const cam = c.object;
+            const target = c.target;
+            target.x = clamp(target.x, -limit, limit);
+            target.z = clamp(target.z, -limit, limit);
+            cam.position.x = clamp(cam.position.x, -limit * 1.5, limit * 1.5);
+            cam.position.z = clamp(cam.position.z, -limit * 1.5, limit * 1.5);
+            cam.updateProjectionMatrix();
+          }}
+        />
+      </Canvas>
 
-      />
-      <Grid />
-      <Drone
-        position={worldPosition}
-        onAnimationComplete={handleAnimationComplete}
-      />
-      <OrbitControls screenSpacePanning={false} panSpeed={1} />
-    </Canvas>
+      <button
+        className="absolute top-4 left-4 text-md cursor-pointer"
+        onClick={() => {
+          if (!controlsRef.current) return;
+          const cam = controlsRef.current.object;
+          cam.position.set(...START_POSITION);
+          controlsRef.current.update();
+        }}
+      >
+        <FoldVertical size={20} />
+      </button>
+    </div>
   );
-};
+}

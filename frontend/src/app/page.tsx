@@ -54,7 +54,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    async function initPython() { /* ... pyodide loading logic ... */ }
+    async function initPython() {
+      /* ... pyodide loading logic ... */
+    }
     initPython();
   }, []);
 
@@ -62,7 +64,6 @@ export default function Home() {
     if (dark) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
   }, [dark]);
-
 
   return (
     <SidebarProvider>
@@ -76,12 +77,10 @@ export default function Home() {
           </header>
 
           <main className="flex-1 p-4 flex flex-col gap-4">
-            <div className="flex flex-1 gap-4">
-              <TaskCard title="Aufgabe" />
+            <div className="flex flex-col md:flex-row flex-1 gap-4">
+              <TaskCard title="Task" />
               <div className="flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
-                {/* --- THIS IS THE PERMANENT FIX --- */}
-                <div className="w-full max-h-[600px] aspect-square relative">
-                  {/* The Scene is now ALWAYS mounted. We just control its visibility. */}
+                <div className="w-full max-h-[500px] aspect-square relative">
                   <div
                     className={`transition-opacity duration-500 w-full h-full ${
                       pyodideLoaded ? "opacity-100" : "opacity-0"
@@ -89,16 +88,13 @@ export default function Home() {
                   >
                     <Scene />
                   </div>
-
-                  {/* The Spinner is rendered on top and fades out when loading is done. */}
                   {!pyodideLoaded && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center ...">
                       <Spinner className="mb-2" />
-                      Lade Pyodide...
+                      Loading...
                     </div>
                   )}
                 </div>
-                {/* --- END OF FIX --- */}
               </div>
             </div>
 
