@@ -37,7 +37,7 @@ export default function Home() {
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
       });
 
-      const response = await fetch("/game.py");
+      const response = await fetch("/python/game.py");
       const pythonCode = await response.text();
       await pyodide.runPythonAsync(pythonCode);
 

@@ -11,7 +11,7 @@ interface DroneProps {
 }
 
 export default function Drone({ position, onAnimationComplete }: DroneProps) {
-  const { scene } = useGLTF("/drone_body.glb");
+  const { scene } = useGLTF("/models/drone_body.glb");
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -50,5 +50,5 @@ export default function Drone({ position, onAnimationComplete }: DroneProps) {
   );
 }
 
-useGLTF.preload("/drone_body.glb");
-useGLTF.preload("/rotor.glb");
+useGLTF.preload("/models/drone_body.glb");
+useGLTF.preload("/models/rotor.glb");
