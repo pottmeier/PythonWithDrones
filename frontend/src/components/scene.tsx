@@ -18,6 +18,7 @@ export default function Scene() {
 
   // Camera Settings
   const START_POSITION: [number, number, number] = [0, 75, 150];
+  const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
   const limit = ((GRID_SIZE - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
@@ -88,6 +89,7 @@ export default function Scene() {
           ref={controlsRef}
           enablePan
           panSpeed={1}
+          target={START_TARGET}  
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 2 - 0.3}
           onChange={() => {
@@ -109,7 +111,9 @@ export default function Scene() {
         onClick={() => {
           if (!controlsRef.current) return;
           const cam = controlsRef.current.object;
+          const target = controlsRef.current.target;
           cam.position.set(...START_POSITION);
+          target.set(...START_TARGET);
           controlsRef.current.update();
         }}
       >
