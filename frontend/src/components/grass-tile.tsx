@@ -4,8 +4,10 @@ import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 import InstancedGrass from "./instanced-grass"; // <-- Import the new component
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
+
 export default function GrassTile(props: { windEnabled?: boolean; [key: string]: any }) {
-  const { scene } = useGLTF("/models/grass_tile.glb");
+  const { scene } = useGLTF(`${basePath}/models/grass_tile.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -28,4 +30,4 @@ export default function GrassTile(props: { windEnabled?: boolean; [key: string]:
   );
 }
 
-useGLTF.preload("/models/grass_tile.glb");
+useGLTF.preload(`${basePath}/models/grass_tile.glb`);

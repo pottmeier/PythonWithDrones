@@ -18,8 +18,10 @@ interface InstancedGrassProps {
   windEnabled?: boolean;
 }
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
+
 export default function InstancedGrass({ count = 100, windEnabled = false }: InstancedGrassProps) {
-  const { nodes } = useGLTF('/models/grass_blade.glb');
+  const { nodes } = useGLTF(`${basePath}/models/grass_blade.glb`);
   const ref = useRef<THREE.InstancedMesh>(null!);
   const bladeMesh = nodes.grass_blade as THREE.Mesh;
   const bladeData = useMemo<InstanceData[]>(() => {
@@ -84,4 +86,4 @@ export default function InstancedGrass({ count = 100, windEnabled = false }: Ins
   );
 }
 
-useGLTF.preload('/models/grass_blade.glb');
+useGLTF.preload(`${basePath}/models/grass_blade.glb`);
