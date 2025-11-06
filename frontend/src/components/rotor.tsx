@@ -8,7 +8,7 @@ import * as THREE from "three";
 export default function Rotor(props: any) {
   // A ref to gain direct access to the group wrapping the rotor model.
   const rotorRef = useRef<THREE.Group>(null!);
-  const { scene } = useGLTF("/rotor.glb");
+  const { scene } = useGLTF("/models/rotor.glb");
   const clonedScene = scene.clone();
 
   // The useFrame hook runs on every rendered frame.
@@ -30,4 +30,4 @@ export default function Rotor(props: any) {
 }
 
 // Preload the model for faster initial rendering.
-useGLTF.preload("/rotor.glb");
+useGLTF.preload("/models/rotor.glb");

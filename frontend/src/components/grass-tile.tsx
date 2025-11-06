@@ -5,7 +5,7 @@ import { useGLTF } from "@react-three/drei";
 import InstancedGrass from "./instanced-grass"; // <-- Import the new component
 
 export default function GrassTile(props: { windEnabled?: boolean; [key: string]: any }) {
-  const { scene } = useGLTF("/grass_tile.glb");
+  const { scene } = useGLTF("/models/grass_tile.glb");
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -28,4 +28,4 @@ export default function GrassTile(props: { windEnabled?: boolean; [key: string]:
   );
 }
 
-useGLTF.preload("/grass_tile.glb");
+useGLTF.preload("/models/grass_tile.glb");
