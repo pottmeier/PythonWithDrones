@@ -3,10 +3,10 @@
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 
-//const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; //Try without basepath first
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export default function Tile(props: any) {
-  const { scene } = useGLTF("/models/tile.glb");
+  const { scene } = useGLTF(`${basePath}/models/tile.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -22,4 +22,4 @@ export default function Tile(props: any) {
   );
 }
 
-useGLTF.preload("/models/tile.glb");
+useGLTF.preload(`${basePath}/models/tile.glb`);

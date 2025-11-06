@@ -9,10 +9,10 @@ interface DroneProps {
   position: [number, number, number];
   onAnimationComplete: () => void;
 }
-//const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; //Try without basepath first
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
 
 export default function Drone({ position, onAnimationComplete }: DroneProps) {
-  const { scene } = useGLTF(`/models/drone_body.glb`);
+  const { scene } = useGLTF(`${basePath}/models/drone_body.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -51,5 +51,5 @@ export default function Drone({ position, onAnimationComplete }: DroneProps) {
   );
 }
 
-useGLTF.preload("/models/drone_body.glb");
-useGLTF.preload("/models/rotor.glb");
+useGLTF.preload(`${basePath}/models/drone_body.glb`);
+useGLTF.preload(`${basePath}/models/rotor.glb`);
