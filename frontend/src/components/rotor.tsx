@@ -5,10 +5,12 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
+
 export default function Rotor(props: any) {
   // A ref to gain direct access to the group wrapping the rotor model.
   const rotorRef = useRef<THREE.Group>(null!);
-  const { scene } = useGLTF("/models/rotor.glb");
+  const { scene } = useGLTF(`${basePath}/models/rotor.glb`);
   const clonedScene = scene.clone();
 
   // The useFrame hook runs on every rendered frame.
@@ -30,4 +32,4 @@ export default function Rotor(props: any) {
 }
 
 // Preload the model for faster initial rendering.
-useGLTF.preload("/models/rotor.glb");
+useGLTF.preload(`${basePath}/models/rotor.glb`);
