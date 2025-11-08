@@ -4,8 +4,13 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
-import Grid, { TILE_SIZE, TILE_MARGIN, GRID_SIZE } from "./grid";
+import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
 import { FoldVertical } from "lucide-react";
+
+interface LevelSize {
+  width: number;
+  height: number;
+}
 
 export default function Scene() {
   const [gridPosition, setGridPosition] = useState<[number, number]>([0, 0]);
@@ -16,13 +21,22 @@ export default function Scene() {
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
 
+  const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
+
   // Camera Settings
   const START_POSITION: [number, number, number] = [0, 75, 150];
   const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
-  const limit = ((GRID_SIZE - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
+  const { width = 1, height = 1 } = levelSize || {};
+  const limitX = ((width - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
+  const limitZ = ((height - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
+
+  const handleLevelLoaded = useCallback((size: LevelSize) => {
+    console.log("Level size received from Grid:", size);
+    setLevelSize(size);
+  }, []);
 
   useEffect(() => {
     const newX = gridPosition[0] * (TILE_SIZE + TILE_MARGIN);
@@ -70,7 +84,7 @@ export default function Scene() {
       >
         <ambientLight intensity={0.5} />
         <directionalLight
-          position={[10, 20, 10]}
+          position={[100, 200, 100]}
           intensity={1.5}
           castShadow
           shadow-mapSize-width={2048}
@@ -80,7 +94,7 @@ export default function Scene() {
           shadow-camera-top={60}
           shadow-camera-bottom={-60}
         />
-        <Grid />
+        <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
           position={worldPosition}
           onAnimationComplete={handleAnimationComplete}
@@ -89,18 +103,25 @@ export default function Scene() {
           ref={controlsRef}
           enablePan
           panSpeed={1}
+          screenSpacePanning={false}
+
+          //zoom distance
+          minDistance={20}     
+          maxDistance={200}
+          zoomSpeed={3}
+
           target={START_TARGET}  
           minPolarAngle={0}
-          maxPolarAngle={Math.PI / 2 - 0.3}
+          maxPolarAngle={Math.PI / 2 - 0.1}
           onChange={() => {
             const c = controlsRef.current;
             if (!c) return;
             const cam = c.object;
             const target = c.target;
-            target.x = clamp(target.x, -limit, limit);
-            target.z = clamp(target.z, -limit, limit);
-            cam.position.x = clamp(cam.position.x, -limit * 1.5, limit * 1.5);
-            cam.position.z = clamp(cam.position.z, -limit * 1.5, limit * 1.5);
+            target.x = clamp(target.x, -limitX, limitX);
+            target.z = clamp(target.z, -limitZ, limitZ);
+            cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
+            cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
             cam.updateProjectionMatrix();
           }}
         />

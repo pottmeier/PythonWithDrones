@@ -1,0 +1,26 @@
+grid_size:
+  width: 9
+  height: 9
+
+layers:
+  layer_0: 
+    - [grass, grass, grass, grass, grass, grass, grass, grass, grass]
+    - [grass, grass, dirt,  dirt,  dirt,  dirt,  dirt,  grass, grass]
+    - [grass, dirt,  dirt,  dirt,  grass, dirt,  dirt,  dirt,  grass]
+    - [grass, dirt,  dirt,  grass, grass, grass, dirt,  dirt,  grass]
+    - [grass, dirt,  dirt,  dirt,  grass, dirt,  dirt,  dirt,  grass]
+    - [grass, dirt,  dirt,  dirt,  dirt,  dirt,  dirt,  dirt,  grass]
+    - [grass, grass, dirt,  dirt,  dirt,  dirt,  dirt,  grass, grass]
+    - [grass, grass, grass, grass, dirt,  grass, grass, grass, grass]
+    - [grass, grass, grass, grass, grass, grass, grass, grass, grass]
+
+  layer_1:
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
+    - [empty, empty, tree,  empty, empty, empty, empty, empty, empty]
+    - [empty, empty,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
+    - [empty, empty, empty,  empty, empty, empty, empty, tree,  empty]
+    - [empty, tree,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty,  empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
