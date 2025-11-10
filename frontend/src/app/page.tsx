@@ -22,9 +22,6 @@ export default function Home() {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
 
-  const [moveQueue, setMoveQueue] = useState<string[]>([]);
-  const [isAnimating, setIsAnimating] = useState(false);
-
   // Darkmode
   useEffect(() => {
     if (dark) document.documentElement.classList.add("dark");
@@ -111,7 +108,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <Toaster position="bottom-left" richColors closeButton />
+      <Toaster position="top-left" richColors closeButton />
     </SidebarProvider>
   );
 }
