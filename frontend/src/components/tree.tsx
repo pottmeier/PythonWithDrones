@@ -6,7 +6,7 @@ import { useGLTF } from "@react-three/drei";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
 
 export default function Tree(props: any) {
-  const { scene } = useGLTF("/models/tree_1.glb");
+  const { scene } = useGLTF(`${basePath}/models/tree_1.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
