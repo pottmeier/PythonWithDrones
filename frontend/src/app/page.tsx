@@ -13,7 +13,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-import { TILE_SIZE, TILE_MARGIN, GRID_SIZE } from "@/components/grid";
 
 export default function Home() {
   const [code, setCode] = useState("");
