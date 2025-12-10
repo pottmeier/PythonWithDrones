@@ -13,6 +13,8 @@ const TILE_COMPONENTS: { [key: string]: React.ComponentType<any> } = {
   tree: Tree,
 };
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 interface LevelData {
   grid_size: { width: number; height: number };
   layers: { [key: string]: string[][] };
@@ -31,7 +33,7 @@ export default function Grid({ onLevelLoaded }: GridProps) {
   useEffect(() => {
     async function loadLevel() {
       try {
-        const response = await fetch('/levels/prototype_level.yaml');
+        const response = await fetch(`${basePath}/levels/prototype_level.yaml`);
         const yamlText = await response.text();
         const data = yaml.load(yamlText) as LevelData;
 
