@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
@@ -10,14 +11,16 @@ interface CodeCardProps {
 }
 
 export function CodeCard({ code, setCode }: CodeCardProps) {
+  const [localCode, setLocalCode] = useState(code);
   const runCode = async () => {
+    setCode(localCode);
     if (typeof window.runPython !== "function") {
       toast.warning("⚠️ Python-Engine ist noch nicht bereit. Bitte warten.");
       return;
     }
 
     try {
-      await window.runPython(code);
+      await window.runPython(localCode);
     } catch (err: any) {
       console.error("Python runtime error:", err);
 
@@ -39,13 +42,13 @@ export function CodeCard({ code, setCode }: CodeCardProps) {
   };
 
   const submitCode = () => {
-    console.log("Code submitted:", code);
+    console.log("Code submitted:", localCode);
   };
 
   return (
     <div className="flex-[2] bg-white dark:bg-gray-800 border rounded-md p-4 flex flex-col">
       <h2 className="text-xl font-bold mb-2">Code</h2>
-      <CodeEditor code={code} setCode={setCode} />
+      <CodeEditor code={localCode} setCode={setLocalCode} />
       <div className="mt-2 flex space-x-2 self-end">
         <Button className="text-md cursor-pointer" onClick={runCode}>
           Run
