@@ -21,9 +21,6 @@ export default function Home() {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
 
-  const [moveQueue, setMoveQueue] = useState<string[]>([]);
-  const [isAnimating, setIsAnimating] = useState(false);
-
   // Darkmode
   useEffect(() => {
     if (dark) document.documentElement.classList.add("dark");
@@ -45,7 +42,6 @@ export default function Home() {
 
       window.runPython = (code: string) => pyodide.runPythonAsync(code);
 
-      console.log("Python + Bibliothek geladen!");
       setPyodideLoaded(true);
     }
 
