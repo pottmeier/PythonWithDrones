@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-python";
@@ -11,6 +12,7 @@ interface CodeEditorProps {
 }
 
 export function CodeEditor({ code, setCode }: CodeEditorProps) {
+
   return (
     <div className="flex flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 rounded-md border mb-2">
       <div
