@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
+import Rotor from "./rotor";
 import gsap from "gsap";
 
 interface DroneProps {
@@ -10,7 +11,10 @@ interface DroneProps {
   onAnimationComplete: () => void;
 }
 
-export default function Drone({ positionRef, onAnimationComplete }: DroneProps) {
+export default function Drone({
+  positionRef,
+  onAnimationComplete,
+}: DroneProps) {
   const groupRef = useRef<any>(null);
   const { scene } = useGLTF("/models/drone_body.glb");
 
@@ -46,6 +50,10 @@ export default function Drone({ positionRef, onAnimationComplete }: DroneProps) 
   return (
     <group ref={groupRef}>
       <primitive object={scene} scale={0.5} />
+      <Rotor position={[4, 3.5, 4]} />
+      <Rotor position={[-4, 3.5, 4]} />
+      <Rotor position={[4, 3.5, -4]} />
+      <Rotor position={[-4, 3.5, -4]} />
     </group>
   );
 }
