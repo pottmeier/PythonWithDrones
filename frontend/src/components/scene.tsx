@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
 import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
-import { FoldVertical } from "lucide-react";
+import ResetCameraButton from "./resetCamButton";
 
 interface LevelSize {
   width: number;
@@ -13,12 +13,11 @@ interface LevelSize {
 }
 
 export default function Scene() {
-  const [gridPosition, setGridPosition] = useState<[number, number, number]>([0, 10, 0,]);
-  const [currentPosition, setCurrentPosition] = useState<[number, number, number]>([0, 10, 0]);
+  const gridPosRef = useRef<[number, number, number]>([0, 10, 0]);
+  const positionRef = useRef<[number, number, number]>([0, 10, 0]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
-
   const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
 
   // Camera Settings
@@ -28,24 +27,16 @@ export default function Scene() {
   const { width = 1, height = 1 } = levelSize || {};
   const limitX = ((width - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
   const limitZ = ((height - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
-  const worldLimitX = ((width) / 2) * (TILE_SIZE + TILE_MARGIN);
-  const worldLimitZ = ((height) / 2) * (TILE_SIZE + TILE_MARGIN);
+  const worldLimitX = (width / 2) * (TILE_SIZE + TILE_MARGIN);
+  const worldLimitZ = (height / 2) * (TILE_SIZE + TILE_MARGIN);
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
 
   const handleLevelLoaded = useCallback((size: LevelSize) => {
     console.log("Level size received from Grid:", size);
     setLevelSize(size);
+    console.log("Starting position: ", positionRef.current);
   }, []);
-
-  useEffect(() => {
-    const newX = gridPosition[0] * (TILE_SIZE + TILE_MARGIN);
-    const newZ = gridPosition[2] * (TILE_SIZE + TILE_MARGIN);
-    const newPos: [number, number, number] = [newX, 10, newZ];
-
-    setCurrentPosition(newPos);
-    console.log("Current Position: ", newPos);
-  }, [gridPosition]);
 
   const processNextMoveInQueue = useCallback(() => {
     if (moveQueueRef.current.length === 0) {
@@ -55,34 +46,37 @@ export default function Scene() {
 
     isAnimatingRef.current = true;
     const nextMove = moveQueueRef.current.shift()!;
+    const step = TILE_SIZE + TILE_MARGIN;
 
-    setGridPosition((prev) => {
-      const newPos = [...prev] as [number, number, number];
+    const newPos = [...gridPosRef.current] as [number, number, number];
 
-      const step = TILE_SIZE + TILE_MARGIN;
+    const futureX =
+      (newPos[0] +
+        (nextMove === "rechts" ? 1 : nextMove === "links" ? -1 : 0)) *
+      step;
 
-      // Koordinaten nach dem Move
-      const futureX =
-        (newPos[0] +
-          (nextMove === "rechts" ? 1 : nextMove === "links" ? -1 : 0)) *
-        step;
-      const futureZ =
-        (newPos[2] +
-          (nextMove === "runter" ? 1 : nextMove === "hoch" ? -1 : 0)) *
-        step;
+    const futureZ =
+      (newPos[2] + (nextMove === "runter" ? 1 : nextMove === "hoch" ? -1 : 0)) *
+      step;
 
-      // Blockierung, falls außerhalb
-      if (futureX < -worldLimitX || futureX > worldLimitX) return prev;
-      if (futureZ < -worldLimitZ || futureZ > worldLimitZ) return prev;
+    if (futureX < -worldLimitX || futureX > worldLimitX) {
+      isAnimatingRef.current = false;
+      return;
+    }
+    if (futureZ < -worldLimitZ || futureZ > worldLimitZ) {
+      isAnimatingRef.current = false;
+      return;
+    }
 
-      // Wenn innerhalb, Position updaten
-      if (nextMove === "rechts") newPos[0] += 1;
-      if (nextMove === "links") newPos[0] -= 1;
-      if (nextMove === "hoch") newPos[2] -= 1;
-      if (nextMove === "runter") newPos[2] += 1;
+    if (nextMove === "rechts") newPos[0] += 1;
+    if (nextMove === "links") newPos[0] -= 1;
+    if (nextMove === "hoch") newPos[2] -= 1;
+    if (nextMove === "runter") newPos[2] += 1;
 
-      return newPos;
-    });
+    gridPosRef.current = newPos;
+
+    positionRef.current = [newPos[0] * step, 10, newPos[2] * step];
+    console.log(positionRef.current);
   }, [width, height]);
 
   const handleAnimationComplete = useCallback(() => {
@@ -120,7 +114,7 @@ export default function Scene() {
         />
         <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
-          position={currentPosition}
+          positionRef={positionRef}
           onAnimationComplete={handleAnimationComplete}
         />
         <OrbitControls
@@ -148,19 +142,11 @@ export default function Scene() {
         />
       </Canvas>
 
-      <button
-        className="absolute top-4 left-4 text-md cursor-pointer"
-        onClick={() => {
-          if (!controlsRef.current) return;
-          const cam = controlsRef.current.object;
-          const target = controlsRef.current.target;
-          cam.position.set(...START_POSITION);
-          target.set(...START_TARGET);
-          controlsRef.current.update();
-        }}
-      >
-        <FoldVertical size={20} />
-      </button>
+      <ResetCameraButton
+        controlsRef={controlsRef}
+        startPosition={START_POSITION}
+        startTarget={START_TARGET}
+      />
     </div>
   );
 }
