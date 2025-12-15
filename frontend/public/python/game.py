@@ -1,18 +1,7 @@
 import js
 
-# Wir benennen die alte Funktion um, damit sie zum neuen Code passt
-def bewege_rechts():
-  js.window.moveDrone('rechts')
-
-def bewege_links():
-  js.window.moveDrone('links')
-
-# NEUE FUNKTIONEN für die Z-Achse
-def bewege_hoch():
-  js.window.moveDrone('hoch')
-
-def bewege_runter():
-  js.window.moveDrone('runter')
+def move(direction:str):
+    js.window.moveDrone(direction)
 
 # Die Brückenfunktion bleibt exakt gleich
 def code_ausfuehren(code_string):
