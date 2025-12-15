@@ -153,19 +153,12 @@ export default function Scene() {
             const cam = c.object;
             const target = c.target;
 
-            // 🧭 Kompass (korrekte Ausrichtung, kein Re-Render)
             if (compassRef.current) {
               const angle = THREE.MathUtils.radToDeg(c.getAzimuthalAngle());
-
-              // CSS-Rotation direkt setzen
               compassRef.current.style.transform = `rotate(${angle}deg)`;
             }
-
-            // 🔒 Target-Clamping
             target.x = clamp(target.x, -limitX, limitX);
             target.z = clamp(target.z, -limitZ, limitZ);
-
-            // 🔒 Camera-Clamping
             cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
             cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
 
