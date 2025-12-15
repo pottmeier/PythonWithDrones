@@ -106,7 +106,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <Toaster position="bottom-left" richColors closeButton />
+      <Toaster position="top-left" richColors closeButton />
     </SidebarProvider>
   );
 }

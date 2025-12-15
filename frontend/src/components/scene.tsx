@@ -20,17 +20,32 @@ export default function Scene() {
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
 
+  // Movement steps (world units)
+  const STEP = TILE_SIZE + TILE_MARGIN; // horizontal step on X/Z
+  const VERTICAL_STEP = TILE_SIZE; // vertical step on Y
+
   // Camera Settings
   const START_POSITION: [number, number, number] = [0, 75, 150];
   const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
   const { width = 1, height = 1 } = levelSize || {};
-  const limitX = ((width - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
-  const limitZ = ((height - 1) / 2) * (TILE_SIZE + TILE_MARGIN) * PAN_FACTOR;
-  const worldLimitX = (width / 2) * (TILE_SIZE + TILE_MARGIN);
-  const worldLimitZ = (height / 2) * (TILE_SIZE + TILE_MARGIN);
+  const limitX = ((width - 1) / 2) * STEP * PAN_FACTOR;
+  const limitZ = ((height - 1) / 2) * STEP * PAN_FACTOR;
+  const worldLimitX = (width / 2) * STEP;
+  const worldLimitZ = (height / 2) * STEP;
+  const MIN_Y = 0.5;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
+
+  // Direction map: use world-space deltas [dx, dy, dz]
+  const deltas: Record<string, [number, number, number]> = {
+    east: [1, 0, 0],
+    west: [-1, 0, 0],
+    north: [0, 0, -1],
+    south: [0, 0, 1],
+    up: [0, 1, 0],
+    down: [0, -1, 0],
+  };
 
   const handleLevelLoaded = useCallback((size: LevelSize) => {
     console.log("Level size received from Grid:", size);
@@ -46,36 +61,36 @@ export default function Scene() {
 
     isAnimatingRef.current = true;
     const nextMove = moveQueueRef.current.shift()!;
-    const step = TILE_SIZE + TILE_MARGIN;
+    const key = nextMove.toLowerCase()
+    const moveDelta = deltas[key];
 
-    const newPos = [...gridPosRef.current] as [number, number, number];
-
-    const futureX =
-      (newPos[0] +
-        (nextMove === "rechts" ? 1 : nextMove === "links" ? -1 : 0)) *
-      step;
-
-    const futureZ =
-      (newPos[2] + (nextMove === "runter" ? 1 : nextMove === "hoch" ? -1 : 0)) *
-      step;
-
-    if (futureX < -worldLimitX || futureX > worldLimitX) {
+    // If unknown command, skip and proceed to next
+    if (!moveDelta) {
+      console.error(`Unknown direction: ${nextMove}`);
       isAnimatingRef.current = false;
-      return;
-    }
-    if (futureZ < -worldLimitZ || futureZ > worldLimitZ) {
-      isAnimatingRef.current = false;
+      // Immediately try next
+      processNextMoveInQueue();
       return;
     }
 
-    if (nextMove === "rechts") newPos[0] += 1;
-    if (nextMove === "links") newPos[0] -= 1;
-    if (nextMove === "hoch") newPos[2] -= 1;
-    if (nextMove === "runter") newPos[2] += 1;
+    const [x, y, z] = positionRef.current;
+    const dx = moveDelta[0] * STEP;
+    const dy = moveDelta[1] * VERTICAL_STEP;
+    const dz = moveDelta[2] * STEP;
+    const newY = Math.max(MIN_Y, (y + dy));
+    const newPos = [x + dx, newY, z + dz] as [number, number, number];
 
-    gridPosRef.current = newPos;
+    // World Limit
+    if (newPos[0] < -worldLimitX || newPos[0] > worldLimitX) {
+      isAnimatingRef.current = false;
+      return;
+    }
+    if (newPos[2] < -worldLimitZ || newPos[2] > worldLimitZ) {
+      isAnimatingRef.current = false;
+      return;
+    }
 
-    positionRef.current = [newPos[0] * step, 10, newPos[2] * step];
+    positionRef.current = newPos;
     console.log(positionRef.current);
   }, [width, height]);
 
@@ -84,7 +99,7 @@ export default function Scene() {
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    window.moveDrone = (direction: string) => {
+    (window as any).moveDrone = (direction: string) => {
       moveQueueRef.current.push(direction);
       if (!isAnimatingRef.current) {
         processNextMoveInQueue();
