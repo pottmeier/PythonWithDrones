@@ -6,6 +6,8 @@ import { useFrame } from "@react-three/fiber";
 import Rotor from "./rotor";
 import gsap from "gsap";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
+
 interface DroneProps {
   positionRef: React.RefObject<[number, number, number]>;
   onAnimationComplete: () => void;
@@ -16,7 +18,7 @@ export default function Drone({
   onAnimationComplete,
 }: DroneProps) {
   const groupRef = useRef<any>(null);
-  const { scene } = useGLTF("/models/drone_body.glb");
+  const { scene } = useGLTF(`${basePath}/models/drone_body.glb`);
 
   const lastTarget = useRef<[number, number, number]>([0, 0, 0]);
 
@@ -58,4 +60,4 @@ export default function Drone({
   );
 }
 
-useGLTF.preload("/models/drone_body.glb");
+useGLTF.preload(`${basePath}/models/drone_body.glb`);
