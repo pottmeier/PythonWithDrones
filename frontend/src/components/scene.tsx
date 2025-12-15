@@ -6,6 +6,8 @@ import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
 import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
 import ResetCameraButton from "./resetCamButton";
+import Compass from "./compass";
+import * as THREE from "three";
 
 interface LevelSize {
   width: number;
@@ -19,6 +21,7 @@ export default function Scene() {
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
+  const compassRef = useRef<HTMLDivElement>(null);
 
   // Movement steps (world units)
   const STEP = TILE_SIZE + TILE_MARGIN; // horizontal step on X/Z
@@ -61,7 +64,7 @@ export default function Scene() {
 
     isAnimatingRef.current = true;
     const nextMove = moveQueueRef.current.shift()!;
-    const key = nextMove.toLowerCase()
+    const key = nextMove.toLowerCase();
     const moveDelta = deltas[key];
 
     // If unknown command, skip and proceed to next
@@ -77,7 +80,7 @@ export default function Scene() {
     const dx = moveDelta[0] * STEP;
     const dy = moveDelta[1] * VERTICAL_STEP;
     const dz = moveDelta[2] * STEP;
-    const newY = Math.max(MIN_Y, (y + dy));
+    const newY = Math.max(MIN_Y, y + dy);
     const newPos = [x + dx, newY, z + dz] as [number, number, number];
 
     // World Limit
@@ -146,16 +149,34 @@ export default function Scene() {
           onChange={() => {
             const c = controlsRef.current;
             if (!c) return;
+
             const cam = c.object;
             const target = c.target;
+
+            // 🧭 Kompass (korrekte Ausrichtung, kein Re-Render)
+            if (compassRef.current) {
+              const angle = THREE.MathUtils.radToDeg(c.getAzimuthalAngle());
+
+              // CSS-Rotation direkt setzen
+              compassRef.current.style.transform = `rotate(${angle}deg)`;
+            }
+
+            // 🔒 Target-Clamping
             target.x = clamp(target.x, -limitX, limitX);
             target.z = clamp(target.z, -limitZ, limitZ);
+
+            // 🔒 Camera-Clamping
             cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
             cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
+
             cam.updateProjectionMatrix();
           }}
         />
       </Canvas>
+
+      <div className="absolute top-4 right-4 pointer-events-none">
+        <Compass ref={compassRef} />
+      </div>
 
       <ResetCameraButton
         controlsRef={controlsRef}
