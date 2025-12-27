@@ -1,3 +1,4 @@
+//scene.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -9,18 +10,17 @@ import ResetCameraButton from "./resetCamButton";
 import Compass from "./compass";
 import * as THREE from "three";
 
-interface LevelSize {
-  width: number;
-  height: number;
+interface LevelLoadData {
+  size: { width: number; height: number };
+  spawn: { x: number; y: number };
 }
 
 export default function Scene() {
-  const gridPosRef = useRef<[number, number, number]>([0, 10, 0]);
-  const positionRef = useRef<[number, number, number]>([-2, 0.5, 0]);
+  const positionRef = useRef<[number, number, number]>([0, 0.5, 0]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
-  const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
+  const [levelSize, setLevelSize] = useState<{ width: number; height: number } | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
 
   // Camera Settings
@@ -46,10 +46,19 @@ export default function Scene() {
     down: [0, -1, 0],
   };
 
-  const handleLevelLoaded = useCallback((size: LevelSize) => {
-    console.log("Level size received from Grid:", size);
-    setLevelSize(size);
-    console.log("Starting position: ", positionRef.current);
+  const handleLevelLoaded = useCallback((data: LevelLoadData) => {
+    console.log("Level loaded:", data);
+    
+    // level size for camera limits
+    setLevelSize(data.size);
+
+    const offsetX = (data.size.width - 1) / 2;
+    const offsetZ = (data.size.height - 1) / 2;
+
+    const worldX = (data.spawn.x - offsetX);
+    const worldZ = (data.spawn.y - offsetZ);
+
+    positionRef.current = [worldX, 0.5, worldZ];
   }, []);
 
   const processNextMoveInQueue = useCallback(() => {
