@@ -26,7 +26,7 @@ export default function Rotor(props: any) {
   return (
     // Pass the ref to this group. All props (like position) are applied here.
     <group ref={rotorRef} {...props}>
-      <primitive object={clonedScene} scale={0.5} />
+      <primitive object={clonedScene} scale={1} />
     </group>
   );
 }

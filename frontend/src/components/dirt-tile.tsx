@@ -21,7 +21,7 @@ export default function DirtTile(props: any ) {
   return (
     <group {...props}>
       <primitive object={clonedScene} scale={1} />
-      <InstancedPebbles count={6} />
+      <InstancedPebbles count={4} />
     </group>
   );
 }

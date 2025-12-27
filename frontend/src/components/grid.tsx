@@ -20,8 +20,8 @@ interface LevelData {
   layers: { [key: string]: string[][] };
 }
 
-export const TILE_SIZE = 16;
-export const TILE_MARGIN = 0.1;
+//export const TILE_SIZE = 1;
+//export const TILE_MARGIN = 0;
 
 interface GridProps {
   onLevelLoaded: (size: { width: number; height: number }) => void;
@@ -69,8 +69,8 @@ export default function Grid({ onLevelLoaded }: GridProps) {
         const Component = TILE_COMPONENTS[tileName];
 
         if (Component) {
-          const worldX = (x - offsetX) * (TILE_SIZE + TILE_MARGIN);
-          const worldZ = (z - offsetZ) * (TILE_SIZE + TILE_MARGIN);
+          const worldX = (x - offsetX);
+          const worldZ = (z - offsetZ);
           const worldY = layerName === 'layer_0' ? 0 : 0;  // Object Hover distance to Tile
 
           allElements.push(
@@ -86,40 +86,3 @@ export default function Grid({ onLevelLoaded }: GridProps) {
 
   return <>{allElements}</>;
 }
-
-
-
-/*
-"use client";
-
-// import Tile from "./tile";
-import GrassTile from "./grass-tile";
-export const GRID_SIZE = 8;       // z.B. 5x5 Grid
-export const TILE_SIZE = 16;       // Größe eines Tiles
-export const TILE_MARGIN = 0.1;    // Abstand zwischen Tiles
-
-export default function Grid() {
-  const windEnabled = true;
-  const tiles = [];
-  const offset = Math.floor(GRID_SIZE / 2);
-
-  for (let x = -offset; x <= offset; x++) {
-    for (let z = -offset; z <= offset; z++) {
-      tiles.push(
-        <GrassTile
-
-          key={`${x},${z}`}
-          position={[
-            x * (TILE_SIZE + TILE_MARGIN),
-            0, // Höhe
-            z * (TILE_SIZE + TILE_MARGIN),
-          ]}
-          windEnabled={windEnabled}
-        />
-      );
-    }
-  }
-
-  return <>{tiles}</>;
-}
-*/
