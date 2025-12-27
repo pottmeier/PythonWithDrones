@@ -1,9 +1,6 @@
 #prototype_level.yaml
-grid_size:
-  width: 9
-  height: 9
-  
-spawn: { x: 4, y: 8}
+
+spawn: { x: 1, y: 7}
 
 layers:
   layer_0: 
@@ -21,9 +18,9 @@ layers:
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
     - [empty, empty, tree,  empty, empty, empty, empty, empty, empty]
-    - [empty, empty,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
-    - [empty, empty, empty,  empty, empty, empty, empty, tree,  empty]
+    - [empty, empty, empty, empty, empty, empty, empty, tree,  empty]
     - [empty, tree,  empty, empty, empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty,  empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]

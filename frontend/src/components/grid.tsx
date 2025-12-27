@@ -16,15 +16,15 @@ const TILE_COMPONENTS: { [key: string]: React.ComponentType<any> } = {
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 interface LevelData {
-  grid_size: { width: number; height: number };
+  spawn: { x: number; y: number };
   layers: { [key: string]: string[][] };
 }
 
-//export const TILE_SIZE = 1;
-//export const TILE_MARGIN = 0;
-
 interface GridProps {
-  onLevelLoaded: (size: { width: number; height: number }) => void;
+  onLevelLoaded: (data: { 
+    size: { width: number; height: number }; 
+    spawn: { x: number; y: number };
+  }) => void;
 }
 
 export default function Grid({ onLevelLoaded }: GridProps) {
@@ -37,25 +37,36 @@ export default function Grid({ onLevelLoaded }: GridProps) {
         const yamlText = await response.text();
         const data = yaml.load(yamlText) as LevelData;
 
-        if (data && data.grid_size) {
+        const baseLayer = data.layers['layer_0'];
+
+        if (baseLayer && data.spawn) {
+          const height = baseLayer.length;    
+          const width = baseLayer[0]?.length || 0; 
+
           setLevelData(data);
-          onLevelLoaded(data.grid_size);
+
+          onLevelLoaded({
+            size: { width, height },
+            spawn: data.spawn
+          });
         } else {
-          console.error("Failed to parse YAML or file is missing 'grid_size'. Parsed data:", data);
+          console.error("Invalid level data: Missing layer_0 or spawn point");
         }
 
       } catch (error) {
-        console.error("Failed to load or parse level file:", error);
+        console.error("Error loading level:", error);
       }
     }
     loadLevel();
-  }, []);
+  }, [onLevelLoaded]);
 
   if (!levelData) {
     return null;
   }
 
-  const { width, height } = levelData.grid_size;
+  const baseLayer = levelData.layers['layer_0'];
+  const height = baseLayer.length;
+  const width = baseLayer[0].length;
   const offsetX = (width - 1) / 2;
   const offsetZ = (height - 1) / 2;
 
