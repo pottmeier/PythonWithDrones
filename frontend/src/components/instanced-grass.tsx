@@ -32,7 +32,7 @@ export default function InstancedGrass({ count = 100, windEnabled = true }: Inst
 
   const bladeData = useMemo<InstanceData[]>(() => {
     const data: InstanceData[] = [];
-    const TILE_SIZE = 12.0;
+    const TILE_SIZE = 0.8;
     for (let i = 0; i < count; i++) {
       data.push({
         position: [(Math.random() - 0.5) * TILE_SIZE, 0, (Math.random() - 0.5) * TILE_SIZE],

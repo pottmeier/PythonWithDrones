@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
-import Grid, { TILE_SIZE, TILE_MARGIN } from "./grid";
+import Grid from "./grid";
 import ResetCameraButton from "./resetCamButton";
 import Compass from "./compass";
 import * as THREE from "three";
@@ -16,26 +16,22 @@ interface LevelSize {
 
 export default function Scene() {
   const gridPosRef = useRef<[number, number, number]>([0, 10, 0]);
-  const positionRef = useRef<[number, number, number]>([0, 10, 0]);
+  const positionRef = useRef<[number, number, number]>([-2, 0.5, 0]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<LevelSize | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
 
-  // Movement steps (world units)
-  const STEP = TILE_SIZE + TILE_MARGIN; // horizontal step on X/Z
-  const VERTICAL_STEP = TILE_SIZE; // vertical step on Y
-
   // Camera Settings
   const START_POSITION: [number, number, number] = [0, 75, 150];
   const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
   const { width = 1, height = 1 } = levelSize || {};
-  const limitX = ((width - 1) / 2) * STEP * PAN_FACTOR;
-  const limitZ = ((height - 1) / 2) * STEP * PAN_FACTOR;
-  const worldLimitX = (width / 2) * STEP;
-  const worldLimitZ = (height / 2) * STEP;
+  const limitX = ((width - 1) / 2) * PAN_FACTOR;
+  const limitZ = ((height - 1) / 2) * PAN_FACTOR;
+  const worldLimitX = (width / 2);
+  const worldLimitZ = (height / 2);
   const MIN_Y = 0.5;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
@@ -77,9 +73,9 @@ export default function Scene() {
     }
 
     const [x, y, z] = positionRef.current;
-    const dx = moveDelta[0] * STEP;
-    const dy = moveDelta[1] * VERTICAL_STEP;
-    const dz = moveDelta[2] * STEP;
+    const dx = moveDelta[0];
+    const dy = moveDelta[1];
+    const dz = moveDelta[2];
     const newY = Math.max(MIN_Y, y + dy);
     const newPos = [x + dx, newY, z + dz] as [number, number, number];
 
@@ -120,15 +116,15 @@ export default function Scene() {
       >
         <ambientLight intensity={0.5} />
         <directionalLight
-          position={[100, 200, 100]}
+          position={[10, 20, 10]}
           intensity={1.5}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
-          shadow-camera-left={-60}
-          shadow-camera-right={60}
-          shadow-camera-top={60}
-          shadow-camera-bottom={-60}
+          shadow-camera-left={-10}
+          shadow-camera-right={10}
+          shadow-camera-top={10}
+          shadow-camera-bottom={-10}
         />
         <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
@@ -140,8 +136,8 @@ export default function Scene() {
           enablePan
           panSpeed={1}
           screenSpacePanning={false}
-          minDistance={20}
-          maxDistance={200}
+          minDistance={1}
+          maxDistance={10}
           zoomSpeed={3}
           target={START_TARGET}
           minPolarAngle={0}
