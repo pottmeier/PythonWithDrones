@@ -23,7 +23,7 @@ export default function GrassTile(props: { windEnabled?: boolean; [key: string]:
       {/* The base tile model */}
       <primitive object={clonedScene} scale={1} />
     
-      <InstancedGrass count={100} windEnabled={props.windEnabled}/>
+      <InstancedGrass count={100} windEnabled={props.windEnabled} tilePosition={props.position}/>
     </group>
   );
 }
