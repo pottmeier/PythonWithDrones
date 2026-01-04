@@ -1,3 +1,5 @@
+//instanced-grass.tsx
+
 "use client";
 
 import React, { useMemo, useRef } from 'react';
@@ -15,11 +17,12 @@ interface InstanceData {
 interface InstancedGrassProps {
   count?: number;
   windEnabled?: boolean;
+  tilePosition?: [number, number, number]; 
 }
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
-export default function InstancedGrass({ count = 100, windEnabled = true }: InstancedGrassProps) {
+export default function InstancedGrass({ count = 100, windEnabled = true, tilePosition = [0, 0, 0] }: InstancedGrassProps) {
   const { nodes } = useGLTF(`${basePath}/models/grass_blade.glb`);
   const ref = useRef<THREE.InstancedMesh>(null!);
   
@@ -48,13 +51,14 @@ export default function InstancedGrass({ count = 100, windEnabled = true }: Inst
     if (!windEnabled || !ref.current) return;
     const time = state.clock.getElapsedTime();
     const dummy = new THREE.Object3D();
+    const tileOffset = (tilePosition[0] * 2 + tilePosition[2] * 5);
 
     bladeData.forEach((data, i) => {
       dummy.position.set(...data.position);
       dummy.rotation.set(...data.rotation);
       dummy.scale.setScalar(data.scale);
       
-      const swayAngle = Math.sin(time * 2 + data.animationOffset) * 0.1;
+      const swayAngle = Math.sin(time * 2 + data.animationOffset + tileOffset) * 0.1;
       dummy.rotation.z += swayAngle;
 
       dummy.updateMatrix();
