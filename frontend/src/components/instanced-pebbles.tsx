@@ -26,7 +26,7 @@ export default function InstancedPebbles({ count = 25 }: InstancedPebblesProps) 
     const TILE_SIZE = 0.6;
     for (let i = 0; i < count; i++) {
       data.push({
-        position: [(Math.random() - 0.5) * TILE_SIZE, 0, (Math.random() - 0.5) * TILE_SIZE],
+        position: [(Math.random() - 0.5) * TILE_SIZE, 0.5, (Math.random() - 0.5) * TILE_SIZE],
         rotation: [0, Math.random() * Math.PI * 2, 0],
         scale: 1 + Math.random() * 0.1,
       });

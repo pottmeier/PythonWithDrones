@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useGLTF } from "@react-three/drei";
-import InstancedGrass from "./instanced-grass"; // <-- Import the new component
+import InstancedGrass from "./instanced-grass";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
 
@@ -22,9 +22,7 @@ export default function GrassTile(props: { windEnabled?: boolean; [key: string]:
     <group {...props}>
       {/* The base tile model */}
       <primitive object={clonedScene} scale={1} />
-      
-      {/* The scattered grass blades rendered on top */}
-      {/* You can adjust the 'count' to control grass density */}
+    
       <InstancedGrass count={100} windEnabled={props.windEnabled}/>
     </group>
   );
