@@ -29,8 +29,8 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     id: "dirt",
     isCollidable: true,
     isDestructible: true,
-    isPickable: true, // Maybe you can pick up dirt clumps?
-    placementValidOn: ["dirt", "bedrock"],
+    isPickable: false,
+    placementValidOn: ["dirt"],
     component: DirtTile,
   },
   
@@ -40,12 +40,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     isCollidable: true,
     isDestructible: true,
     isPickable: false,
-    placementValidOn: ["grass", "dirt", "tree_trunk"], // Can stack on itself!
+    placementValidOn: ["grass", "dirt", "tree_trunk"],
     component: TrunkBlock,
   },
   tree_leaves: {
     id: "tree_leaves",
-    isCollidable: true, // Or false if you want to fly through leaves
+    isCollidable: true,
     isDestructible: true,
     isPickable: false,
     placementValidOn: ["tree_trunk", "tree_leaves"],

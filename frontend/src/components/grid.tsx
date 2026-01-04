@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import yaml from "js-yaml";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
+import { generateLevel } from "@/lib/level-generator";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -27,22 +28,24 @@ export default function Grid({ onLevelLoaded }: GridProps) {
       try {
         const response = await fetch(`${basePath}/levels/prototype_level.yaml`);
         const yamlText = await response.text();
-        const data = yaml.load(yamlText) as LevelData;
-        const baseLayer = data.layers['layer_0'];
+        const blueprint = yaml.load(yamlText) as LevelData;
+        const generatedLevel = generateLevel(blueprint, Date.now());
 
-        (window as any).getLevelData = () => data;
+        (window as any).getLevelData = () => generatedLevel; 
         (window as any).getBlockRegistry = () => BLOCK_REGISTRY;
 
-        if (baseLayer && data.spawn) {
-          const width = baseLayer[0]?.length || 0;          // Columns (X)
-          const height = Object.keys(data.layers).length;   // Layers (Y)
-          const depth = baseLayer.length;                   // Rows (Z)
+        const baseLayer = generatedLevel.layers['layer_0'];
+
+        if (baseLayer && generatedLevel.spawn) {
+          const width = baseLayer[0]?.length || 0;                    // Columns (X)
+          const height = Object.keys(generatedLevel.layers).length;   // Layers (Y)
+          const depth = baseLayer.length;                             // Rows (Z)
           
-          setLevelData(data);
+          setLevelData(generatedLevel);
 
           onLevelLoaded({
             size: { width, height, depth },
-            spawn: data.spawn
+            spawn: generatedLevel.spawn
           });
         } else {
           console.error("Invalid level data: Missing layer_0 or spawn point");
