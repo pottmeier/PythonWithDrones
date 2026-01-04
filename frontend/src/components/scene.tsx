@@ -153,7 +153,12 @@ export default function Scene() {
         camera={{ position: START_POSITION, fov: 50 }}
         style={{ borderRadius: 8 }}
       >
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.2} />
+        <hemisphereLight 
+          color={"#ffffff"} 
+          groundColor={"#888888"} 
+          intensity={0.8} 
+        />
         <directionalLight
           position={[10, 20, 10]}
           intensity={1.5}
