@@ -11,30 +11,63 @@ import Compass from "./compass";
 import * as THREE from "three";
 
 interface LevelLoadData {
-  size: { width: number; height: number };
-  spawn: { x: number; y: number };
+  size: { width: number; height: number; depth: number };
+  spawn: { x: number; y: number; z: number};
 }
 
 export default function Scene() {
-  const positionRef = useRef<[number, number, number]>([0, 0.5, 0]);
+  const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
-  const [levelSize, setLevelSize] = useState<{ width: number; height: number } | null>(null);
+  const [levelSize, setLevelSize] = useState<{ width: number; height: number; depth: number } | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
 
   // Camera Settings
-  const START_POSITION: [number, number, number] = [0, 75, 150];
+  const START_POSITION: [number, number, number] = [0, -20, 40];
   const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
-  const { width = 1, height = 1 } = levelSize || {};
+  const { width = 1, height = 10, depth = 1} = levelSize || {};
   const limitX = ((width - 1) / 2) * PAN_FACTOR;
-  const limitZ = ((height - 1) / 2) * PAN_FACTOR;
-  const worldLimitX = (width / 2);
-  const worldLimitZ = (height / 2);
-  const MIN_Y = 0.5;
+  const limitZ = ((depth - 1) / 2) * PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
+
+  const isPositionSafe = (x: number, y: number, z: number, width: number, height: number, depth: number) => {
+    const getLevelData = (window as any).getLevelData;
+    const getBlockRegistry = (window as any).getBlockRegistry;
+    if (!getLevelData || !getBlockRegistry) return false;
+
+    const data = getLevelData();
+    const registry = getBlockRegistry();
+
+    const offsetX = (width - 1) / 2;
+    const offsetZ = (depth - 1) / 2;
+
+    const gridX = Math.round(x + offsetX);
+    const gridY = Math.round(y); 
+    const gridZ = Math.round(z + offsetZ);
+
+    if (gridX < 0 || gridX >= width) return false; // Out of bounds X
+    if (gridZ < 0 || gridZ >= depth) return false; // Out of bounds Z
+    if (gridY < 0) return false; // Below the world
+
+    if (gridY >= height) return false; 
+
+    const layerName = `layer_${gridY}`;
+    const layer = data.layers[layerName];
+    const blockId = layer[gridZ]?.[gridX];
+    
+    if (!blockId || blockId === "empty") 
+      return true;
+
+    const blockDef = registry[blockId];
+    
+    if (blockDef && blockDef.isCollidable) 
+      return false;
+
+    return true;
+  };
 
   // Direction map: use world-space deltas [dx, dy, dz]
   const deltas: Record<string, [number, number, number]> = {
@@ -53,12 +86,13 @@ export default function Scene() {
     setLevelSize(data.size);
 
     const offsetX = (data.size.width - 1) / 2;
-    const offsetZ = (data.size.height - 1) / 2;
+    const offsetZ = (data.size.depth - 1) / 2;
 
     const worldX = (data.spawn.x - offsetX);
-    const worldZ = (data.spawn.y - offsetZ);
+    const worldY = data.spawn.y;
+    const worldZ = (data.spawn.z - offsetZ);
 
-    positionRef.current = [worldX, 0.5, worldZ];
+    positionRef.current = [worldX, worldY, worldZ];
   }, []);
 
   const processNextMoveInQueue = useCallback(() => {
@@ -76,31 +110,27 @@ export default function Scene() {
     if (!moveDelta) {
       console.error(`Unknown direction: ${nextMove}`);
       isAnimatingRef.current = false;
-      // Immediately try next
       processNextMoveInQueue();
       return;
     }
 
     const [x, y, z] = positionRef.current;
-    const dx = moveDelta[0];
-    const dy = moveDelta[1];
-    const dz = moveDelta[2];
-    const newY = Math.max(MIN_Y, y + dy);
-    const newPos = [x + dx, newY, z + dz] as [number, number, number];
+    const targetX = x + moveDelta[0];
+    const targetY = y + moveDelta[1]; 
+    const targetZ = z + moveDelta[2];
 
-    // World Limit
-    if (newPos[0] < -worldLimitX || newPos[0] > worldLimitX) {
+    const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
+
+    if (!safe) {
+      console.warn("CRASH! Movement blocked by object or border.");
       isAnimatingRef.current = false;
-      return;
-    }
-    if (newPos[2] < -worldLimitZ || newPos[2] > worldLimitZ) {
-      isAnimatingRef.current = false;
-      return;
+      // Optionally: Trigger a "crash" animation here
+      return; 
     }
 
-    positionRef.current = newPos;
-    console.log(positionRef.current);
-  }, [width, height]);
+    positionRef.current = [targetX, targetY, targetZ];
+    console.log("Moving to:", positionRef.current);
+  }, [width, depth]);
 
   const handleAnimationComplete = useCallback(() => {
     processNextMoveInQueue();
@@ -146,7 +176,7 @@ export default function Scene() {
           panSpeed={1}
           screenSpacePanning={false}
           minDistance={1}
-          maxDistance={10}
+          maxDistance={20}
           zoomSpeed={3}
           target={START_TARGET}
           minPolarAngle={0}
@@ -154,19 +184,11 @@ export default function Scene() {
           onChange={() => {
             const c = controlsRef.current;
             if (!c) return;
-
             const cam = c.object;
             const target = c.target;
-
-            if (compassRef.current) {
-              const angle = THREE.MathUtils.radToDeg(c.getAzimuthalAngle());
-              compassRef.current.style.transform = `rotate(${angle}deg)`;
-            }
             target.x = clamp(target.x, -limitX, limitX);
             target.z = clamp(target.z, -limitZ, limitZ);
-            cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
-            cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
-
+            if (cam.position.y < 0.5) cam.position.y = 0.5;
             cam.updateProjectionMatrix();
           }}
         />

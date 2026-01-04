@@ -1,6 +1,6 @@
 #prototype_level.yaml
 
-spawn: { x: 1, y: 7}
+spawn: { x: 1, y: 1, z: 3}
 
 layers:
   layer_0: 
@@ -11,16 +11,38 @@ layers:
     - [grass, dirt,  dirt,  dirt,  grass, dirt,  dirt,  dirt,  grass]
     - [grass, dirt,  dirt,  dirt,  dirt,  dirt,  dirt,  dirt,  grass]
     - [grass, grass, dirt,  dirt,  dirt,  dirt,  dirt,  grass, grass]
-    - [grass, grass, grass, grass, dirt,  grass, grass, grass, grass]
+    - [grass, grass, grass, grass, dirt,  grass, grass, grass, dirt]
     - [grass, grass, grass, grass, grass, grass, grass, grass, grass]
 
   layer_1:
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
-    - [empty, empty, tree,  empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk,  empty, empty]
+    - [empty, empty, tree_trunk,  empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty, empty, tree,  empty, empty]
-    - [empty, empty, empty, empty, empty, empty, empty, tree,  empty]
-    - [empty, tree,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk,  empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, tree_trunk, empty]
+    - [empty, tree_trunk,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+
+  layer_2:
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk,  empty, empty]
+    - [empty, empty, tree_leaves,  empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk,  empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, tree_leaves, empty]
+    - [empty, tree_trunk,  empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+
+  layer_3:
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_leaves,  empty, empty]
+    - [empty, empty, empty,  empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_leaves,  empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, tree_leaves,  empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
