@@ -12,11 +12,12 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 interface DroneProps {
   positionRef: React.RefObject<[number, number, number]>;
+  droneRef: React.RefObject<THREE.Group>
   onAnimationComplete: () => void;
 }
 
-export default function Drone({ positionRef, onAnimationComplete }: DroneProps) {
-  const groupRef = useRef<any>(null);
+export default function Drone({ positionRef,droneRef, onAnimationComplete }: DroneProps) {
+  //const groupRef = useRef<any>(null);
   const { scene, nodes } = useGLTF(`${basePath}/models/drone_body.glb`);
   console.log("GLTF Nodes:", nodes);
 
@@ -27,7 +28,7 @@ export default function Drone({ positionRef, onAnimationComplete }: DroneProps) 
   }, [scene]);
 
   useFrame(() => {
-    if (!groupRef.current) return;
+    if (!droneRef.current) return;
 
     const t = positionRef.current;
 
@@ -38,7 +39,7 @@ export default function Drone({ positionRef, onAnimationComplete }: DroneProps) 
     ) {
       lastTarget.current = [...t];
 
-      gsap.to(groupRef.current.position, {
+      gsap.to(droneRef.current.position, {
         x: t[0],
         y: t[1],
         z: t[2],
@@ -55,7 +56,7 @@ export default function Drone({ positionRef, onAnimationComplete }: DroneProps) 
   const rotor_mount_4 = nodes.rotor_mount_4 as THREE.Object3D;
 
   return (
-    <group ref={groupRef}>
+    <group ref={droneRef}>
       <primitive object={scene} />
       <Rotor position={rotor_mount_1.position} />
       <Rotor position={rotor_mount_2.position} />
