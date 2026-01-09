@@ -19,6 +19,7 @@ interface LevelLoadData {
 export default function Scene() {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const moveQueueRef = useRef<string[]>([]);
+  const droneRef = useRef<THREE.Group>(new THREE.Group)
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<{ width: number; height: number; depth: number } | null>(null);
@@ -138,7 +139,7 @@ export default function Scene() {
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef)
+    registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef, droneRef)
   }, [processNextMoveInQueue]);
 
   function calcCompass() {
@@ -186,6 +187,7 @@ export default function Scene() {
         />
         <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
+          droneRef={droneRef}
           positionRef={positionRef}
           onAnimationComplete={handleAnimationComplete}
         />
