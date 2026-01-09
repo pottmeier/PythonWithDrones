@@ -3,6 +3,9 @@ import js
 def move(direction:str):
     js.window.moveDrone(direction)
 
+def getPosition():
+    return js.window.getPosition()
+
 # Die Brückenfunktion bleibt exakt gleich
 def code_ausfuehren(code_string):
     try:
