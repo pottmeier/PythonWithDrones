@@ -23,7 +23,7 @@ const items = [
   },
   {
     title: "Documentation",
-    url: "/progress",
+    url: "/documentation",
     icon: FileSearchIcon,
   },
 ];
