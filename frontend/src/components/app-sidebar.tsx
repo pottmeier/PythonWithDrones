@@ -10,20 +10,22 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const items = [
   {
     title: "Home",
-    url: "/",
+    url: `${basePath}/`,
     icon: Home,
   },
   {
     title: "Progress",
-    url: "/progress",
+    url: `${basePath}/progress`,
     icon: Award,
   },
   {
     title: "Documentation",
-    url: "/documentation",
+    url: `${basePath}/documentation`,
     icon: FileSearchIcon,
   },
 ];
