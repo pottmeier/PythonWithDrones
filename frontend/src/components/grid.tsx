@@ -29,7 +29,7 @@ export default function Grid({ onLevelLoaded }: GridProps) {
         const response = await fetch(`${basePath}/levels/prototype_level.yaml`);
         const yamlText = await response.text();
         const blueprint = yaml.load(yamlText) as LevelData;
-        const generatedLevel = generateLevel(blueprint, Date.now());
+        const generatedLevel = generateLevel(blueprint, 60);
 
         (window as any).getLevelData = () => generatedLevel; 
         (window as any).getBlockRegistry = () => BLOCK_REGISTRY;
@@ -66,9 +66,7 @@ export default function Grid({ onLevelLoaded }: GridProps) {
   const allBlocks = [];
   const baseLayer = levelData.layers['layer_0'];
   const mapX = baseLayer[0].length;
-  const mapZ = baseLayer.length;       
-  const offsetX = (mapX - 1) / 2;
-  const offsetZ = (mapZ - 1) / 2;
+  const mapZ = baseLayer.length;  
 
   for (const layerName in levelData.layers) {
     const layerMatrix = levelData.layers[layerName];
@@ -82,8 +80,8 @@ export default function Grid({ onLevelLoaded }: GridProps) {
 
         if (blockDef && blockDef.id !== 'empty') {
           const Component = blockDef.component;
-          const worldX = (col - offsetX);
-          const worldZ = (row - offsetZ);
+          const worldX = col;
+          const worldZ = row;
 
           allBlocks.push(
             <Component

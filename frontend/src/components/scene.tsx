@@ -10,6 +10,7 @@ import ResetCameraButton from "./resetCamButton";
 import Compass from "./compass";
 import * as THREE from "three";
 import { registerPyodideFunctions } from "./pyodideFunctions";
+import { Caramel } from "next/font/google";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -25,14 +26,20 @@ export default function Scene() {
   const compassRef = useRef<HTMLDivElement>(null);
 
   // Camera Settings
-  const START_POSITION: [number, number, number] = [0, -20, 40];
-  const START_TARGET: [number, number, number] = [0, 0, 0];
+  const { width = 1, depth = 1 } = levelSize || {};
+  const mapCenterX = width / 2;
+  const mapCenterZ = depth / 2;
+  const START_POSITION: [number, number, number] = [mapCenterX - 10, 10, mapCenterZ + 10]; 
+  const START_TARGET: [number, number, number] = [mapCenterX, 0.5, mapCenterZ];
   const PAN_FACTOR = 2;
-  const { width = 1, height = 10, depth = 1 } = levelSize || {};
-  const limitX = ((width - 1) / 2) * PAN_FACTOR;
-  const limitZ = ((depth - 1) / 2) * PAN_FACTOR;
+  const minPanX = mapCenterX - (width / 2) - PAN_FACTOR;
+  const maxPanX = mapCenterX + (width / 2) + PAN_FACTOR;
+  const minPanZ = mapCenterZ - (depth / 2) - PAN_FACTOR;
+  const maxPanZ = mapCenterZ + (depth / 2) + PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
+
+  const [crashDirection, setCrashDirection] = useState<[number, number, number] | null>(null);
 
   const isPositionSafe = (x: number, y: number, z: number, width: number, height: number, depth: number) => {
     const getLevelData = (window as any).getLevelData;
@@ -42,12 +49,11 @@ export default function Scene() {
     const data = getLevelData();
     const registry = getBlockRegistry();
 
-    const offsetX = (width - 1) / 2;
-    const offsetZ = (depth - 1) / 2;
-
-    const gridX = Math.round(x + offsetX);
+    const gridX = Math.round(x);
     const gridY = Math.round(y);
-    const gridZ = Math.round(z + offsetZ);
+    const gridZ = Math.round(z);
+
+    console.log(`Checking: World[${x},${z}] -> Grid[${gridX},${gridZ}] Layer ${gridY}`);
 
     if (gridX < 0 || gridX >= width) return false; // Out of bounds X
     if (gridZ < 0 || gridZ >= depth) return false; // Out of bounds Z
@@ -86,12 +92,9 @@ export default function Scene() {
     // level size for camera limits
     setLevelSize(data.size);
 
-    const offsetX = (data.size.width - 1) / 2;
-    const offsetZ = (data.size.depth - 1) / 2;
-
-    const worldX = (data.spawn.x - offsetX);
+    const worldX = data.spawn.x;
     const worldY = data.spawn.y;
-    const worldZ = (data.spawn.z - offsetZ);
+    const worldZ = data.spawn.z;
 
     positionRef.current = [worldX, worldY, worldZ];
   }, []);
@@ -100,6 +103,10 @@ export default function Scene() {
     if (moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
       return;
+    }
+    if (crashDirection) {
+        isAnimatingRef.current = false;
+        return;
     }
 
     isAnimatingRef.current = true;
@@ -116,22 +123,27 @@ export default function Scene() {
     }
 
     const [x, y, z] = positionRef.current;
-    const targetX = x + moveDelta[0];
-    const targetY = y + moveDelta[1];
-    const targetZ = z + moveDelta[2];
+    const dx = moveDelta[0];
+    const dy = moveDelta[1];
+    const dz = moveDelta[2];
+    const targetX = x + dx;
+    const targetY = y + dy;
+    const targetZ = z + dz;
 
+    const { width = 1, depth = 1, height = 99 } = levelSize || {};
     const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
 
     if (!safe) {
       console.warn("CRASH! Movement blocked by object or border.");
       isAnimatingRef.current = false;
-      // Optionally: Trigger a "crash" animation here
+      setCrashDirection([dx, dy, dz]);
+      moveQueueRef.current = [];
       return;
     }
 
     positionRef.current = [targetX, targetY, targetZ];
     console.log("Moving to:", positionRef.current);
-  }, [width, depth]);
+  }, [width, depth, crashDirection]);
 
   const handleAnimationComplete = useCallback(() => {
     processNextMoveInQueue();
@@ -151,10 +163,10 @@ export default function Scene() {
       const angle = THREE.MathUtils.radToDeg(controlsRef.current.getAzimuthalAngle());
       compassRef.current.style.transform = `rotate(${angle}deg)`;
     }
-    target.x = clamp(target.x, -limitX, limitX);
-    target.z = clamp(target.z, -limitZ, limitZ);
-    cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
-    cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
+    target.x = clamp(target.x, minPanX, maxPanX);
+    target.z = clamp(target.z, minPanZ, maxPanZ);
+    cam.position.x = clamp(cam.position.x, minPanX - 20, maxPanX + 20);
+    cam.position.z = clamp(cam.position.z, minPanZ - 20, maxPanZ + 20);
 
     cam.updateProjectionMatrix();
   }
@@ -188,6 +200,7 @@ export default function Scene() {
         <Drone
           positionRef={positionRef}
           onAnimationComplete={handleAnimationComplete}
+          crashDirection={crashDirection} 
         />
         <OrbitControls
           ref={controlsRef}
