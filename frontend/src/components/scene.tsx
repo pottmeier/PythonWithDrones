@@ -12,7 +12,7 @@ import * as THREE from "three";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
-  spawn: { x: number; y: number; z: number};
+  spawn: { x: number; y: number; z: number };
 }
 
 export default function Scene() {
@@ -27,7 +27,7 @@ export default function Scene() {
   const START_POSITION: [number, number, number] = [0, -20, 40];
   const START_TARGET: [number, number, number] = [0, 0, 0];
   const PAN_FACTOR = 2;
-  const { width = 1, height = 10, depth = 1} = levelSize || {};
+  const { width = 1, height = 10, depth = 1 } = levelSize || {};
   const limitX = ((width - 1) / 2) * PAN_FACTOR;
   const limitZ = ((depth - 1) / 2) * PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
@@ -45,25 +45,25 @@ export default function Scene() {
     const offsetZ = (depth - 1) / 2;
 
     const gridX = Math.round(x + offsetX);
-    const gridY = Math.round(y); 
+    const gridY = Math.round(y);
     const gridZ = Math.round(z + offsetZ);
 
     if (gridX < 0 || gridX >= width) return false; // Out of bounds X
     if (gridZ < 0 || gridZ >= depth) return false; // Out of bounds Z
     if (gridY < 0) return false; // Below the world
 
-    if (gridY >= height) return false; 
+    if (gridY >= height) return false;
 
     const layerName = `layer_${gridY}`;
     const layer = data.layers[layerName];
     const blockId = layer[gridZ]?.[gridX];
-    
-    if (!blockId || blockId === "empty") 
+
+    if (!blockId || blockId === "empty")
       return true;
 
     const blockDef = registry[blockId];
-    
-    if (blockDef && blockDef.isCollidable) 
+
+    if (blockDef && blockDef.isCollidable)
       return false;
 
     return true;
@@ -81,7 +81,7 @@ export default function Scene() {
 
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     console.log("Level loaded:", data);
-    
+
     // level size for camera limits
     setLevelSize(data.size);
 
@@ -116,7 +116,7 @@ export default function Scene() {
 
     const [x, y, z] = positionRef.current;
     const targetX = x + moveDelta[0];
-    const targetY = y + moveDelta[1]; 
+    const targetY = y + moveDelta[1];
     const targetZ = z + moveDelta[2];
 
     const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
@@ -125,7 +125,7 @@ export default function Scene() {
       console.warn("CRASH! Movement blocked by object or border.");
       isAnimatingRef.current = false;
       // Optionally: Trigger a "crash" animation here
-      return; 
+      return;
     }
 
     positionRef.current = [targetX, targetY, targetZ];
@@ -154,10 +154,10 @@ export default function Scene() {
         style={{ borderRadius: 8 }}
       >
         <ambientLight intensity={0.2} />
-        <hemisphereLight 
-          color={"#ffffff"} 
-          groundColor={"#888888"} 
-          intensity={0.8} 
+        <hemisphereLight
+          color={"#ffffff"}
+          groundColor={"#888888"}
+          intensity={0.8}
         />
         <directionalLight
           position={[10, 20, 10]}
@@ -189,6 +189,10 @@ export default function Scene() {
           onChange={() => {
             const c = controlsRef.current;
             if (!c) return;
+            if (compassRef.current) {
+              const angle = THREE.MathUtils.radToDeg(c.getAzimuthalAngle());
+              compassRef.current.style.transform = `rotate(${angle}deg)`;
+            }
             const cam = c.object;
             const target = c.target;
             target.x = clamp(target.x, -limitX, limitX);
