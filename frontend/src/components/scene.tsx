@@ -9,6 +9,7 @@ import Grid from "./grid";
 import ResetCameraButton from "./resetCamButton";
 import Compass from "./compass";
 import * as THREE from "three";
+import { registerPyodideFunctions } from "./pyodideFunctions";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -137,13 +138,26 @@ export default function Scene() {
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    (window as any).moveDrone = (direction: string) => {
-      moveQueueRef.current.push(direction);
-      if (!isAnimatingRef.current) {
-        processNextMoveInQueue();
-      }
-    };
+    registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef)
   }, [processNextMoveInQueue]);
+
+  function calcCompass() {
+    if (!controlsRef.current) return;
+
+    const cam = controlsRef.current.object;
+    const target = controlsRef.current.target;
+
+    if (compassRef.current) {
+      const angle = THREE.MathUtils.radToDeg(controlsRef.current.getAzimuthalAngle());
+      compassRef.current.style.transform = `rotate(${angle}deg)`;
+    }
+    target.x = clamp(target.x, -limitX, limitX);
+    target.z = clamp(target.z, -limitZ, limitZ);
+    cam.position.x = clamp(cam.position.x, -limitX * 1.5, limitX * 1.5);
+    cam.position.z = clamp(cam.position.z, -limitZ * 1.5, limitZ * 1.5);
+
+    cam.updateProjectionMatrix();
+  }
 
   return (
     <div className="relative w-full h-full">
@@ -186,21 +200,7 @@ export default function Scene() {
           target={START_TARGET}
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 2 - 0.1}
-          onChange={() => {
-            const c = controlsRef.current;
-            if (!c) return;
-            if (compassRef.current) {
-              const angle = THREE.MathUtils.radToDeg(c.getAzimuthalAngle());
-              compassRef.current.style.transform = `rotate(${angle}deg)`;
-            }
-            const cam = c.object;
-            const target = c.target;
-            target.x = clamp(target.x, -limitX, limitX);
-            target.z = clamp(target.z, -limitZ, limitZ);
-            if (cam.position.y < 0.5) cam.position.y = 0.5;
-            cam.updateProjectionMatrix();
-          }}
-        />
+          onChange={calcCompass} />
       </Canvas>
 
       <div className="absolute top-4 right-4 pointer-events-none">
