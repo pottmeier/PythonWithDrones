@@ -15,7 +15,8 @@ import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState, saveLevelProgress } from "@/lib/appState";
+import { loadState } from "@/lib/appState";
+import { saveLevelProgress } from "@/lib/appState";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -97,7 +98,9 @@ export default function LevelContent({ level }: LevelContentProps) {
     const id = Number(levelId);
     if (!Number.isFinite(id)) return;
 
-    saveLevelProgress(id, { code: submittedCode });
+    saveLevelProgress(id, {
+      code: submittedCode,
+    });
   };
 
   return (
