@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
@@ -8,10 +8,15 @@ import { toast } from "sonner";
 interface CodeCardProps {
   code: string;
   setCode: (value: string) => void;
+  onSubmit: (code: string) => void;
 }
 
-export function CodeCard({ code, setCode }: CodeCardProps) {
+export function CodeCard({ code, setCode, onSubmit }: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
+  useEffect(() => {
+    setLocalCode(code);
+  }, [code]);
+
   const runCode = async () => {
     setCode(localCode);
     if (typeof window.runPython !== "function") {
@@ -42,6 +47,7 @@ export function CodeCard({ code, setCode }: CodeCardProps) {
   };
 
   const submitCode = () => {
+    onSubmit(localCode);
     console.log("Code submitted:", localCode);
   };
 
@@ -54,8 +60,9 @@ export function CodeCard({ code, setCode }: CodeCardProps) {
           Run
         </Button>
         <Button className="text-md cursor-pointer" onClick={submitCode}>
-          Submit
+          Save
         </Button>
+        <Button className="text-md cursor-pointer">Submit</Button>
       </div>
     </div>
   );

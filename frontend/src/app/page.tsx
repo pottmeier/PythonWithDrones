@@ -14,12 +14,19 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { UsernameDialog } from "@/components/user-dialog";
+import { loadState } from "@/lib/appState";
 import { Search } from "lucide-react";
+import { UserMenu } from "@/components/user-menu";
 
 export default function Home() {
   const [dark, setDark] = useState(true);
   type LevelStatus = "locked" | "unlocked" | "completed";
   const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | LevelStatus>("all");
+
   const handleLevelClick = (id: number) => {
     router.push(`/level/${id}`);
   };
@@ -49,16 +56,10 @@ export default function Home() {
     },
   ];
 
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | LevelStatus>("all");
-
   const filteredLevels = levels.filter((level) => {
     const matchesSearch =
       level.title.toLowerCase().includes(search.toLowerCase()) ||
-      level.description.toLowerCase().includes(search.toLowerCase()) ||
-      level.tags?.some((tag) =>
-        tag.toLowerCase().includes(search.toLowerCase())
-      );
+      level.description.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter =
       filterStatus === "all" ||
@@ -73,16 +74,29 @@ export default function Home() {
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
+  useEffect(() => {
+    setUsername(loadState().user.username || "");
+  }, []);
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <AppSidebar />
 
         <div className="flex flex-1 flex-col">
-          <header className="p-4 flex items-center justify-between border-b">
+          <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
-            <DarkModeToggle />
+            <div className="ml-auto flex items-center gap-4">
+              <UserMenu
+                username={username}
+                setUsername={setUsername}
+                onRequireUsername={() => {}}
+              />
+              <DarkModeToggle />
+            </div>
           </header>
+
+          <UsernameDialog onSaved={(name) => setUsername(name)} />
 
           <main className="flex-1 p-4 flex flex-col gap-4">
             <div className="flex justify-end items-center gap-2 mb-0 mt-1">
