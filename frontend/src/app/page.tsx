@@ -23,28 +23,6 @@ import { loadState } from "@/lib/appState";
 import { Search } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 
-function SidebarBackdrop() {
-  const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
-
-  const isOpen = isMobile ? openMobile : open;
-
-  const close = () => {
-    if (isMobile) setOpenMobile(false);
-    else setOpen(false);
-  };
-
-  return (
-    <div
-      aria-hidden="true"
-      onClick={close}
-      className={[
-        "fixed inset-0 z-40 bg-black/40 transition-opacity",
-        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
-      ].join(" ")}
-    />
-  );
-}
-
 export default function Home() {
   const [dark, setDark] = useState(true);
   type LevelStatus = "locked" | "unlocked" | "completed";
@@ -108,7 +86,6 @@ export default function Home() {
     <SidebarProvider>
       <div className="relative min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <AppSidebar />
-        <SidebarBackdrop />
 
         <div className="flex flex-1 flex-col">
           <header className="p-4 flex items-center border-b">

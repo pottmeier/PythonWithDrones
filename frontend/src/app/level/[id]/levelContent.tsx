@@ -10,12 +10,13 @@ import {
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 // import { TaskCard } from "@/components/task-card";
-// import { TestCard } from "@/components/test-card";
+import { TestCard } from "@/components/test-card";
 import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState, saveLevelProgress } from "@/lib/appState";
+import { loadState } from "@/lib/appState";
+import { saveLevelProgress } from "@/lib/appState";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -97,7 +98,9 @@ export default function LevelContent({ level }: LevelContentProps) {
     const id = Number(levelId);
     if (!Number.isFinite(id)) return;
 
-    saveLevelProgress(id, { code: submittedCode });
+    saveLevelProgress(id, {
+      code: submittedCode,
+    });
   };
 
   return (
@@ -111,7 +114,7 @@ export default function LevelContent({ level }: LevelContentProps) {
         <AppSidebar />
         <SidebarBackdrop />
 
-        <div className="flex min-h-screen flex-col">
+        <div className="flex flex-1 flex-col">
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
@@ -166,6 +169,11 @@ export default function LevelContent({ level }: LevelContentProps) {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row flex-1 gap-4">
+              <TestCard title="Tests" />
+              <CodeCard code={code} setCode={setCode} onSubmit={submitCode} />
             </div>
           </main>
         </div>
