@@ -8,10 +8,12 @@ import { AppSidebar } from "@/components/app-sidebar";
 // import { TaskCard } from "@/components/task-card";
 // import { TestCard } from "@/components/test-card";
 import { CodeCard } from "@/components/code-card";
-import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
+import { loadState } from "@/lib/appState";
+import { saveLevelProgress } from "@/lib/appState";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -25,9 +27,8 @@ export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [dark, setDark] = useState(true);
-  const [levelCount, setLevelCount] = useState(11);
-  const [currentLevel, setCurrentLevel] = useState(0);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
+  const [username, setUsername] = useState("");
 
   // Darkmode
   useEffect(() => {
@@ -60,6 +61,25 @@ export default function LevelContent({ level }: LevelContentProps) {
     initPython();
   }, []);
 
+  useEffect(() => {
+    const id = Number(levelId);
+    if (!Number.isFinite(id)) return;
+
+    const state = loadState();
+    setUsername(state.user.username);
+    const savedCode = state.progress.levels[id]?.code ?? "";
+    setCode(savedCode);
+  }, [levelId]);
+
+  const submitCode = (submittedCode: string) => {
+    const id = Number(levelId);
+    if (!Number.isFinite(id)) return;
+
+    saveLevelProgress(id, {
+      code: submittedCode,
+    });
+  };
+
   return (
     <SidebarProvider>
       {/* 
@@ -76,7 +96,14 @@ export default function LevelContent({ level }: LevelContentProps) {
           {/* Header */}
           <header className="p-4 flex items-center justify-between border-b shrink-0 bg-white dark:bg-gray-900 z-10 sticky top-0 lg:static">
             <SidebarTrigger />
-            <DarkModeToggle />
+            <div className="ml-auto flex items-center gap-4">
+              <Avatar>
+                <AvatarFallback>
+                  {username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <DarkModeToggle />
+            </div>
           </header>
 
           {/* 
@@ -94,7 +121,7 @@ export default function LevelContent({ level }: LevelContentProps) {
             */}
             <div className="w-full lg:w-1/3 lg:min-w-[350px] shrink-0 h-[500px] lg:h-full flex flex-col">
               <div className="h-full flex flex-col">
-                 <CodeCard code={code} setCode={setCode} />
+                 <CodeCard code={code} setCode={setCode} onSubmit={submitCode}/>
               </div>
             </div>
 
@@ -122,7 +149,6 @@ export default function LevelContent({ level }: LevelContentProps) {
                 </div>
               </div>
             </div>
-
           </main>
         </div>
       </div>
