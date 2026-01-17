@@ -6,11 +6,11 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
 import Grid from "./grid";
-import ResetCameraButton from "./resetCamButton";
 import Compass from "./compass";
 import * as THREE from "three";
 import { registerPyodideFunctions } from "./pyodideFunctions";
 import { Caramel } from "next/font/google";
+import { FoldVertical, RotateCcw } from "lucide-react";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -24,6 +24,8 @@ export default function Scene() {
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<{ width: number; height: number; depth: number } | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
+  const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
+  const [droneKey, setDroneKey] = useState(0); 
 
   // Camera Settings
   const { width = 1, depth = 1 } = levelSize || {};
@@ -40,6 +42,7 @@ export default function Scene() {
     Math.min(Math.max(value, min), max);
 
   const [crashDirection, setCrashDirection] = useState<[number, number, number] | null>(null);
+  const [crashHeight, setCrashHeight] = useState<number>(0.2); 
 
   const isPositionSafe = (x: number, y: number, z: number, width: number, height: number, depth: number) => {
     const getLevelData = (window as any).getLevelData;
@@ -96,8 +99,37 @@ export default function Scene() {
     const worldY = data.spawn.y;
     const worldZ = data.spawn.z;
 
+    spawnRef.current = [worldX, worldY, worldZ];
+    positionRef.current = [worldX, worldY, worldZ];
     positionRef.current = [worldX, worldY, worldZ];
   }, []);
+
+  const getCrashLandingHeight = (x: number, y: number, z: number, width: number, depth: number, maxHeight: number) => {
+    const getLevelData = (window as any).getLevelData;
+    const getBlockRegistry = (window as any).getBlockRegistry;
+
+    if (!getLevelData || !getBlockRegistry) return 0.2;
+
+    const data = getLevelData();
+    const registry = getBlockRegistry();
+    const gridX = Math.round(x);
+    const gridZ = Math.round(z);
+    const startLayer = Math.floor(y) - 1;
+
+    for (let checkY = startLayer; checkY >= 0; checkY--) {
+      const layerName = `layer_${checkY}`;
+      const layer = data.layers[layerName];
+      if (!layer) continue;
+      const blockId = layer[gridZ]?.[gridX];
+      if (blockId && blockId !== "empty") {
+        const blockDef = registry[blockId];
+        if (blockDef && blockDef.isCollidable) {
+          return checkY + 0.5 + 0.2; 
+        }
+      }
+    }
+    return 0.2;
+  };
 
   const processNextMoveInQueue = useCallback(() => {
     if (moveQueueRef.current.length === 0) {
@@ -114,7 +146,6 @@ export default function Scene() {
     const key = nextMove.toLowerCase();
     const moveDelta = deltas[key];
 
-    // If unknown command, skip and proceed to next
     if (!moveDelta) {
       console.error(`Unknown direction: ${nextMove}`);
       isAnimatingRef.current = false;
@@ -136,6 +167,8 @@ export default function Scene() {
     if (!safe) {
       console.warn("CRASH! Movement blocked by object or border.");
       isAnimatingRef.current = false;
+      const landingY = getCrashLandingHeight(x, y, z, width, depth, height);
+      setCrashHeight(landingY);
       setCrashDirection([dx, dy, dz]);
       moveQueueRef.current = [];
       return;
@@ -152,6 +185,23 @@ export default function Scene() {
   useEffect(() => {
     registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef)
   }, [processNextMoveInQueue]);
+
+  const resetLevel = () => {
+    isAnimatingRef.current = false;
+    moveQueueRef.current = [];
+    setCrashDirection(null);
+    setCrashHeight(0.2);
+    positionRef.current = [...spawnRef.current];
+    setDroneKey(prev => prev + 1);
+  };
+
+  const resetCamera = () => {
+    if (!controlsRef.current) return;
+    const controls = controlsRef.current;
+    controls.object.position.set(...START_POSITION);
+    controls.target.set(...START_TARGET);
+    controls.update();
+  };
 
   function calcCompass() {
     if (!controlsRef.current) return;
@@ -170,6 +220,8 @@ export default function Scene() {
 
     cam.updateProjectionMatrix();
   }
+
+  const buttonStyle = "bg-white/80 hover:bg-white dark:bg-black/50 dark:hover:bg-black/80 p-2 rounded-md shadow-md backdrop-blur-sm transition-all text-gray-800 dark:text-gray-200 cursor-pointer";
 
   return (
     <div className="relative w-full h-full">
@@ -198,9 +250,11 @@ export default function Scene() {
         />
         <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
+          key={droneKey}
           positionRef={positionRef}
           onAnimationComplete={handleAnimationComplete}
-          crashDirection={crashDirection} 
+          crashDirection={crashDirection}
+          crashHeight={crashHeight}
         />
         <OrbitControls
           ref={controlsRef}
@@ -220,11 +274,27 @@ export default function Scene() {
         <Compass ref={compassRef} />
       </div>
 
-      <ResetCameraButton
-        controlsRef={controlsRef}
-        startPosition={START_POSITION}
-        startTarget={START_TARGET}
-      />
+     <div className="absolute top-4 left-4 flex flex-col gap-2">
+        
+        {/* Camera Reset Button */}
+        <button
+          onClick={resetCamera}
+          className={buttonStyle}
+          title="Reset Camera View"
+        >
+          <FoldVertical size={20} />
+        </button>
+
+        {/* Level Reset Button */}
+        <button
+          onClick={resetLevel}
+          className={buttonStyle}
+          title="Reset Level (Drone Position)"
+        >
+          <RotateCcw size={20} />
+        </button>
+        
+      </div>
     </div>
   );
 }
