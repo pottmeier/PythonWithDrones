@@ -1,5 +1,15 @@
 #prototype_level.yaml
 
+description: |
+  Welcome to **Level 1**!
+  
+  Your mission is to navigate through the forest and land on the <span class="text-red-500 font-bold">Portal</span>. 1 2 3 4 5 6 7890
+  
+  ### Instructions:
+  1. Use the command `move_drone("north")` to fly forward.
+  2. Avoid the <span class="text-green-600 font-bold">Trees</span>!
+  3. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+
 spawn: { x: 1, y: 1, z: 3}
 
 solve_conditions:

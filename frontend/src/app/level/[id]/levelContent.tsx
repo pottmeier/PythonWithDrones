@@ -1,11 +1,12 @@
+//LevelContent.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
-import { TaskCard } from "@/components/task-card";
-import { TestCard } from "@/components/test-card";
+// import { TaskCard } from "@/components/task-card";
+// import { TestCard } from "@/components/test-card";
 import { CodeCard } from "@/components/code-card";
 import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
@@ -61,29 +62,38 @@ export default function LevelContent({ level }: LevelContentProps) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="flex h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden">
         <AppSidebar />
 
         <div className="flex flex-1 flex-col">
-          <header className="p-4 flex items-center justify-between border-b">
+          <header className="p-4 flex items-center justify-between border-b shrink-0 bg-white dark:bg-gray-900 z-10 sticky top-0">
             <SidebarTrigger />
             <DarkModeToggle />
           </header>
 
-          <main className="flex-1 p-4 flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row flex-1 gap-4">
-              <TaskCard title={`Level ${levelId}`} />
-              <div className="flex-[2] flex justify-center items-center p-4 bg-gray-100 dark:bg-gray-900">
-                <div className="w-full max-h-[500px] aspect-square relative">
+          <main className="flex-1 flex flex-col lg:flex-row p-4 gap-4 items-start h-[calc(100vh-5rem)]">
+            
+            {/* LEFT COLUMN: Code Editor */}
+            <div className="w-full lg:w-1/3 min-w-[350px] shrink-0 h-full flex flex-col">
+              <div className="h-full flex flex-col">
+                 <CodeCard code={code} setCode={setCode} />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Scene Only */}
+            <div className="flex-1 h-full min-w-0">
+              <div className="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 relative overflow-hidden">
+                <div className="w-full h-full relative">
                   <div
                     className={`transition-opacity duration-500 w-full h-full ${
                       pyodideLoaded ? "opacity-100" : "opacity-0"
                     }`}
                   >
-                    <Scene />
+                    {/* Pass Level ID so Scene can display it in the info card */}
+                    <Scene levelId={levelId} />
                   </div>
                   {!pyodideLoaded && (
-                    <div className="absolute inset-0 flex flex-col justify-center items-center">
+                    <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
                       <Spinner className="mb-2" />
                       Loading...
                     </div>
@@ -92,17 +102,7 @@ export default function LevelContent({ level }: LevelContentProps) {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row flex-1 gap-4">
-              <TestCard title="Tests" />
-              <CodeCard code={code} setCode={setCode} />
-            </div>
           </main>
-
-          <LevelProgress
-            currentLevel={currentLevel}
-            setCurrentLevel={setCurrentLevel}
-            levelCount={levelCount}
-          />
         </div>
       </div>
       <Toaster position="top-left" richColors closeButton />

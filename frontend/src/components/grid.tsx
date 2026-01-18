@@ -17,6 +17,7 @@ interface GridProps {
   onLevelLoaded: (data: { 
     size: { width: number; height: number; depth: number }; 
     spawn: { x: number; y: number; z: number};
+    description?: string;
   }) => void;
 }
 
@@ -45,7 +46,8 @@ export default function Grid({ onLevelLoaded }: GridProps) {
 
           onLevelLoaded({
             size: { width, height, depth },
-            spawn: generatedLevel.spawn
+            spawn: generatedLevel.spawn,
+            description: generatedLevel.description || "No description available.", // 3. Pass it up
           });
         } else {
           console.error("Invalid level data: Missing layer_0 or spawn point");
