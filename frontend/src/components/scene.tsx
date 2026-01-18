@@ -27,6 +27,8 @@ export default function Scene() {
   const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
   const [droneKey, setDroneKey] = useState(0); 
 
+  const [isLevelComplete, setIsLevelComplete] = useState(false);
+
   // Camera Settings
   const { width = 1, depth = 1 } = levelSize || {};
   const mapCenterX = width / 2;
@@ -41,6 +43,7 @@ export default function Scene() {
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
 
+  //crash
   const [crashDirection, setCrashDirection] = useState<[number, number, number] | null>(null);
   const [crashHeight, setCrashHeight] = useState<number>(0.2); 
 
@@ -131,7 +134,56 @@ export default function Scene() {
     return 0.2;
   };
 
+  const checkFinishCondition = (x: number, y: number, z: number, width: number, depth: number, height: number) => {
+    const getLevelData = (window as any).getLevelData;
+    const getBlockRegistry = (window as any).getBlockRegistry;
+    if (!getLevelData || !getBlockRegistry) return false;
+
+    const data = getLevelData();
+    const registry = getBlockRegistry();
+
+    const gridX = Math.round(x);
+    const gridY = Math.round(y);
+    const gridZ = Math.round(z);
+
+    // Check boundaries first
+    if (gridX < 0 || gridX >= width || gridZ < 0 || gridZ >= depth || gridY < 0 || gridY >= height) return false;
+
+    const layerName = `layer_${gridY}`;
+    const layer = data.layers[layerName];
+
+    // LOGGING
+    if (layer) {
+      const blockId = layer[gridZ]?.[gridX];
+      console.log(`Checking Win: [${gridX}, ${gridY}, ${gridZ}] -> Block: ${blockId}`);
+      
+      if (blockId) {
+          const blockDef = registry[blockId];
+          console.log("Block Definition:", blockDef);
+          if (blockDef && blockDef.isFinish) {
+              return true;
+          }
+      }
+    }
+
+    if (!layer) return false;
+
+    const blockId = layer[gridZ]?.[gridX];
+    if (!blockId || blockId === "empty") return false;
+
+    const blockDef = registry[blockId];
+    if (blockDef && blockDef.isFinish) {
+      return true;
+    }
+    return false;
+  };
+
   const processNextMoveInQueue = useCallback(() => {
+    if (isLevelComplete) {
+      isAnimatingRef.current = false;
+      return;
+    }
+
     if (moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
       return;
@@ -176,7 +228,16 @@ export default function Scene() {
 
     positionRef.current = [targetX, targetY, targetZ];
     console.log("Moving to:", positionRef.current);
-  }, [width, depth, crashDirection]);
+
+    const won = checkFinishCondition(targetX, targetY, targetZ, width, depth, height);
+    if (won) {
+      console.log("LEVEL COMPLETE!");
+      isAnimatingRef.current = false;
+      setIsLevelComplete(true);
+      moveQueueRef.current = [];
+    }
+
+  }, [width, depth, crashDirection, isLevelComplete]);
 
   const handleAnimationComplete = useCallback(() => {
     processNextMoveInQueue();
@@ -193,6 +254,7 @@ export default function Scene() {
     setCrashHeight(0.2);
     positionRef.current = [...spawnRef.current];
     setDroneKey(prev => prev + 1);
+    setIsLevelComplete(false);
   };
 
   const resetCamera = () => {
