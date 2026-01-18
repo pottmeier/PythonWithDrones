@@ -12,7 +12,7 @@ interface CodeEditorProps {
 
 export function CodeEditor({ code, setCode }: CodeEditorProps) {
   return (
-    <div className="relative flex-1 w-full h-full min-h-0 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="relative flex-1 w-full h-full min-h-0 bg-gray-50 dark:bg-gray-900 overflow-hidden">
       
       {/* 
         1. THE SCROLLABLE PARENT 
