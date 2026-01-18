@@ -1,9 +1,11 @@
+//code-card.tsx
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
+import { Play, Send } from "lucide-react";
 
 interface CodeCardProps {
   code: string;
@@ -46,17 +48,42 @@ export function CodeCard({ code, setCode }: CodeCardProps) {
   };
 
   return (
-    <div className="flex-[2] bg-white dark:bg-gray-800 border rounded-md p-4 flex flex-col">
-      <h2 className="text-xl font-bold mb-2">Code</h2>
-      <CodeEditor code={localCode} setCode={setLocalCode} />
-      <div className="mt-2 flex space-x-2 self-end">
-        <Button className="text-md cursor-pointer" onClick={runCode}>
-          Run
-        </Button>
-        <Button className="text-md cursor-pointer" onClick={submitCode}>
-          Submit
-        </Button>
+    // Root container
+    <div className="h-full flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+      
+      {/* --- HEADER ---*/}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+        <h2 className="text-lg font-bold text-gray-700 dark:text-gray-200">
+          Code
+        </h2>
+
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={runCode} 
+            size="sm" 
+            className="cursor-pointer font-semibold bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Play size={14} className="mr-1.5" />
+            Run
+          </Button>
+          
+          <Button 
+            onClick={submitCode} 
+            size="sm" 
+            variant="secondary"
+            className="cursor-pointer font-semibold"
+          >
+            <Send size={14} className="mr-1.5" />
+            Submit
+          </Button>
+        </div>
       </div>
+
+      {/* --- EDITOR CONTENT --- */}
+      <div className="flex-1 min-h-0 relative bg-gray-50 dark:bg-gray-900">
+        <CodeEditor code={localCode} setCode={setLocalCode} />
+      </div>
+      
     </div>
   );
 }

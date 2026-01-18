@@ -119,6 +119,34 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
+  }
+
+  /* Chrome, Edge, Safari */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--muted-foreground); 
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    opacity: 0.5;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--foreground);
+  }
 }
 
 @tailwind base;

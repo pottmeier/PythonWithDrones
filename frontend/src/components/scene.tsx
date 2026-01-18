@@ -10,14 +10,20 @@ import Compass from "./compass";
 import * as THREE from "three";
 import { registerPyodideFunctions } from "./pyodideFunctions";
 import { Caramel } from "next/font/google";
-import { FoldVertical, RotateCcw } from "lucide-react";
+import { ScanEye, RotateCcw, ScrollText } from "lucide-react";
+import { TaskCard } from "./task-card";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
   spawn: { x: number; y: number; z: number };
+  description?: string;
 }
 
-export default function Scene() {
+interface SceneProps {
+  levelId: string;
+}
+
+export default function Scene({ levelId }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
@@ -26,6 +32,8 @@ export default function Scene() {
   const compassRef = useRef<HTMLDivElement>(null);
   const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
   const [droneKey, setDroneKey] = useState(0); 
+  const [showInfo, setShowInfo] = useState(false);
+  const [levelDescription, setLevelDescription] = useState<string>("");
 
   const [isLevelComplete, setIsLevelComplete] = useState(false);
 
@@ -94,9 +102,8 @@ export default function Scene() {
 
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     console.log("Level loaded:", data);
-
-    // level size for camera limits
     setLevelSize(data.size);
+    setLevelDescription(data.description || "");
 
     const worldX = data.spawn.x;
     const worldY = data.spawn.y;
@@ -283,7 +290,11 @@ export default function Scene() {
     cam.updateProjectionMatrix();
   }
 
-  const buttonStyle = "bg-white/80 hover:bg-white dark:bg-black/50 dark:hover:bg-black/80 p-2 rounded-md shadow-md backdrop-blur-sm transition-all text-gray-800 dark:text-gray-200 cursor-pointer";
+  const baseBtn = "h-10 rounded-md shadow-md flex items-center justify-center transition-all focus:outline-none z-30";
+  const darkBtn = `${baseBtn} w-10 
+    bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 
+    dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700`;
+  const primaryBtn = `${baseBtn} px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2`;
 
   return (
     <div className="relative w-full h-full">
@@ -336,27 +347,58 @@ export default function Scene() {
         <Compass ref={compassRef} />
       </div>
 
-     <div className="absolute top-4 left-4 flex flex-col gap-2">
+     {/* --- BUTTON LAYOUT --- */}
+      <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
         
-        {/* Camera Reset Button */}
-        <button
-          onClick={resetCamera}
-          className={buttonStyle}
-          title="Reset Camera View"
-        >
-          <FoldVertical size={20} />
-        </button>
+        {/* Row 1: Reset View + Info */}
+        <div className="flex gap-2">
+          
+          {/* Reset Camera (Dark Blue Square) */}
+          <button onClick={resetCamera} className={darkBtn} title="Reset Camera">
+            <ScanEye size={20} />
+          </button>
 
-        {/* Level Reset Button */}
-        <button
-          onClick={resetLevel}
-          className={buttonStyle}
-          title="Reset Level (Drone Position)"
-        >
+          {/* Info Button (Bright Blue Rectangle) */}
+          <button 
+            onClick={() => setShowInfo(!showInfo)} 
+            className={`${primaryBtn} ${showInfo ? 'ring-2 ring-white' : ''}`}
+            title="Toggle Level Info"
+          >
+            <ScrollText size={18} />
+            <span>Task</span>
+          </button>
+        </div>
+
+        {/* Row 2: Reset Level (Dark Blue Square) */}
+        <button onClick={resetLevel} className={darkBtn} title="Reset Level">
           <RotateCcw size={20} />
         </button>
-        
       </div>
+
+      {/* --- INFO CARD OVERLAY --- */}
+      <div 
+        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 p-4 pt-28 z-10 transition-all duration-300 ease-in-out transform ${
+          showInfo ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="h-full overflow-y-auto">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
+            <TaskCard 
+              title={`Level ${levelId}`} 
+              description={levelDescription} />
+          </div>
+        </div>
+      </div>
+
+      {/* Win Screen (Optional, just keeping it if you had it) */}
+      {isLevelComplete && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+          <div className="bg-green-500/90 text-white p-6 rounded-xl shadow-2xl backdrop-blur-md animate-in zoom-in">
+            <h1 className="text-4xl font-bold mb-2">Level Complete!</h1>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
