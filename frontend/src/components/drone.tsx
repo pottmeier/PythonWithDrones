@@ -19,8 +19,7 @@ interface DroneProps {
 export default function Drone({ positionRef,droneRef, onAnimationComplete }: DroneProps) {
   //const groupRef = useRef<any>(null);
   const { scene, nodes } = useGLTF(`${basePath}/models/drone_body.glb`);
-  console.log("GLTF Nodes:", nodes);
-
+  
   const lastTarget = useRef<[number, number, number]>([0, 0, 0]);
 
   useEffect(() => {
