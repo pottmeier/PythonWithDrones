@@ -1,19 +1,50 @@
 import * as THREE from "three";
-import gsap from "gsap";
 
 export function registerPyodideFunctions(
-    moveQueueRef: React.RefObject<string[]>,
+    commandQueueRef: React.RefObject<string[]>,
     isAnimatingRef: React.RefObject<boolean>,
-    processNextMove: () => void,
+    processNextMoveInQueue: () => void,
     positionRef?: React.RefObject<[number, number, number]>,
     droneRef?: React.RefObject<THREE.Group>
 ) {
-    (window as any).moveDrone = (direction: string) => {
-        moveQueueRef.current.push(direction);
+    (window as any).command = (direction: string) => {
+        commandQueueRef.current.push(direction);
         if (!isAnimatingRef.current) {
-            processNextMove();
+            processNextMoveInQueue();
         }
     };
+
+    if (droneRef) {
+        (window as any).turnRight = () => {
+            (window as any).command("right");
+        }
+
+        (window as any).turnLeft = () => {
+            (window as any).command("left");
+        }
+
+        type Coord = `${number},${number},${number}`
+
+        (window as any).direction = () => {
+            //TODO: This needs adjustment between the real object and the python output. At the moment when doing something like
+            // for i in range(3):
+            //      turnRight()
+            //      print(direction())
+            // The moves are done persistent but the direction is wrong, as the python compiler is faster than our animation!
+            const vector = new THREE.Vector3()
+            const directionmap: Record<Coord, string> = {
+                "1,0,0": "east",
+                "-1,0,0": "west",
+                "0,0,-1": "north",
+                "0,0,1": "south",
+            };
+            const direction = droneRef.current.getWorldDirection(vector)
+            const x = direction.round().x
+            const y = direction.round().y
+            const z = direction.round().z
+            return String(directionmap[`${x},${y},${z}`])
+        }
+    }
 
     // Add a getPosition function IF a ref is supplied
     if (positionRef) {
@@ -22,34 +53,7 @@ export function registerPyodideFunctions(
         };
 
         (window as any).move = () => {
-            positionRef.current;
+            (window as any).command((window as any).direction());
         };
-    }
-
-    if (droneRef) {
-        const turn = Math.PI / 2;
-        (window as any).turnRight = async () => {
-            if (!isAnimatingRef.current) {
-                isAnimatingRef.current = true;
-                await gsap.to(droneRef.current.rotation, {
-                    y: `-=${turn}`,
-                    duration: 0.8,
-                    ease: "power2.out"
-                });
-                isAnimatingRef.current = false;
-            }
-        }
-
-        (window as any).turnLeft = async () => {
-            if (!isAnimatingRef.current) {
-                isAnimatingRef.current = true;
-                await gsap.to(droneRef.current.rotation, {
-                    y: `+=${turn}`,
-                    duration: 0.8,
-                    ease: "power2.out"
-                });
-                isAnimatingRef.current = false;
-            }
-        }
     }
 }

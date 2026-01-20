@@ -1,8 +1,8 @@
 import js
 import time
 
-def move(direction:str):
-    js.window.moveDrone(direction)
+def move():
+    js.window.move()
 
 def getPosition():
     return js.window.getPosition()
@@ -12,6 +12,9 @@ def turnRight():
 
 def turnLeft():
     js.window.turnRight()
+
+def direction():
+    return js.window.direction()
 
 # works but freezes like while
 def sleep(seconds):

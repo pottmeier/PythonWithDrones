@@ -4,12 +4,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import Drone from "./drone";
-import Grid from "./grid";
-import ResetCameraButton from "./resetCamButton";
-import Compass from "./compass";
+import Drone from "@/components/drone";
+import Grid from "@/components/grid";
+import ResetCameraButton from "@/components/resetCamButton";
+import Compass from "@/components/compass";
 import * as THREE from "three";
-import { registerPyodideFunctions } from "./pyodideFunctions";
+import { registerPyodideFunctions } from "@/components/pyodideFunctions";
+import gsap from "gsap";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -18,7 +19,7 @@ interface LevelLoadData {
 
 export default function Scene() {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
-  const moveQueueRef = useRef<string[]>([]);
+  const commandQueueRef = useRef<string[]>([]);
   const droneRef = useRef<THREE.Group>(new THREE.Group)
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
@@ -81,6 +82,8 @@ export default function Scene() {
     down: [0, -1, 0],
   };
 
+  const turn = Math.PI / 2;
+
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     console.log("Level loaded:", data);
 
@@ -98,15 +101,26 @@ export default function Scene() {
   }, []);
 
   const processNextMoveInQueue = useCallback(() => {
-    if (moveQueueRef.current.length === 0) {
+    if (commandQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
       return;
     }
 
     isAnimatingRef.current = true;
-    const nextMove = moveQueueRef.current.shift()!;
+    const nextMove = commandQueueRef.current.shift()!;
     const key = nextMove.toLowerCase();
     const moveDelta = deltas[key];
+
+
+    if (key === "left" || key === "right") {
+      gsap.to(droneRef.current.rotation, {
+        y: key === "left" ? `+=${turn}` : `-=${turn}`,
+        duration: 0.8,
+        ease: "power2.out",
+        onComplete: () => processNextMoveInQueue()
+      });
+      return;
+    }
 
     // If unknown command, skip and proceed to next
     if (!moveDelta) {
@@ -139,7 +153,7 @@ export default function Scene() {
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef, droneRef)
+    registerPyodideFunctions(commandQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef, droneRef)
   }, [processNextMoveInQueue]);
 
   function calcCompass() {
