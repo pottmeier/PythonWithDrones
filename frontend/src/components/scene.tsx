@@ -32,7 +32,7 @@ export default function Scene({ levelId }: SceneProps) {
   const compassRef = useRef<HTMLDivElement>(null);
   const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
   const [droneKey, setDroneKey] = useState(0); 
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
   const [levelDescription, setLevelDescription] = useState<string>("");
 
   const [isLevelComplete, setIsLevelComplete] = useState(false);
