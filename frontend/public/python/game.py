@@ -11,7 +11,7 @@ def turnRight():
     js.window.turnRight()
 
 def turnLeft():
-    js.window.turnRight()
+    js.window.turnLeft()
 
 def direction():
     return js.window.direction()
