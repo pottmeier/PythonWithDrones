@@ -2,16 +2,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
-// import { TaskCard } from "@/components/task-card";
-// import { TestCard } from "@/components/test-card";
 import { CodeCard } from "@/components/code-card";
-import { LevelProgress } from "@/components/level-progress";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
+import { loadState } from "@/lib/app-state";
+import { saveLevelProgress } from "@/lib/app-state";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -21,13 +25,34 @@ interface LevelContentProps {
   level: Level;
 }
 
+function SidebarBackdrop() {
+  const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
+
+  const isOpen = isMobile ? openMobile : open;
+
+  const close = () => {
+    if (isMobile) setOpenMobile(false);
+    else setOpen(false);
+  };
+
+  return (
+    <div
+      aria-hidden="true"
+      onClick={close}
+      className={[
+        "fixed inset-0 z-40 bg-black/40 transition-opacity",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+      ].join(" ")}
+    />
+  );
+}
+
 export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [dark, setDark] = useState(true);
-  const [levelCount, setLevelCount] = useState(11);
-  const [currentLevel, setCurrentLevel] = useState(0);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
+  const [username, setUsername] = useState("");
 
   // Darkmode
   useEffect(() => {
@@ -60,6 +85,25 @@ export default function LevelContent({ level }: LevelContentProps) {
     initPython();
   }, []);
 
+  useEffect(() => {
+    const id = Number(levelId);
+    if (!Number.isFinite(id)) return;
+
+    const state = loadState();
+    setUsername(state.user.username);
+    const savedCode = state.progress.levels[id]?.code ?? "";
+    setCode(savedCode);
+  }, [levelId]);
+
+  const submitCode = (submittedCode: string) => {
+    const id = Number(levelId);
+    if (!Number.isFinite(id)) return;
+
+    saveLevelProgress(id, {
+      code: submittedCode,
+    });
+  };
+
   return (
     <SidebarProvider>
       {/* 
@@ -67,16 +111,23 @@ export default function LevelContent({ level }: LevelContentProps) {
          - Mobile: min-h-screen (Scrollable)
          - Desktop (lg): h-screen + overflow-hidden (Locked App-like view)
       */}
-      <div className="flex min-h-screen lg:h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 lg:overflow-hidden transition-colors duration-300">
+      <div className="relative min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <AppSidebar />
+        <SidebarBackdrop />
 
         {/* Flex column wrapper */}
         <div className="flex flex-1 flex-col h-full lg:overflow-hidden">
-          
           {/* Header */}
-          <header className="p-4 flex items-center justify-between border-b shrink-0 bg-white dark:bg-gray-900 z-10 sticky top-0 lg:static">
+          <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
-            <DarkModeToggle />
+            <div className="ml-auto flex items-center gap-4 cursor-default">
+              <Avatar>
+                <AvatarFallback>
+                  {username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <DarkModeToggle />
+            </div>
           </header>
 
           {/* 
@@ -86,7 +137,6 @@ export default function LevelContent({ level }: LevelContentProps) {
              - Desktop: lg:h-full (Fills vertical space)
           */}
           <main className="flex-1 flex flex-col-reverse lg:flex-row p-4 gap-4 lg:h-full lg:overflow-hidden">
-            
             {/* 
                CODE EDITOR COLUMN 
                - Mobile: w-full, h-[500px] (Fixed height to allow scrolling inside editor)
@@ -94,7 +144,7 @@ export default function LevelContent({ level }: LevelContentProps) {
             */}
             <div className="w-full lg:w-1/3 lg:min-w-[350px] shrink-0 h-[500px] lg:h-full flex flex-col">
               <div className="h-full flex flex-col">
-                 <CodeCard code={code} setCode={setCode} />
+                <CodeCard code={code} setCode={setCode} onSubmit={submitCode} />
               </div>
             </div>
 
@@ -122,7 +172,6 @@ export default function LevelContent({ level }: LevelContentProps) {
                 </div>
               </div>
             </div>
-
           </main>
         </div>
       </div>

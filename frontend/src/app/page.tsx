@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { LevelCard } from "@/components/level-card";
@@ -15,11 +19,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import { UserMenu } from "@/components/user-menu";
+import { loadState } from "@/lib/app-state";
+import { UsernameDialog } from "@/components/user-dialog";
+
+function SidebarBackdrop() {
+  const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
+  const isOpen = isMobile ? openMobile : open;
+
+  const close = () => {
+    if (isMobile) setOpenMobile(false);
+    else setOpen(false);
+  };
+
+  return (
+    <div
+      aria-hidden="true"
+      onClick={close}
+      className={[
+        "fixed inset-0 z-40 bg-black/40 transition-opacity",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+      ].join(" ")}
+    />
+  );
+}
 
 export default function Home() {
   const [dark, setDark] = useState(true);
   type LevelStatus = "locked" | "unlocked" | "completed";
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const handleLevelClick = (id: number) => {
     router.push(`/level/${id}`);
   };
@@ -55,10 +84,7 @@ export default function Home() {
   const filteredLevels = levels.filter((level) => {
     const matchesSearch =
       level.title.toLowerCase().includes(search.toLowerCase()) ||
-      level.description.toLowerCase().includes(search.toLowerCase()) ||
-      level.tags?.some((tag) =>
-        tag.toLowerCase().includes(search.toLowerCase())
-      );
+      level.description.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter =
       filterStatus === "all" ||
@@ -73,16 +99,30 @@ export default function Home() {
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
+  useEffect(() => {
+    setUsername(loadState().user.username || "");
+  }, []);
+
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="relative min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <AppSidebar />
+        <SidebarBackdrop />
 
         <div className="flex flex-1 flex-col">
-          <header className="p-4 flex items-center justify-between border-b">
+          <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
-            <DarkModeToggle />
+            <div className="ml-auto flex items-center gap-4">
+              <UserMenu
+                username={username}
+                setUsername={setUsername}
+                onRequireUsername={() => {}}
+              />
+              <DarkModeToggle />
+            </div>
           </header>
+
+          <UsernameDialog onSaved={(name) => setUsername(name)} />
 
           <main className="flex-1 p-4 flex flex-col gap-4">
             <div className="flex justify-end items-center gap-2 mb-0 mt-1">

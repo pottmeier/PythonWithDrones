@@ -32,7 +32,7 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar className="fixed left-0 top-0 z-50 h-dvh w-64">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Python with Drones</SidebarGroupLabel>
