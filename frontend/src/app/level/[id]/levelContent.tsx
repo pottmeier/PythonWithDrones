@@ -2,7 +2,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 // import { TaskCard } from "@/components/task-card";
@@ -11,8 +15,7 @@ import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState } from "@/lib/appState";
-import { saveLevelProgress } from "@/lib/appState";
+import { loadState, saveLevelProgress } from "@/lib/appState";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -21,6 +24,28 @@ type Level = { id: string };
 
 interface LevelContentProps {
   level: Level;
+}
+
+function SidebarBackdrop() {
+  const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
+
+  const isOpen = isMobile ? openMobile : open;
+
+  const close = () => {
+    if (isMobile) setOpenMobile(false);
+    else setOpen(false);
+  };
+
+  return (
+    <div
+      aria-hidden="true"
+      onClick={close}
+      className={[
+        "fixed inset-0 z-40 bg-black/40 transition-opacity",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+      ].join(" ")}
+    />
+  );
 }
 
 export default function LevelContent({ level }: LevelContentProps) {
@@ -41,18 +66,15 @@ export default function LevelContent({ level }: LevelContentProps) {
     async function initPython() {
       console.log("🔄 Lade Pyodide...");
 
-      // Pyodide vom CDN laden
       const pyodide = await window.loadPyodide({
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
       });
 
-      // Python-Game aus public laden
       const response = await fetch(`${basePath}/python/game.py`);
       const pythonCode = await response.text();
 
       await pyodide.runPythonAsync(pythonCode);
 
-      // Funktion global verfügbar machen
       window.runPython = (code: string) => pyodide.runPythonAsync(code);
 
       setPyodideLoaded(true);
@@ -75,9 +97,7 @@ export default function LevelContent({ level }: LevelContentProps) {
     const id = Number(levelId);
     if (!Number.isFinite(id)) return;
 
-    saveLevelProgress(id, {
-      code: submittedCode,
-    });
+    saveLevelProgress(id, { code: submittedCode });
   };
 
   return (
@@ -89,12 +109,10 @@ export default function LevelContent({ level }: LevelContentProps) {
       */}
       <div className="flex min-h-screen lg:h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 lg:overflow-hidden transition-colors duration-300">
         <AppSidebar />
+        <SidebarBackdrop />
 
-        {/* Flex column wrapper */}
-        <div className="flex flex-1 flex-col h-full lg:overflow-hidden">
-          
-          {/* Header */}
-          <header className="p-4 flex items-center justify-between border-b shrink-0 bg-white dark:bg-gray-900 z-10 sticky top-0 lg:static">
+        <div className="flex min-h-screen flex-col">
+          <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
               <Avatar>
@@ -152,6 +170,7 @@ export default function LevelContent({ level }: LevelContentProps) {
           </main>
         </div>
       </div>
+
       <Toaster position="top-left" richColors closeButton />
     </SidebarProvider>
   );
