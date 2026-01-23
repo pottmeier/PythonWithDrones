@@ -9,9 +9,9 @@ import Grid from "./grid";
 import Compass from "./compass";
 import * as THREE from "three";
 import { registerPyodideFunctions } from "./pyodideFunctions";
-import { Caramel } from "next/font/google";
 import { ScanEye, RotateCcw, ScrollText } from "lucide-react";
 import { TaskCard } from "./task-card";
+import { Button } from "@/components/ui/button";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -28,10 +28,14 @@ export default function Scene({ levelId }: SceneProps) {
   const moveQueueRef = useRef<string[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
-  const [levelSize, setLevelSize] = useState<{ width: number; height: number; depth: number } | null>(null);
+  const [levelSize, setLevelSize] = useState<{
+    width: number;
+    height: number;
+    depth: number;
+  } | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
   const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
-  const [droneKey, setDroneKey] = useState(0); 
+  const [droneKey, setDroneKey] = useState(0);
   const [showInfo, setShowInfo] = useState(true);
   const [levelDescription, setLevelDescription] = useState<string>("");
 
@@ -41,21 +45,34 @@ export default function Scene({ levelId }: SceneProps) {
   const { width = 1, depth = 1 } = levelSize || {};
   const mapCenterX = width / 2;
   const mapCenterZ = depth / 2;
-  const START_POSITION: [number, number, number] = [mapCenterX - 10, 10, mapCenterZ + 10]; 
+  const START_POSITION: [number, number, number] = [
+    mapCenterX - 10,
+    10,
+    mapCenterZ + 10,
+  ];
   const START_TARGET: [number, number, number] = [mapCenterX, 0.5, mapCenterZ];
   const PAN_FACTOR = 2;
-  const minPanX = mapCenterX - (width / 2) - PAN_FACTOR;
-  const maxPanX = mapCenterX + (width / 2) + PAN_FACTOR;
-  const minPanZ = mapCenterZ - (depth / 2) - PAN_FACTOR;
-  const maxPanZ = mapCenterZ + (depth / 2) + PAN_FACTOR;
+  const minPanX = mapCenterX - width / 2 - PAN_FACTOR;
+  const maxPanX = mapCenterX + width / 2 + PAN_FACTOR;
+  const minPanZ = mapCenterZ - depth / 2 - PAN_FACTOR;
+  const maxPanZ = mapCenterZ + depth / 2 + PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
 
   //crash
-  const [crashDirection, setCrashDirection] = useState<[number, number, number] | null>(null);
-  const [crashHeight, setCrashHeight] = useState<number>(0.2); 
+  const [crashDirection, setCrashDirection] = useState<
+    [number, number, number] | null
+  >(null);
+  const [crashHeight, setCrashHeight] = useState<number>(0.2);
 
-  const isPositionSafe = (x: number, y: number, z: number, width: number, height: number, depth: number) => {
+  const isPositionSafe = (
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    height: number,
+    depth: number,
+  ) => {
     const getLevelData = (window as any).getLevelData;
     const getBlockRegistry = (window as any).getBlockRegistry;
     if (!getLevelData || !getBlockRegistry) return false;
@@ -67,7 +84,9 @@ export default function Scene({ levelId }: SceneProps) {
     const gridY = Math.round(y);
     const gridZ = Math.round(z);
 
-    console.log(`Checking: World[${x},${z}] -> Grid[${gridX},${gridZ}] Layer ${gridY}`);
+    console.log(
+      `Checking: World[${x},${z}] -> Grid[${gridX},${gridZ}] Layer ${gridY}`,
+    );
 
     if (gridX < 0 || gridX >= width) return false; // Out of bounds X
     if (gridZ < 0 || gridZ >= depth) return false; // Out of bounds Z
@@ -79,13 +98,11 @@ export default function Scene({ levelId }: SceneProps) {
     const layer = data.layers[layerName];
     const blockId = layer[gridZ]?.[gridX];
 
-    if (!blockId || blockId === "empty")
-      return true;
+    if (!blockId || blockId === "empty") return true;
 
     const blockDef = registry[blockId];
 
-    if (blockDef && blockDef.isCollidable)
-      return false;
+    if (blockDef && blockDef.isCollidable) return false;
 
     return true;
   };
@@ -114,7 +131,14 @@ export default function Scene({ levelId }: SceneProps) {
     positionRef.current = [worldX, worldY, worldZ];
   }, []);
 
-  const getCrashLandingHeight = (x: number, y: number, z: number, width: number, depth: number, maxHeight: number) => {
+  const getCrashLandingHeight = (
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    depth: number,
+    maxHeight: number,
+  ) => {
     const getLevelData = (window as any).getLevelData;
     const getBlockRegistry = (window as any).getBlockRegistry;
 
@@ -134,14 +158,21 @@ export default function Scene({ levelId }: SceneProps) {
       if (blockId && blockId !== "empty") {
         const blockDef = registry[blockId];
         if (blockDef && blockDef.isCollidable) {
-          return checkY + 0.5 + 0.2; 
+          return checkY + 0.5 + 0.2;
         }
       }
     }
     return 0.2;
   };
 
-  const checkFinishCondition = (x: number, y: number, z: number, width: number, depth: number, height: number) => {
+  const checkFinishCondition = (
+    x: number,
+    y: number,
+    z: number,
+    width: number,
+    depth: number,
+    height: number,
+  ) => {
     const getLevelData = (window as any).getLevelData;
     const getBlockRegistry = (window as any).getBlockRegistry;
     if (!getLevelData || !getBlockRegistry) return false;
@@ -154,7 +185,15 @@ export default function Scene({ levelId }: SceneProps) {
     const gridZ = Math.round(z);
 
     // Check boundaries first
-    if (gridX < 0 || gridX >= width || gridZ < 0 || gridZ >= depth || gridY < 0 || gridY >= height) return false;
+    if (
+      gridX < 0 ||
+      gridX >= width ||
+      gridZ < 0 ||
+      gridZ >= depth ||
+      gridY < 0 ||
+      gridY >= height
+    )
+      return false;
 
     const layerName = `layer_${gridY}`;
     const layer = data.layers[layerName];
@@ -162,14 +201,16 @@ export default function Scene({ levelId }: SceneProps) {
     // LOGGING
     if (layer) {
       const blockId = layer[gridZ]?.[gridX];
-      console.log(`Checking Win: [${gridX}, ${gridY}, ${gridZ}] -> Block: ${blockId}`);
-      
+      console.log(
+        `Checking Win: [${gridX}, ${gridY}, ${gridZ}] -> Block: ${blockId}`,
+      );
+
       if (blockId) {
-          const blockDef = registry[blockId];
-          console.log("Block Definition:", blockDef);
-          if (blockDef && blockDef.isFinish) {
-              return true;
-          }
+        const blockDef = registry[blockId];
+        console.log("Block Definition:", blockDef);
+        if (blockDef && blockDef.isFinish) {
+          return true;
+        }
       }
     }
 
@@ -196,8 +237,8 @@ export default function Scene({ levelId }: SceneProps) {
       return;
     }
     if (crashDirection) {
-        isAnimatingRef.current = false;
-        return;
+      isAnimatingRef.current = false;
+      return;
     }
 
     isAnimatingRef.current = true;
@@ -221,7 +262,14 @@ export default function Scene({ levelId }: SceneProps) {
     const targetZ = z + dz;
 
     const { width = 1, depth = 1, height = 99 } = levelSize || {};
-    const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
+    const safe = isPositionSafe(
+      targetX,
+      targetY,
+      targetZ,
+      width,
+      height,
+      depth,
+    );
 
     if (!safe) {
       console.warn("CRASH! Movement blocked by object or border.");
@@ -236,14 +284,20 @@ export default function Scene({ levelId }: SceneProps) {
     positionRef.current = [targetX, targetY, targetZ];
     console.log("Moving to:", positionRef.current);
 
-    const won = checkFinishCondition(targetX, targetY, targetZ, width, depth, height);
+    const won = checkFinishCondition(
+      targetX,
+      targetY,
+      targetZ,
+      width,
+      depth,
+      height,
+    );
     if (won) {
       console.log("LEVEL COMPLETE!");
       isAnimatingRef.current = false;
       setIsLevelComplete(true);
       moveQueueRef.current = [];
     }
-
   }, [width, depth, crashDirection, isLevelComplete]);
 
   const handleAnimationComplete = useCallback(() => {
@@ -251,7 +305,12 @@ export default function Scene({ levelId }: SceneProps) {
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    registerPyodideFunctions(moveQueueRef, isAnimatingRef, processNextMoveInQueue, positionRef)
+    registerPyodideFunctions(
+      moveQueueRef,
+      isAnimatingRef,
+      processNextMoveInQueue,
+      positionRef,
+    );
   }, [processNextMoveInQueue]);
 
   const resetLevel = () => {
@@ -260,7 +319,7 @@ export default function Scene({ levelId }: SceneProps) {
     setCrashDirection(null);
     setCrashHeight(0.2);
     positionRef.current = [...spawnRef.current];
-    setDroneKey(prev => prev + 1);
+    setDroneKey((prev) => prev + 1);
     setIsLevelComplete(false);
   };
 
@@ -279,7 +338,9 @@ export default function Scene({ levelId }: SceneProps) {
     const target = controlsRef.current.target;
 
     if (compassRef.current) {
-      const angle = THREE.MathUtils.radToDeg(controlsRef.current.getAzimuthalAngle());
+      const angle = THREE.MathUtils.radToDeg(
+        controlsRef.current.getAzimuthalAngle(),
+      );
       compassRef.current.style.transform = `rotate(${angle}deg)`;
     }
     target.x = clamp(target.x, minPanX, maxPanX);
@@ -290,11 +351,20 @@ export default function Scene({ levelId }: SceneProps) {
     cam.updateProjectionMatrix();
   }
 
-  const baseBtn = "h-10 rounded-md shadow-md flex items-center justify-center transition-all focus:outline-none z-30";
-  const darkBtn = `${baseBtn} w-10 
-    bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 
-    dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700`;
-  const primaryBtn = `${baseBtn} px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2`;
+  const baseBtn =
+    "cursor-pointer rounded-md flex items-center justify-center transition-all focus:outline-none z-30";
+
+  const darkBtn = `
+  ${baseBtn}
+  h-8 w-8
+  bg-white text-gray-700 border border-gray-200 hover:bg-gray-50
+  dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700
+`;
+
+  const primaryBtn = `
+  ${baseBtn}
+  bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2
+`;
 
   return (
     <div className="relative w-full h-full">
@@ -340,52 +410,62 @@ export default function Scene({ levelId }: SceneProps) {
           target={START_TARGET}
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 2 - 0.1}
-          onChange={calcCompass} />
+          onChange={calcCompass}
+        />
       </Canvas>
 
       <div className="absolute top-4 right-4 pointer-events-none">
         <Compass ref={compassRef} />
       </div>
 
-     {/* --- BUTTON LAYOUT --- */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
-        
+      {/* --- BUTTON LAYOUT --- */}
+      <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
         {/* Row 1: Reset View + Info */}
         <div className="flex gap-2">
-          
           {/* Reset Camera (Dark Blue Square) */}
-          <button onClick={resetCamera} className={darkBtn} title="Reset Camera">
-            <ScanEye size={20} />
-          </button>
+          <Button size="sm" onClick={resetCamera} className={darkBtn}>
+            <ScanEye size={16} />
+          </Button>
 
           {/* Info Button (Bright Blue Rectangle) */}
-          <button 
+          {/* <button 
             onClick={() => setShowInfo(!showInfo)} 
             className={`${primaryBtn} ${showInfo ? 'ring-2 ring-white' : ''}`}
             title="Toggle Level Info"
           >
             <ScrollText size={18} />
             <span>Task</span>
-          </button>
+          </button> */}
+          <Button
+            size="sm"
+            onClick={() => setShowInfo(!showInfo)}
+            className={`${primaryBtn} ${showInfo ? "ring-2 ring-white" : ""}`}
+          >
+            <ScrollText size={18} />
+            Task
+          </Button>
         </div>
 
         {/* Row 2: Reset Level (Dark Blue Square) */}
-        <button onClick={resetLevel} className={darkBtn} title="Reset Level">
-          <RotateCcw size={20} />
-        </button>
+        <Button size="sm" onClick={resetLevel} className={darkBtn}>
+          <RotateCcw size={16} />
+        </Button>
       </div>
 
       {/* --- INFO CARD OVERLAY --- */}
-      <div 
+      <div
         className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 p-4 pt-28 z-10 transition-all duration-300 ease-in-out transform ${
-          showInfo ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
+          showInfo
+            ? "translate-x-0 opacity-100"
+            : "-translate-x-full opacity-0 pointer-events-none"
         }`}
       >
         <div className="h-full overflow-y-auto">
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
-            <TaskCard 
-              title={`Level ${levelId}`} 
-              description={levelDescription} />
+            <TaskCard
+              title={`Level ${levelId}`}
+              description={levelDescription}
+            />
           </div>
         </div>
       </div>
@@ -398,7 +478,6 @@ export default function Scene({ levelId }: SceneProps) {
           </div>
         </div>
       )}
-
     </div>
   );
 }
