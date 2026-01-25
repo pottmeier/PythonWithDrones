@@ -12,6 +12,7 @@ import { registerPyodideFunctions } from "./pyodideFunctions";
 import { ScanEye, RotateCcw, ScrollText } from "lucide-react";
 import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
+import gsap from "gsap";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -325,6 +326,7 @@ export default function Scene({ levelId }: SceneProps) {
       isAnimatingRef,
       processNextMoveInQueue,
       positionRef,
+      droneRef
     );
   }, [processNextMoveInQueue]);
 
@@ -409,6 +411,7 @@ export default function Scene({ levelId }: SceneProps) {
         <Grid onLevelLoaded={handleLevelLoaded} />
         <Drone
           key={droneKey}
+          groupRef={droneRef}
           positionRef={positionRef}
           onAnimationComplete={handleAnimationComplete}
           crashDirection={crashDirection}

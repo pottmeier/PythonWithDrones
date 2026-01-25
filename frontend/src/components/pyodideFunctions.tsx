@@ -4,8 +4,8 @@ export function registerPyodideFunctions(
     commandQueueRef: React.RefObject<string[]>,
     isAnimatingRef: React.RefObject<boolean>,
     processNextMoveInQueue: () => void,
-    positionRef?: React.RefObject<[number, number, number]>,
-    droneRef?: React.RefObject<THREE.Group>
+    positionRef: React.RefObject<[number, number, number]>,
+    droneRef: React.RefObject<THREE.Group>
 ) {
     (window as any).command = (direction: string) => {
         commandQueueRef.current.push(direction);
@@ -15,14 +15,6 @@ export function registerPyodideFunctions(
     };
 
     if (droneRef) {
-        (window as any).turnRight = () => {
-            (window as any).command("right");
-        }
-
-        (window as any).turnLeft = () => {
-            (window as any).command("left");
-        }
-
         type Coord = `${number},${number},${number}`
 
         (window as any).direction = () => {
