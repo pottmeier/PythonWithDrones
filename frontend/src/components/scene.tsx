@@ -26,6 +26,7 @@ interface SceneProps {
 export default function Scene({ levelId }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const moveQueueRef = useRef<string[]>([]);
+  const droneRef = useRef<THREE.Group>(new THREE.Group)
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<{
@@ -116,6 +117,8 @@ export default function Scene({ levelId }: SceneProps) {
     up: [0, 1, 0],
     down: [0, -1, 0],
   };
+
+  const turn = Math.PI / 2;
 
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     console.log("Level loaded:", data);
@@ -246,6 +249,18 @@ export default function Scene({ levelId }: SceneProps) {
     const key = nextMove.toLowerCase();
     const moveDelta = deltas[key];
 
+
+    if (key === "left" || key === "right") {
+      gsap.to(droneRef.current.rotation, {
+        y: key === "left" ? `+=${turn}` : `-=${turn}`,
+        duration: 0.8,
+        ease: "power2.out",
+        onComplete: () => processNextMoveInQueue()
+      });
+      return;
+    }
+
+    // If unknown command, skip and proceed to next
     if (!moveDelta) {
       console.error(`Unknown direction: ${nextMove}`);
       isAnimatingRef.current = false;
