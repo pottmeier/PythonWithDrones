@@ -4,14 +4,20 @@ import time
 def move():
     js.window.move()
 
+def up():
+    js.window.command("up")
+    
+def down():
+    js.window.command("down")
+
 def getPosition():
     return js.window.getPosition()
 
 def turnRight():
-    js.window.turnRight()
+    js.window.command("right")
 
 def turnLeft():
-    js.window.turnLeft()
+    js.window.command("left")
 
 def direction():
     return js.window.direction()

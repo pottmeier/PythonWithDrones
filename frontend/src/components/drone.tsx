@@ -12,13 +12,14 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 interface DroneProps {
   positionRef: React.RefObject<[number, number, number]>;
+  groupRef: React.RefObject<THREE.Group>
   onAnimationComplete: () => void;
   crashDirection: [number, number, number] | null;
   crashHeight: number;
 }
 
-export default function Drone({ positionRef, onAnimationComplete, crashDirection, crashHeight }: DroneProps) {
-  const groupRef = useRef<any>(null);
+export default function Drone({ positionRef, groupRef, onAnimationComplete, crashDirection, crashHeight }: DroneProps) {
+  // const groupRef = useRef<any>(null);
   const { scene, nodes } = useGLTF(`${basePath}/models/drone_body.glb`);
 
   const lastTarget = useRef<[number, number, number]>([0, 0, 0]);
