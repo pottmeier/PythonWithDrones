@@ -1,36 +1,34 @@
 import js
-import time
+
+# The bridge to the new "Virtual Brain" in scene.tsx
+def _send_action(action):
+    try:
+        js.window.droneAction(action)
+    except Exception as e:
+        print(f"Error communicating with drone: {e}")
+
+# --- PUBLIC API FOR THE PLAYER ---
 
 def move():
-    js.window.move()
-
-def up():
-    js.window.command("up")
-    
-def down():
-    js.window.command("down")
-
-def getPosition():
-    return js.window.getPosition()
-
-def turnRight():
-    js.window.command("right")
+    _send_action("move")
 
 def turnLeft():
-    js.window.command("left")
+    _send_action("turnLeft")
 
-def direction():
-    return js.window.direction()
+def turnRight():
+    _send_action("turnRight")
 
-# works but freezes like while
-def sleep(seconds):
-    time.sleep(seconds)
+def up():
+    _send_action("up")
+    
+def down():
+    _send_action("down")
 
-# Die Brückenfunktion bleibt exakt gleich
-def code_ausfuehren(code_string):
-    try:
-        exec(code_string, globals())
-    except Exception as e:
-        print(f"FEHLER BEI DER AUSFÜHRUNG: {e}")
+def getDirection():
+    return js.window.getDroneDirection()
 
-print("Spiel-Bibliothek wurde geladen!")
+def getPosition():
+    pos = js.window.getDronePosition()
+    return {"x": pos.x, "y": pos.y, "z": pos.z}
+
+print("System loaded. Drone ready.")
