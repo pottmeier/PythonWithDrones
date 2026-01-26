@@ -23,7 +23,7 @@ interface SceneProps {
   levelId: string;
 }
 
-const DIRECTION_VECTORS = [
+const direction_vectors = [
   [0, 0, -1], // 0: North
   [1, 0, 0],  // 1: East
   [0, 0, 1],  // 2: South
@@ -34,6 +34,7 @@ export default function Scene({ levelId }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const droneRef = useRef<THREE.Group>(new THREE.Group)
 
+  // virtual drone state 
   const virtualPositionRef = useRef<[number, number, number]>([0, 0, 0]);
   const virtualDirectionRef = useRef<number>(0); // 0 = North
   const virtualCrashRef = useRef(false); 
@@ -119,18 +120,6 @@ export default function Scene({ levelId }: SceneProps) {
 
     return true;
   };
-
-  // Direction map: use world-space deltas [dx, dy, dz]
-  const deltas: Record<string, [number, number, number]> = {
-    east: [1, 0, 0],
-    west: [-1, 0, 0],
-    north: [0, 0, -1],
-    south: [0, 0, 1],
-    up: [0, 1, 0],
-    down: [0, -1, 0],
-  };
-
-  const turn = Math.PI / 2;
 
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     console.log("Level loaded:", data);
@@ -263,7 +252,7 @@ export default function Scene({ levelId }: SceneProps) {
       let dx = 0, dy = 0, dz = 0;
 
       if (action === "move") {
-        [dx, dy, dz] = DIRECTION_VECTORS[virtualDirectionRef.current];
+        [dx, dy, dz] = direction_vectors[virtualDirectionRef.current];
       } else if (action === "up") {
         dy = 1;
       } else if (action === "down") {
@@ -310,29 +299,7 @@ export default function Scene({ levelId }: SceneProps) {
     isAnimatingRef.current = true;
     const command = moveQueueRef.current.shift();
 
-    if (command.type === "turn") {
-      const turnAmount = Math.PI / 2;
-      gsap.to(droneRef.current.rotation, {
-        y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
-        duration: 0.4, // Faster turn
-        ease: "power2.out",
-        onComplete: () => processNextMoveInQueue()
-      });
-      return;
-    }
-
-    // --- CRASH ANIMATION ---
-    if (command.type === "crash") {
-      const { width = 1, depth = 1, height = 99 } = levelSize || {};
-      const landingY = getCrashLandingHeight(command.x, command.y, command.z, width, depth, height);
-      setCrashHeight(landingY);
-      setCrashDirection(command.vector);
-      isAnimatingRef.current = false;
-      moveQueueRef.current = [];
-      return;
-    }
-
-    // --- MOVE ANIMATION ---
+    // move animation
     if (command.type === "move") {
       // The payload IS the target. No calculation needed here.
       const [targetX, targetY, targetZ] = command.target;
@@ -350,6 +317,29 @@ export default function Scene({ levelId }: SceneProps) {
       }
     }
 
+    // turn animation
+    if (command.type === "turn") {
+      const turnAmount = Math.PI / 2;
+      gsap.to(droneRef.current.rotation, {
+        y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
+        duration: 0.4, // Faster turn
+        ease: "power2.out",
+        onComplete: () => processNextMoveInQueue()
+      });
+      return;
+    }
+
+    // crash animation
+    if (command.type === "crash") {
+      const { width = 1, depth = 1, height = 99 } = levelSize || {};
+      const landingY = getCrashLandingHeight(command.x, command.y, command.z, width, depth, height);
+      setCrashHeight(landingY);
+      setCrashDirection(command.vector);
+      isAnimatingRef.current = false;
+      moveQueueRef.current = [];
+      return;
+    }
+    
   }, [levelSize, crashDirection, isLevelComplete]);
 
   const handleAnimationComplete = useCallback(() => {
