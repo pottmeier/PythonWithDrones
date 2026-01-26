@@ -8,7 +8,6 @@ import Drone from "./drone";
 import Grid from "./grid";
 import Compass from "./compass";
 import * as THREE from "three";
-import { registerPyodideFunctions } from "./pyodideFunctions";
 import { ScanEye, RotateCcw, ScrollText } from "lucide-react";
 import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
@@ -24,10 +23,23 @@ interface SceneProps {
   levelId: string;
 }
 
+const DIRECTION_VECTORS = [
+  [0, 0, -1], // 0: North
+  [1, 0, 0],  // 1: East
+  [0, 0, 1],  // 2: South
+  [-1, 0, 0]  // 3: West
+];
+
 export default function Scene({ levelId }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
-  const moveQueueRef = useRef<string[]>([]);
   const droneRef = useRef<THREE.Group>(new THREE.Group)
+
+  const virtualPositionRef = useRef<[number, number, number]>([0, 0, 0]);
+  const virtualDirectionRef = useRef<number>(0); // 0 = North
+  const virtualCrashRef = useRef(false); 
+
+  const moveQueueRef = useRef<any[]>([]); 
+
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const [levelSize, setLevelSize] = useState<{
@@ -98,12 +110,11 @@ export default function Scene({ levelId }: SceneProps) {
 
     const layerName = `layer_${gridY}`;
     const layer = data.layers[layerName];
-    const blockId = layer[gridZ]?.[gridX];
 
+    const blockId = layer[gridZ]?.[gridX];
     if (!blockId || blockId === "empty") return true;
 
     const blockDef = registry[blockId];
-
     if (blockDef && blockDef.isCollidable) return false;
 
     return true;
@@ -132,7 +143,10 @@ export default function Scene({ levelId }: SceneProps) {
 
     spawnRef.current = [worldX, worldY, worldZ];
     positionRef.current = [worldX, worldY, worldZ];
-    positionRef.current = [worldX, worldY, worldZ];
+
+    virtualPositionRef.current = [worldX, worldY, worldZ];
+    virtualDirectionRef.current = 0;
+    virtualCrashRef.current = false;
   }, []);
 
   const getCrashLandingHeight = (
@@ -229,9 +243,57 @@ export default function Scene({ levelId }: SceneProps) {
     }
     return false;
   };
+  
+  const executeVirtualAction = useCallback((action: string) => {
+    if (virtualCrashRef.current) return;
+
+    if (action === "turnLeft") {
+      virtualDirectionRef.current = (virtualDirectionRef.current + 3) % 4;
+      moveQueueRef.current.push({ type: "turn", direction: "left" });
+      return;
+    }
+    if (action === "turnRight") {
+      virtualDirectionRef.current = (virtualDirectionRef.current + 1) % 4;
+      moveQueueRef.current.push({ type: "turn", direction: "right" });
+      return;
+    }
+
+    if (action === "move" || action === "up" || action === "down") {
+      const [vx, vy, vz] = virtualPositionRef.current;
+      let dx = 0, dy = 0, dz = 0;
+
+      if (action === "move") {
+        [dx, dy, dz] = DIRECTION_VECTORS[virtualDirectionRef.current];
+      } else if (action === "up") {
+        dy = 1;
+      } else if (action === "down") {
+        dy = -1;
+      }
+
+      const targetX = vx + dx;
+      const targetY = vy + dy;
+      const targetZ = vz + dz;
+
+      const { width = 1, depth = 1, height = 99 } = levelSize || {};
+      const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
+
+      if (!safe) {
+        console.warn(`Virtual Crash Detected (${action})!`);
+        virtualCrashRef.current = true;
+        moveQueueRef.current.push({ 
+            type: "crash", 
+            vector: [dx, dy, dz], 
+            x: vx, y: vy, z: vz 
+        });
+        return;
+      }
+      virtualPositionRef.current = [targetX, targetY, targetZ];
+      moveQueueRef.current.push({ type: "move", target: [targetX, targetY, targetZ] });
+    }
+  }, [levelSize]);
 
   const processNextMoveInQueue = useCallback(() => {
-    if (isLevelComplete) {
+    if (isLevelComplete || crashDirection) {
       isAnimatingRef.current = false;
       return;
     }
@@ -246,89 +308,74 @@ export default function Scene({ levelId }: SceneProps) {
     }
 
     isAnimatingRef.current = true;
-    const nextMove = moveQueueRef.current.shift()!;
-    const key = nextMove.toLowerCase();
-    const moveDelta = deltas[key];
+    const command = moveQueueRef.current.shift();
 
-
-    if (key === "left" || key === "right") {
+    if (command.type === "turn") {
+      const turnAmount = Math.PI / 2;
       gsap.to(droneRef.current.rotation, {
-        y: key === "left" ? `+=${turn}` : `-=${turn}`,
-        duration: 0.8,
+        y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
+        duration: 0.4, // Faster turn
         ease: "power2.out",
         onComplete: () => processNextMoveInQueue()
       });
       return;
     }
 
-    // If unknown command, skip and proceed to next
-    if (!moveDelta) {
-      console.error(`Unknown direction: ${nextMove}`);
-      isAnimatingRef.current = false;
-      processNextMoveInQueue();
-      return;
-    }
-
-    const [x, y, z] = positionRef.current;
-    const dx = moveDelta[0];
-    const dy = moveDelta[1];
-    const dz = moveDelta[2];
-    const targetX = x + dx;
-    const targetY = y + dy;
-    const targetZ = z + dz;
-
-    const { width = 1, depth = 1, height = 99 } = levelSize || {};
-    const safe = isPositionSafe(
-      targetX,
-      targetY,
-      targetZ,
-      width,
-      height,
-      depth,
-    );
-
-    if (!safe) {
-      console.warn("CRASH! Movement blocked by object or border.");
-      isAnimatingRef.current = false;
-      const landingY = getCrashLandingHeight(x, y, z, width, depth, height);
+    // --- CRASH ANIMATION ---
+    if (command.type === "crash") {
+      const { width = 1, depth = 1, height = 99 } = levelSize || {};
+      const landingY = getCrashLandingHeight(command.x, command.y, command.z, width, depth, height);
       setCrashHeight(landingY);
-      setCrashDirection([dx, dy, dz]);
+      setCrashDirection(command.vector);
+      isAnimatingRef.current = false;
       moveQueueRef.current = [];
       return;
     }
 
-    positionRef.current = [targetX, targetY, targetZ];
-    console.log("Moving to:", positionRef.current);
+    // --- MOVE ANIMATION ---
+    if (command.type === "move") {
+      // The payload IS the target. No calculation needed here.
+      const [targetX, targetY, targetZ] = command.target;
+      positionRef.current = [targetX, targetY, targetZ];
+      
+      console.log("Visual Moving to:", positionRef.current);
 
-    const won = checkFinishCondition(
-      targetX,
-      targetY,
-      targetZ,
-      width,
-      depth,
-      height,
-    );
-    if (won) {
-      console.log("LEVEL COMPLETE!");
-      isAnimatingRef.current = false;
-      setIsLevelComplete(true);
-      moveQueueRef.current = [];
+      // Check win condition based on VISUAL arrival
+      const { width = 1, depth = 1, height = 99 } = levelSize || {};
+      const won = checkFinishCondition(targetX, targetY, targetZ, width, depth, height);
+      if (won) {
+        console.log("LEVEL COMPLETE!");
+        setIsLevelComplete(true);
+        moveQueueRef.current = [];
+      }
     }
-  }, [width, depth, crashDirection, isLevelComplete]);
+
+  }, [levelSize, crashDirection, isLevelComplete]);
 
   const handleAnimationComplete = useCallback(() => {
     processNextMoveInQueue();
   }, [processNextMoveInQueue]);
 
   useEffect(() => {
-    registerPyodideFunctions(
-      moveQueueRef,
-      isAnimatingRef,
-      processNextMoveInQueue,
-      positionRef,
-      droneRef
-    );
-  }, [processNextMoveInQueue]);
+    (window as any).droneAction = (action: string) => {
+      executeVirtualAction(action);
+      
+      if (!isAnimatingRef.current) {
+        processNextMoveInQueue();
+      }
+    };
+
+    (window as any).getDroneDirection = () => {
+      const dirs = ["North", "East", "South", "West"];
+      return dirs[virtualDirectionRef.current];
+    };
+    
+    (window as any).getDronePosition = () => {
+        const [x, y, z] = virtualPositionRef.current;
+        return { x, y, z };
+    };
+
+  }, [executeVirtualAction, processNextMoveInQueue]);
 
   const resetLevel = () => {
     isAnimatingRef.current = false;
@@ -336,6 +383,11 @@ export default function Scene({ levelId }: SceneProps) {
     setCrashDirection(null);
     setCrashHeight(0.2);
     positionRef.current = [...spawnRef.current];
+
+    virtualPositionRef.current = [...spawnRef.current];
+    virtualDirectionRef.current = 0;
+    virtualCrashRef.current = false;
+
     setDroneKey((prev) => prev + 1);
     setIsLevelComplete(false);
   };
