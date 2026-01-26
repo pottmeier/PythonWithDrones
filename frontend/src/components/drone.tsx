@@ -26,6 +26,9 @@ export default function Drone({ positionRef, groupRef, onAnimationComplete, cras
  
   useEffect(() => {
     scene.traverse((c: any) => (c.castShadow = true));
+    if (groupRef.current) {
+      groupRef.current.rotation.order = "YXZ";
+    }
   }, [scene]);
 
   useFrame(() => {
@@ -55,7 +58,6 @@ export default function Drone({ positionRef, groupRef, onAnimationComplete, cras
   useEffect(() => {
     if (crashDirection && groupRef.current) {
       const [dx, dy, dz] = crashDirection;
-      
       const tl = gsap.timeline();
 
       // try to move forward
@@ -78,7 +80,7 @@ export default function Drone({ positionRef, groupRef, onAnimationComplete, cras
 
       // backflip
       .to(groupRef.current.rotation, {
-        x: "+=" + Math.PI, 
+        x: "+=" + Math.PI,
         duration: 0.4
       }, "<") 
       
