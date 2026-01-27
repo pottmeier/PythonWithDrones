@@ -1,7 +1,7 @@
-//LevelContent.tsx
+//levelContent.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -13,9 +13,10 @@ import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState } from "@/lib/app-state";
-import { saveLevelProgress } from "@/lib/app-state";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { loadState, saveLevelProgress, updateState } from "@/lib/app-state";
+import { usePyodideWorker } from "@/hooks/usePyodideWorker";
+import { UserMenu } from "@/components/user-menu";
+import { UsernameDialog } from "@/components/user-dialog";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -50,9 +51,53 @@ function SidebarBackdrop() {
 export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
-  const [dark, setDark] = useState(true);
-  const [pyodideLoaded, setPyodideLoaded] = useState(false);
   const [username, setUsername] = useState("");
+  const [dark, setDark] = useState(true);
+  const { isReady, isRunning, runCode, stopCode } = usePyodideWorker();
+
+  const isInitialized = useRef(false);
+
+  useEffect(() => {
+    isInitialized.current = false; 
+    
+    const id = Number(levelId);
+    if (!Number.isFinite(id)) return;
+
+    const state = loadState();
+    setUsername(state.user.username || "");
+    
+    const savedCode = state.progress.levels[id]?.code ?? "# Start coding here...\nmove()";
+    setCode(savedCode);
+
+    isInitialized.current = true;
+  }, [levelId]);
+
+  useEffect(() => {
+    const id = Number(levelId);
+    if (isInitialized.current && Number.isFinite(id) && code !== "") {
+      saveLevelProgress(id, { code });
+    }
+  }, [code, levelId]);
+
+  const stopEngineOnly = useCallback(() => {
+    stopCode();
+  }, [stopCode]);
+
+  const handleFullReset = useCallback(() => {
+    stopCode(); // Kill engine
+    if ((window as any).resetScene) {
+      (window as any).resetScene();
+    }
+  }, [stopCode]);
+
+  useEffect(() => {
+    (window as any).stopPythonEngine = stopEngineOnly;
+    (window as any).triggerFullReset = handleFullReset;
+    return () => {
+      (window as any).stopPythonEngine = undefined;
+      (window as any).triggerFullReset = undefined;
+    };
+  }, [stopEngineOnly, handleFullReset]);
 
   // Darkmode
   useEffect(() => {
@@ -60,40 +105,9 @@ export default function LevelContent({ level }: LevelContentProps) {
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
-  // Pyodide laden
   useEffect(() => {
-    async function initPython() {
-      console.log("🔄 Lade Pyodide...");
-
-      // Pyodide vom CDN laden
-      const pyodide = await window.loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
-      });
-
-      // Python-Game aus public laden
-      const response = await fetch(`${basePath}/python/game.py`);
-      const pythonCode = await response.text();
-
-      await pyodide.runPythonAsync(pythonCode);
-
-      // Funktion global verfügbar machen
-      window.runPython = (code: string) => pyodide.runPythonAsync(code);
-
-      setPyodideLoaded(true);
-    }
-
-    initPython();
-  }, []);
-
-  useEffect(() => {
-    const id = Number(levelId);
-    if (!Number.isFinite(id)) return;
-
-    const state = loadState();
-    setUsername(state.user.username);
-    const savedCode = state.progress.levels[id]?.code ?? "";
-    setCode(savedCode);
-  }, [levelId]);
+    (window as any).runPython = runCode;
+  }, [runCode]);
 
   const submitCode = (submittedCode: string) => {
     const id = Number(levelId);
@@ -121,11 +135,10 @@ export default function LevelContent({ level }: LevelContentProps) {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4 cursor-default">
-              <Avatar>
-                <AvatarFallback>
-                  {username.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <UserMenu 
+                username={username} 
+                setUsername={setUsername} 
+              />
               <DarkModeToggle />
             </div>
           </header>
@@ -144,7 +157,13 @@ export default function LevelContent({ level }: LevelContentProps) {
             */}
             <div className="w-full lg:w-1/3 lg:min-w-[350px] shrink-0 h-[500px] lg:h-full flex flex-col">
               <div className="h-full flex flex-col">
-                <CodeCard code={code} setCode={setCode} onSubmit={submitCode} />
+                <CodeCard 
+                   code={code} 
+                   setCode={setCode} 
+                   onSubmit={submitCode}
+                   isRunning={isRunning}
+                   stopCode={handleFullReset}
+                />
               </div>
             </div>
 
@@ -156,14 +175,10 @@ export default function LevelContent({ level }: LevelContentProps) {
             <div className="w-full lg:flex-1 h-[400px] lg:h-full min-w-0">
               <div className="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 relative overflow-hidden shadow-sm">
                 <div className="w-full h-full relative">
-                  <div
-                    className={`transition-opacity duration-500 w-full h-full ${
-                      pyodideLoaded ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
+                  <div className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}>
                     <Scene levelId={levelId} />
                   </div>
-                  {!pyodideLoaded && (
+                  {!isReady && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
                       <Spinner className="mb-2" />
                       Loading...
@@ -175,6 +190,7 @@ export default function LevelContent({ level }: LevelContentProps) {
           </main>
         </div>
       </div>
+      <UsernameDialog onSaved={(name) => setUsername(name)} />
       <Toaster position="top-left" richColors closeButton />
     </SidebarProvider>
   );

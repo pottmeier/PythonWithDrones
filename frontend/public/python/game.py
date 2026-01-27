@@ -1,11 +1,10 @@
 import js
+import time
 
-# The bridge to the new "Virtual Brain" in scene.tsx
+# Bridge to the Worker JS
 def _send_action(action):
-    try:
-        js.window.droneAction(action)
-    except Exception as e:
-        print(f"Error communicating with drone: {e}")
+    js.post_action_to_main(action)
+    time.sleep(0.1) # prevent lags in infinite loops
 
 # --- PUBLIC API FOR THE PLAYER ---
 
