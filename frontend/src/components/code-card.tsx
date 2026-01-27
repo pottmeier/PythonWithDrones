@@ -57,8 +57,8 @@ export function CodeCard({ code, setCode, onSubmit, isRunning, stopCode }: CodeC
             size="sm"
             className={`cursor-pointer font-semibold text-white ${
               isRunning 
-                ? "bg-red-600 hover:bg-red-700" 
-                : "bg-blue-600 hover:bg-blue-700" 
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             {isRunning ? (
