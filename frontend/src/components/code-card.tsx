@@ -4,49 +4,39 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
-import { Play, Send } from "lucide-react";
+import { Play, Send, Square } from "lucide-react";
 
 interface CodeCardProps {
   code: string;
   setCode: (value: string) => void;
   onSubmit: (code: string) => void;
+  isRunning?: boolean;
+  stopCode?: () => void;
 }
 
-export function CodeCard({ code, setCode, onSubmit }: CodeCardProps) {
+export function CodeCard({ code, setCode, onSubmit, isRunning, stopCode }: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
 
   useEffect(() => {
     setLocalCode(code);
   }, [code]);
 
-  const runCode = async () => {
-    onSubmit(localCode);
-    setCode(localCode);
-    if (typeof window.runPython !== "function") {
-      toast.warning("⚠️ Python-Engine ist noch nicht bereit. Bitte warten.");
+  const handleCodeChange = (newCode: string) => {
+    setLocalCode(newCode);
+    setCode(newCode);
+  };
+
+  const handleRun = async () => {
+    if (isRunning && stopCode) {
+      stopCode();
       return;
     }
-
-    try {
-      await window.runPython(localCode);
-    } catch (err: any) {
-      console.error("Python runtime error:", err);
-
-      let msg = "Unbekannter Python-Fehler";
-
-      if (err && typeof err.toString === "function") {
-        const lines = err
-          .toString()
-          .split("\n")
-          .map((l: any) => l.trim());
-        const pythonErrorLine = lines
-          .reverse()
-          .find((l: any) => l.match(/(Error|Exception):/));
-        if (pythonErrorLine) msg = pythonErrorLine;
-      }
-
-      toast.error(`${msg}`);
+    setCode(localCode);
+    if (typeof (window as any).runPython !== "function") {
+      toast.warning("Engine not ready.");
+      return;
     }
+    (window as any).runPython(localCode); 
   };
 
   const submitCode = () => {
@@ -63,20 +53,32 @@ export function CodeCard({ code, setCode, onSubmit }: CodeCardProps) {
 
         <div className="flex items-center gap-2">
           <Button
-            onClick={runCode}
+            onClick={handleRun}
             size="sm"
-            className="cursor-pointer font-semibold bg-blue-600 hover:bg-blue-700 text-white"
+            className={`cursor-pointer font-semibold text-white ${
+              isRunning 
+                ? "bg-red-600 hover:bg-red-700" 
+                : "bg-blue-600 hover:bg-blue-700" 
+            }`}
           >
-            <Play size={14} className="mr-1.5" />
-            Run
+            {isRunning ? (
+              <>
+                <Square size={14} className="mr-1.5 fill-current" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play size={14} className="mr-1.5" />
+                Run
+              </>
+            )}
           </Button>
 
           <Button
             onClick={submitCode}
             size="sm"
             variant="secondary"
-            className="cursor-pointer bg-white text-gray-700 border border-gray-200 hover:bg-gray-50
-  dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
+            className="cursor-pointer bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
           >
             <Send size={14} className="mr-1.5" />
             Submit
@@ -86,7 +88,10 @@ export function CodeCard({ code, setCode, onSubmit }: CodeCardProps) {
 
       {/* --- EDITOR CONTENT --- */}
       <div className="flex-1 min-h-0 relative bg-gray-50 dark:bg-gray-900">
-        <CodeEditor code={localCode} setCode={setLocalCode} />
+        <CodeEditor 
+          code={localCode} 
+          setCode={handleCodeChange} 
+        />
       </div>
     </div>
   );
