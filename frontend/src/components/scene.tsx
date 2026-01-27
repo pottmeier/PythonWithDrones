@@ -21,6 +21,7 @@ interface LevelLoadData {
 
 interface SceneProps {
   levelId: string;
+  onBusyChange: (busy: boolean) => void;
 }
 
 const direction_vectors = [
@@ -30,7 +31,7 @@ const direction_vectors = [
   [-1, 0, 0]  // 3: West
 ];
 
-function SceneComponent({ levelId }: SceneProps) {
+function SceneComponent({ levelId, onBusyChange }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const droneRef = useRef<THREE.Group>(new THREE.Group)
 
@@ -305,13 +306,20 @@ function SceneComponent({ levelId }: SceneProps) {
     }
   }, [levelSize]);
 
+  const updateBusyStatus = useCallback(() => {
+    const busy = isAnimatingRef.current || moveQueueRef.current.length > 0;
+    onBusyChange(busy);
+  }, [onBusyChange]);
+
   const processNextMoveInQueue = useCallback(() => {
     if (isLevelComplete || moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
+      updateBusyStatus();
       return;
     }
 
     isAnimatingRef.current = true;
+    updateBusyStatus();
     const command = moveQueueRef.current.shift();
 
     // move animation
@@ -353,7 +361,7 @@ function SceneComponent({ levelId }: SceneProps) {
       moveQueueRef.current = []; 
     }
     
-  }, [levelSize, isLevelComplete]);
+  }, [levelSize, isLevelComplete, updateBusyStatus]);
 
   useEffect(() => {
     (window as any).droneAction = (action: string) => {
@@ -361,6 +369,7 @@ function SceneComponent({ levelId }: SceneProps) {
       
       if (!isAnimatingRef.current) {
         processNextMoveInQueue();
+        updateBusyStatus();
       }
     };
 
@@ -374,9 +383,9 @@ function SceneComponent({ levelId }: SceneProps) {
         return { x, y, z };
     };
 
-  }, [executeVirtualAction, processNextMoveInQueue]);
+  }, [executeVirtualAction, processNextMoveInQueue, updateBusyStatus]);
 
-  const resetLevel = () => {
+  const resetLevel = useCallback(() => {
     if ((window as any).stopPythonEngine) (window as any).stopPythonEngine();
     isAnimatingRef.current = false;
     moveQueueRef.current = [];
@@ -393,7 +402,8 @@ function SceneComponent({ levelId }: SceneProps) {
     }
     
     setDroneKey(prev => prev + 1);
-  };
+    onBusyChange(false);
+  }, [onBusyChange]);
 
   useEffect(() => {
     (window as any).resetScene = resetLevel;
