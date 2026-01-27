@@ -52,8 +52,10 @@ export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
-  const [dark, setDark] = useState(true);
+  const [dark] = useState(true);
   const { isReady, isRunning, runCode, stopCode } = usePyodideWorker();
+  const [isSceneBusy, setIsSceneBusy] = useState(false);
+  const isSystemActive = isRunning || isSceneBusy;
 
   const isInitialized = useRef(false);
 
@@ -84,7 +86,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   }, [stopCode]);
 
   const handleFullReset = useCallback(() => {
-    stopCode(); // Kill engine
+    stopCode();
     if ((window as any).resetScene) {
       (window as any).resetScene();
     }
@@ -158,11 +160,11 @@ export default function LevelContent({ level }: LevelContentProps) {
             <div className="w-full lg:w-1/3 lg:min-w-[350px] shrink-0 h-[500px] lg:h-full flex flex-col">
               <div className="h-full flex flex-col">
                 <CodeCard 
-                   code={code} 
-                   setCode={setCode} 
-                   onSubmit={submitCode}
-                   isRunning={isRunning}
-                   stopCode={handleFullReset}
+                  code={code}
+                  setCode={setCode}
+                  onSubmit={submitCode}
+                  isRunning={isSystemActive}
+                  stopCode={handleFullReset}
                 />
               </div>
             </div>
@@ -176,7 +178,10 @@ export default function LevelContent({ level }: LevelContentProps) {
               <div className="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 relative overflow-hidden shadow-sm">
                 <div className="w-full h-full relative">
                   <div className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}>
-                    <Scene levelId={levelId} />
+                    <Scene 
+                      levelId={levelId} 
+                      onBusyChange={setIsSceneBusy} 
+                    />
                   </div>
                   {!isReady && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
