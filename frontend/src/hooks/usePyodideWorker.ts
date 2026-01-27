@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -10,7 +12,7 @@ export function usePyodideWorker() {
       workerRef.current.terminate();
     }
 
-    const worker = new Worker("/py-worker.js");
+    const worker = new Worker(`${basePath}/py-worker.js`);
     workerRef.current = worker;
     setIsReady(false);
 
@@ -47,7 +49,7 @@ export function usePyodideWorker() {
   const runCode = async (userCode: string) => {
     if (!isReady || !workerRef.current) return;
     setIsRunning(true);
-    const response = await fetch("/python/game.py");
+    const response = await fetch(`${basePath}/python/game.py`);
     const gameScript = await response.text();
     workerRef.current.postMessage({ code: userCode, gameScript });
   };
