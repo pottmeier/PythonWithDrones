@@ -1,7 +1,7 @@
 //scene.tsx
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Drone from "./drone";
@@ -30,7 +30,7 @@ const direction_vectors = [
   [-1, 0, 0]  // 3: West
 ];
 
-export default function Scene({ levelId }: SceneProps) {
+function SceneComponent({ levelId }: SceneProps) {
   const positionRef = useRef<[number, number, number]>([0, 0, 0]);
   const droneRef = useRef<THREE.Group>(new THREE.Group)
 
@@ -49,11 +49,11 @@ export default function Scene({ levelId }: SceneProps) {
     depth: number;
   } | null>(null);
   const compassRef = useRef<HTMLDivElement>(null);
+  const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([0, 10, 0]);
   const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
   const [droneKey, setDroneKey] = useState(0);
   const [showInfo, setShowInfo] = useState(true);
   const [levelDescription, setLevelDescription] = useState<string>("");
-
   const [isLevelComplete, setIsLevelComplete] = useState(false);
 
   // Camera Settings
@@ -73,12 +73,6 @@ export default function Scene({ levelId }: SceneProps) {
   const maxPanZ = mapCenterZ + depth / 2 + PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
-
-  //crash
-  const [crashDirection, setCrashDirection] = useState<
-    [number, number, number] | null
-  >(null);
-  const [crashHeight, setCrashHeight] = useState<number>(0.2);
 
   const isPositionSafe = (
     x: number,
@@ -125,17 +119,13 @@ export default function Scene({ levelId }: SceneProps) {
     console.log("Level loaded:", data);
     setLevelSize(data.size);
     setLevelDescription(data.description || "");
+    const startPos: [number, number, number] = [data.spawn.x, data.spawn.y, data.spawn.z];
 
-    const worldX = data.spawn.x;
-    const worldY = data.spawn.y;
-    const worldZ = data.spawn.z;
-
-    spawnRef.current = [worldX, worldY, worldZ];
-    positionRef.current = [worldX, worldY, worldZ];
-
-    virtualPositionRef.current = [worldX, worldY, worldZ];
+    spawnRef.current = startPos;
+    setSpawnPosition(startPos); 
+    virtualPositionRef.current = startPos;
     virtualDirectionRef.current = 0;
-    virtualCrashRef.current = false;
+    virtualCrashRef.current = false
   }, []);
 
   const getCrashLandingHeight = (
@@ -233,6 +223,40 @@ export default function Scene({ levelId }: SceneProps) {
     return false;
   };
   
+  const triggerVisualCrash = (dx: number, dy: number, dz: number, landingY: number) => {
+    if (!droneRef.current) return;
+
+    const tl = gsap.timeline();
+
+    // try to move forward
+    tl.to(droneRef.current.position, {
+      x: "+=" + (dx * 0.4),
+      y: "+=" + (dy * 0.4),
+      z: "+=" + (dz * 0.4),
+      duration: 0.1,
+      ease: "power1.out"
+    })
+    // move back again
+    .to(droneRef.current.position, {
+      x: "-=" + (dx * 0.4),
+      y: "-=" + (dy * 0.4),
+      z: "-=" + (dz * 0.4),
+      duration: 0.4,
+      ease: "power2.in"
+    })
+    // backflip
+    .to(droneRef.current.rotation, {
+      x: "+=" + Math.PI,
+      duration: 0.4
+    }, "<") 
+    // falling to the ground
+    .to(droneRef.current.position, {
+      y: landingY, 
+      duration: 0.5,
+      ease: "bounce.out"
+    });
+  };
+
   const executeVirtualAction = useCallback((action: string) => {
     if (virtualCrashRef.current) return;
 
@@ -282,16 +306,7 @@ export default function Scene({ levelId }: SceneProps) {
   }, [levelSize]);
 
   const processNextMoveInQueue = useCallback(() => {
-    if (isLevelComplete || crashDirection) {
-      isAnimatingRef.current = false;
-      return;
-    }
-
-    if (moveQueueRef.current.length === 0) {
-      isAnimatingRef.current = false;
-      return;
-    }
-    if (crashDirection) {
+    if (isLevelComplete || moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
       return;
     }
@@ -301,20 +316,21 @@ export default function Scene({ levelId }: SceneProps) {
 
     // move animation
     if (command.type === "move") {
-      // The payload IS the target. No calculation needed here.
-      const [targetX, targetY, targetZ] = command.target;
-      positionRef.current = [targetX, targetY, targetZ];
-      
-      console.log("Visual Moving to:", positionRef.current);
-
-      // Check win condition based on VISUAL arrival
-      const { width = 1, depth = 1, height = 99 } = levelSize || {};
-      const won = checkFinishCondition(targetX, targetY, targetZ, width, depth, height);
-      if (won) {
-        console.log("LEVEL COMPLETE!");
-        setIsLevelComplete(true);
-        moveQueueRef.current = [];
-      }
+      const [tx, ty, tz] = command.target;
+      gsap.to(droneRef.current.position, {
+        x: tx, y: ty, z: tz,
+        duration: 0.4,
+        ease: "power2.out",
+        onComplete: () => {
+          const { width = 1, depth = 1, height = 99 } = levelSize || {};
+          if (checkFinishCondition(tx, ty, tz, width, depth, height)) {
+            setIsLevelComplete(true);
+            isAnimatingRef.current = false;
+          } else {
+            processNextMoveInQueue();
+          }
+        }
+      });
     }
 
     // turn animation
@@ -322,29 +338,22 @@ export default function Scene({ levelId }: SceneProps) {
       const turnAmount = Math.PI / 2;
       gsap.to(droneRef.current.rotation, {
         y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
-        duration: 0.4, // Faster turn
+        duration: 0.4,
         ease: "power2.out",
         onComplete: () => processNextMoveInQueue()
       });
-      return;
     }
 
     // crash animation
     if (command.type === "crash") {
       const { width = 1, depth = 1, height = 99 } = levelSize || {};
       const landingY = getCrashLandingHeight(command.x, command.y, command.z, width, depth, height);
-      setCrashHeight(landingY);
-      setCrashDirection(command.vector);
+      triggerVisualCrash(command.vector[0], command.vector[1], command.vector[2], landingY);
       isAnimatingRef.current = false;
-      moveQueueRef.current = [];
-      return;
+      moveQueueRef.current = []; 
     }
     
-  }, [levelSize, crashDirection, isLevelComplete]);
-
-  const handleAnimationComplete = useCallback(() => {
-    processNextMoveInQueue();
-  }, [processNextMoveInQueue]);
+  }, [levelSize, isLevelComplete]);
 
   useEffect(() => {
     (window as any).droneAction = (action: string) => {
@@ -368,19 +377,30 @@ export default function Scene({ levelId }: SceneProps) {
   }, [executeVirtualAction, processNextMoveInQueue]);
 
   const resetLevel = () => {
+    if ((window as any).stopPythonEngine) (window as any).stopPythonEngine();
     isAnimatingRef.current = false;
     moveQueueRef.current = [];
-    setCrashDirection(null);
-    setCrashHeight(0.2);
-    positionRef.current = [...spawnRef.current];
-
-    virtualPositionRef.current = [...spawnRef.current];
-    virtualDirectionRef.current = 0;
     virtualCrashRef.current = false;
-
-    setDroneKey((prev) => prev + 1);
     setIsLevelComplete(false);
+    
+    const [sx, sy, sz] = spawnRef.current;
+    virtualPositionRef.current = [sx, sy, sz];
+    virtualDirectionRef.current = 0;
+    
+    if (droneRef.current) {
+        droneRef.current.position.set(sx, sy, sz);
+        droneRef.current.rotation.set(0, 0, 0);
+    }
+    
+    setDroneKey(prev => prev + 1);
   };
+
+  useEffect(() => {
+    (window as any).resetScene = resetLevel;
+    return () => {
+      (window as any).resetScene = undefined;
+    };
+  }, [resetLevel]);
 
   const resetCamera = () => {
     if (!controlsRef.current) return;
@@ -454,10 +474,7 @@ export default function Scene({ levelId }: SceneProps) {
         <Drone
           key={droneKey}
           groupRef={droneRef}
-          positionRef={positionRef}
-          onAnimationComplete={handleAnimationComplete}
-          crashDirection={crashDirection}
-          crashHeight={crashHeight}
+          initialPosition={spawnPosition}
         />
         <OrbitControls
           ref={controlsRef}
@@ -541,3 +558,6 @@ export default function Scene({ levelId }: SceneProps) {
     </div>
   );
 }
+
+const Scene = memo(SceneComponent);
+export default Scene;
