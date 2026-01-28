@@ -4,7 +4,7 @@ import time
 # Bridge to the Worker JS
 def _send_action(action):
     js.post_action_to_main(action)
-    time.sleep(0.1) # prevent lags in infinite loops
+    time.sleep(0.01) # prevent lags in infinite loops
 
 # --- PUBLIC API FOR THE PLAYER ---
 
