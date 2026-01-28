@@ -57,6 +57,8 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
   const [levelDescription, setLevelDescription] = useState<string>("");
   const [isLevelComplete, setIsLevelComplete] = useState(false);
 
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+
   // Camera Settings
   const { width = 1, depth = 1 } = levelSize || {};
   const mapCenterX = width / 2;
@@ -311,6 +313,8 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
     onBusyChange(busy);
   }, [onBusyChange]);
 
+  const processRef = useRef<() => void>(null!);
+
   const processNextMoveInQueue = useCallback(() => {
     if (isLevelComplete || moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
@@ -322,12 +326,14 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
     updateBusyStatus();
     const command = moveQueueRef.current.shift();
 
+    const duration = 0.4 / playbackSpeed;
+
     // move animation
     if (command.type === "move") {
       const [tx, ty, tz] = command.target;
       gsap.to(droneRef.current.position, {
         x: tx, y: ty, z: tz,
-        duration: 0.4,
+        duration: duration,
         ease: "power2.out",
         onComplete: () => {
           const { width = 1, depth = 1, height = 99 } = levelSize || {};
@@ -335,7 +341,7 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
             setIsLevelComplete(true);
             isAnimatingRef.current = false;
           } else {
-            processNextMoveInQueue();
+            processRef.current()
           }
         }
       });
@@ -346,9 +352,9 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
       const turnAmount = Math.PI / 2;
       gsap.to(droneRef.current.rotation, {
         y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
-        duration: 0.4,
+        duration: duration,
         ease: "power2.out",
-        onComplete: () => processNextMoveInQueue()
+        onComplete: () => processRef.current()
       });
     }
 
@@ -361,7 +367,16 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
       moveQueueRef.current = []; 
     }
     
-  }, [levelSize, isLevelComplete, updateBusyStatus]);
+  }, [levelSize, isLevelComplete, playbackSpeed, updateBusyStatus]);
+
+  useEffect(() => {
+    processRef.current = processNextMoveInQueue;
+  }, [processNextMoveInQueue]);
+
+  useEffect(() => {
+    gsap.getTweensOf(droneRef.current.position).forEach(t => t.timeScale(playbackSpeed));
+    gsap.getTweensOf(droneRef.current.rotation).forEach(t => t.timeScale(playbackSpeed));
+  }, [playbackSpeed]);
 
   useEffect(() => {
     (window as any).droneAction = (action: string) => {
@@ -513,6 +528,21 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
           <Button size="sm" onClick={resetCamera} className={darkBtn}>
             <ScanEye size={16} />
           </Button>
+
+          <div className="flex bg-white/90 dark:bg-slate-800 rounded-md shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden h-8">
+            {[0.5, 1, 2, 5].map((speed) => (
+              <button
+                key={speed}
+                onClick={() => setPlaybackSpeed(speed)}
+                className={`px-2 text-[10px] font-bold transition-colors border-r last:border-r-0 border-gray-200 dark:border-slate-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 
+                  ${playbackSpeed === speed 
+                    ? "bg-blue-600 text-white hover:bg-blue-600" 
+                    : "text-gray-600 dark:text-gray-400"}`}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
 
           {/* Info Button (Bright Blue Rectangle) */}
           {/* <button 
