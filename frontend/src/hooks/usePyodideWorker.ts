@@ -49,9 +49,20 @@ export function usePyodideWorker() {
   const runCode = async (userCode: string) => {
     if (!isReady || !workerRef.current) return;
     setIsRunning(true);
-    const response = await fetch(`${basePath}/python/game.py`);
-    const gameScript = await response.text();
-    workerRef.current.postMessage({ code: userCode, gameScript });
+    try {
+      const response = await fetch(`${basePath}/python/game.py`);
+      const gameScript = await response.text();
+      const levelData = (window as any).getLevelData?.();
+      const spawn = levelData?.spawn || { x: 0, y: 0, z: 0 };
+      workerRef.current.postMessage({ 
+        code: userCode, 
+        gameScript,
+        spawn: spawn 
+      });
+    } catch (err: any) {
+      console.error("Failed to start worker run:", err);
+      setIsRunning(false);
+    }
   };
 
   const stopCode = () => {
