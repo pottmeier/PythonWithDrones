@@ -76,6 +76,13 @@ export default function Home() {
       status: "locked" as LevelStatus,
       tags: ["Medium", "Functions", "Arrays", "While-Loop"],
     },
+    {
+      id: 4,
+      title: "Level 4",
+      description: "Advanced",
+      status: "unlocked" as LevelStatus,
+      tags: ["Medium", "Functions", "Arrays", "While-Loop"],
+    },
   ];
 
   const [search, setSearch] = useState("");
