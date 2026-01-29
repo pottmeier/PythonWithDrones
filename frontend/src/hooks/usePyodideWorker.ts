@@ -55,6 +55,7 @@ export function usePyodideWorker() {
       const levelData = (window as any).getLevelData?.();
       const spawn = levelData?.spawn || { x: 0, y: 0, z: 0 };
       workerRef.current.postMessage({ 
+        type: "RUN",
         code: userCode, 
         gameScript,
         spawn: spawn 
@@ -71,5 +72,17 @@ export function usePyodideWorker() {
     initWorker();
   };
 
-  return { isReady, isRunning, runCode, stopCode };
+  const resetWorkerState = useCallback(() => {
+    if (!workerRef.current) return;
+    
+    const levelData = (window as any).getLevelData?.();
+    const spawn = levelData?.spawn || { x: 0, y: 0, z: 0 };
+
+    workerRef.current.postMessage({ 
+      type: "RESET", 
+      spawn: spawn 
+    });
+  }, []);
+
+  return { isReady, isRunning, runCode, stopCode, resetWorkerState };
 }
