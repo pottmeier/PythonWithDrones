@@ -10,6 +10,16 @@ description: |
   2. Avoid the <span class="text-green-600 font-bold">Trees</span>!
   3. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
+  looong text
+  <br><br><br><br><br>
+  ...
+  <br><br><br><br><br>
+  nothing
+  <br><br><br><br><br>
+  only empty space
+  <br><br><br><br><br>
+  zzzzz
+
 spawn: { x: 1, y: 1, z: 3}
 
 solve_conditions:

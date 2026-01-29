@@ -53,7 +53,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
-  const { isReady, isRunning, runCode, stopCode } = usePyodideWorker();
+  const { isReady, isRunning, runCode, stopCode, resetWorkerState } = usePyodideWorker();
   const [isSceneBusy, setIsSceneBusy] = useState(false);
   const isSystemActive = isRunning || isSceneBusy;
 
@@ -87,6 +87,7 @@ export default function LevelContent({ level }: LevelContentProps) {
 
   const handleFullReset = useCallback(() => {
     stopCode();
+    resetWorkerState(); 
     if ((window as any).resetScene) {
       (window as any).resetScene();
     }
