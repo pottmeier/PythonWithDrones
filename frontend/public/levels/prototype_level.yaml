@@ -43,7 +43,7 @@ layers:
     - ["?", "?", empty, "?", "?", empty, empty,  "?", empty]
     - ["?", "?", empty,  empty, "?", grass, empty, "?", "?"]
     - [empty, "?", empty, "?", "?", "?", empty, "?", empty]
-    - ["?", empty, "?", "?", "?", "?", empty  "?" empty]
+    - ["?", empty, "?", "?", "?", "?", empty,  "?", empty]
     - [empty, "?", "?", "?", "?", empty, "?", "?", "?"]
     - ["?", empty,  "?", "?", "?", "?", empty, "?", "?"]
     - [empty, "?", "?", empty, empty, "?", empty, empty, grass]
