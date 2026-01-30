@@ -1,13 +1,14 @@
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js");
 
-let pyodide = null;
 let isGameInitialized = false;
 
 async function loadPyodideAndPackages() {
   try {
     const instance = await loadPyodide();
     self.pyodide = instance;
-    pyodide = instance;
+    await self.pyodide.loadPackage(['pyyaml','pydantic'])
+    const helperCode = await ( await fetch("https://pottmeier.github.io/PythonWithDrones/python/model.py")).text(); //TODO: Match to basepath
+    self.pyodide.FS.writeFile("model.py", helperCode)
     self.post_action_to_main = (action) => {
       self.postMessage({ type: "ACTION", action: action });
     };
