@@ -46,27 +46,27 @@ class Drone:
         self.x += dx
         self.y += dy
         self.z += dz
-        self.__send_action__("move")
+        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
     
     def turnLeft(self):
         """Turn 90 degrees left"""
         self.dir = (self.dir + 3) % 4
-        self.__send_action__("turnLeft")
+        self.__send_action__({"type": "turn", "direction": "left"})
     
     def turnRight(self):
         """Turn 90 degrees right"""
         self.dir = (self.dir + 1) % 4
-        self.__send_action__("turnRight")
+        self.__send_action__({"type": "turn", "direction": "right"})
     
     def up(self):
         """Move up one block"""
         self.y += 1
-        self.__send_action__("up")
+        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
     
     def down(self):
         """Move down one block"""
         self.y -= 1
-        self.__send_action__("down")
+        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
     
     def getDirection(self)->str:
         """Get current direction as string"""

@@ -10,7 +10,7 @@ async function loadPyodideAndPackages() {
     const helperCode = await ( await fetch("https://pottmeier.github.io/PythonWithDrones/python/model.py")).text(); //TODO: Match to basepath
     self.pyodide.FS.writeFile("model.py", helperCode)
     self.post_action_to_main = (action) => {
-      self.postMessage({ type: "ACTION", action: action });
+      self.postMessage({ type: "ACTION", action: action?.toJs?.({ dict_convert: true }) ?? action });
     };
     self.postMessage({ type: "READY" });
   } catch (err) {

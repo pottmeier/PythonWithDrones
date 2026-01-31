@@ -1,4 +1,3 @@
-//scene.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
@@ -13,308 +12,61 @@ import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
 import gsap from "gsap";
 
+
+
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
   spawn: { x: number; y: number; z: number };
   description?: string;
 }
 
-interface SceneProps {
-  levelId: string;
-  onBusyChange: (busy: boolean) => void;
-}
 
-const direction_vectors = [
-  [0, 0, -1], // 0: North
-  [1, 0, 0],  // 1: East
-  [0, 0, 1],  // 2: South
-  [-1, 0, 0]  // 3: West
-];
 
-function SceneComponent({ levelId, onBusyChange }: SceneProps) {
-  const positionRef = useRef<[number, number, number]>([0, 0, 0]);
+function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChange: (busy: boolean) => void; }) {
+
+  // refs
   const droneRef = useRef<THREE.Group>(new THREE.Group)
-
-  // virtual drone state 
-  const virtualPositionRef = useRef<[number, number, number]>([0, 0, 0]);
-  const virtualDirectionRef = useRef<number>(0); // 0 = North
-  const virtualCrashRef = useRef(false); 
-
-  const moveQueueRef = useRef<any[]>([]); 
-
+  const moveQueueRef = useRef<any[]>([]);
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
-  const [levelSize, setLevelSize] = useState<{
-    width: number;
-    height: number;
-    depth: number;
-  } | null>(null);
+  const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const compassRef = useRef<HTMLDivElement>(null);
-  const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([0, 10, 0]);
-  const spawnRef = useRef<[number, number, number]>([0, 10, 0]);
-  const [droneKey, setDroneKey] = useState(0);
-  const [showInfo, setShowInfo] = useState(true);
-  const [levelDescription, setLevelDescription] = useState<string>("");
-  const [isLevelComplete, setIsLevelComplete] = useState(false);
 
+  // ui states and config
+  const [levelSize, setLevelSize] = useState<LevelLoadData['size'] | null>(null);
+  const [levelDescription, setLevelDescription] = useState("");
+  const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([0, 10, 0]);
+  const [isLevelComplete, setIsLevelComplete] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
+  const [droneKey, setDroneKey] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
-  // Camera Settings
+  // camera settings
   const { width = 1, depth = 1 } = levelSize || {};
   const mapCenterX = width / 2;
   const mapCenterZ = depth / 2;
-  const START_POSITION: [number, number, number] = [
-    mapCenterX - 10,
-    10,
-    mapCenterZ + 10,
-  ];
+  const START_POSITION: [number, number, number] = [mapCenterX - 10, 10, mapCenterZ + 10];
   const START_TARGET: [number, number, number] = [mapCenterX, 0.5, mapCenterZ];
   const PAN_FACTOR = 2;
   const minPanX = mapCenterX - width / 2 - PAN_FACTOR;
   const maxPanX = mapCenterX + width / 2 + PAN_FACTOR;
   const minPanZ = mapCenterZ - depth / 2 - PAN_FACTOR;
   const maxPanZ = mapCenterZ + depth / 2 + PAN_FACTOR;
-  const clamp = (value: number, min: number, max: number) =>
-    Math.min(Math.max(value, min), max);
+  const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-  const isPositionSafe = (
-    x: number,
-    y: number,
-    z: number,
-    width: number,
-    height: number,
-    depth: number,
-  ) => {
-    const getLevelData = (window as any).getLevelData;
-    const getBlockRegistry = (window as any).getBlockRegistry;
-    if (!getLevelData || !getBlockRegistry) return false;
 
-    const data = getLevelData();
-    const registry = getBlockRegistry();
 
-    const gridX = Math.round(x);
-    const gridY = Math.round(y);
-    const gridZ = Math.round(z);
-
-    console.log(
-      `Checking: World[${x},${z}] -> Grid[${gridX},${gridZ}] Layer ${gridY}`,
-    );
-
-    if (gridX < 0 || gridX >= width) return false; // Out of bounds X
-    if (gridZ < 0 || gridZ >= depth) return false; // Out of bounds Z
-    if (gridY < 0) return false; // Below the world
-
-    if (gridY >= height) return false;
-
-    const layerName = `layer_${gridY}`;
-    const layer = data.layers[layerName];
-
-    const blockId = layer[gridZ]?.[gridX];
-    if (!blockId || blockId === "empty") return true;
-
-    const blockDef = registry[blockId];
-    if (blockDef && blockDef.isCollidable) return false;
-
-    return true;
-  };
-
-  const handleLevelLoaded = useCallback((data: LevelLoadData) => {
-    console.log("Level loaded:", data);
-    setLevelSize(data.size);
-    setLevelDescription(data.description || "");
-    const startPos: [number, number, number] = [data.spawn.x, data.spawn.y, data.spawn.z];
-
-    spawnRef.current = startPos;
-    setSpawnPosition(startPos); 
-    virtualPositionRef.current = startPos;
-    virtualDirectionRef.current = 0;
-    virtualCrashRef.current = false
-  }, []);
-
-  const getCrashLandingHeight = (
-    x: number,
-    y: number,
-    z: number,
-    width: number,
-    depth: number,
-    maxHeight: number,
-  ) => {
-    const getLevelData = (window as any).getLevelData;
-    const getBlockRegistry = (window as any).getBlockRegistry;
-
-    if (!getLevelData || !getBlockRegistry) return 0.2;
-
-    const data = getLevelData();
-    const registry = getBlockRegistry();
-    const gridX = Math.round(x);
-    const gridZ = Math.round(z);
-    const startLayer = Math.floor(y) - 1;
-
-    for (let checkY = startLayer; checkY >= 0; checkY--) {
-      const layerName = `layer_${checkY}`;
-      const layer = data.layers[layerName];
-      if (!layer) continue;
-      const blockId = layer[gridZ]?.[gridX];
-      if (blockId && blockId !== "empty") {
-        const blockDef = registry[blockId];
-        if (blockDef && blockDef.isCollidable) {
-          return checkY + 0.5 + 0.2;
-        }
-      }
-    }
-    return 0.2;
-  };
-
-  const checkFinishCondition = (
-    x: number,
-    y: number,
-    z: number,
-    width: number,
-    depth: number,
-    height: number,
-  ) => {
-    const getLevelData = (window as any).getLevelData;
-    const getBlockRegistry = (window as any).getBlockRegistry;
-    if (!getLevelData || !getBlockRegistry) return false;
-
-    const data = getLevelData();
-    const registry = getBlockRegistry();
-
-    const gridX = Math.round(x);
-    const gridY = Math.round(y);
-    const gridZ = Math.round(z);
-
-    // Check boundaries first
-    if (
-      gridX < 0 ||
-      gridX >= width ||
-      gridZ < 0 ||
-      gridZ >= depth ||
-      gridY < 0 ||
-      gridY >= height
-    )
-      return false;
-
-    const layerName = `layer_${gridY}`;
-    const layer = data.layers[layerName];
-
-    // LOGGING
-    if (layer) {
-      const blockId = layer[gridZ]?.[gridX];
-      console.log(
-        `Checking Win: [${gridX}, ${gridY}, ${gridZ}] -> Block: ${blockId}`,
-      );
-
-      if (blockId) {
-        const blockDef = registry[blockId];
-        console.log("Block Definition:", blockDef);
-        if (blockDef && blockDef.isFinish) {
-          return true;
-        }
-      }
-    }
-
-    if (!layer) return false;
-
-    const blockId = layer[gridZ]?.[gridX];
-    if (!blockId || blockId === "empty") return false;
-
-    const blockDef = registry[blockId];
-    if (blockDef && blockDef.isFinish) {
-      return true;
-    }
-    return false;
-  };
-  
-  const triggerVisualCrash = (dx: number, dy: number, dz: number, landingY: number) => {
-    if (!droneRef.current) return;
-
-    const tl = gsap.timeline();
-
-    // try to move forward
-    tl.to(droneRef.current.position, {
-      x: "+=" + (dx * 0.4),
-      y: "+=" + (dy * 0.4),
-      z: "+=" + (dz * 0.4),
-      duration: 0.1,
-      ease: "power1.out"
-    })
-    // move back again
-    .to(droneRef.current.position, {
-      x: "-=" + (dx * 0.4),
-      y: "-=" + (dy * 0.4),
-      z: "-=" + (dz * 0.4),
-      duration: 0.4,
-      ease: "power2.in"
-    })
-    // backflip
-    .to(droneRef.current.rotation, {
-      x: "+=" + Math.PI,
-      duration: 0.4
-    }, "<") 
-    // falling to the ground
-    .to(droneRef.current.position, {
-      y: landingY, 
-      duration: 0.5,
-      ease: "bounce.out"
-    });
-  };
-
-  const executeVirtualAction = useCallback((action: string) => {
-    if (virtualCrashRef.current) return;
-
-    if (action === "turnLeft") {
-      virtualDirectionRef.current = (virtualDirectionRef.current + 3) % 4;
-      moveQueueRef.current.push({ type: "turn", direction: "left" });
-      return;
-    }
-    if (action === "turnRight") {
-      virtualDirectionRef.current = (virtualDirectionRef.current + 1) % 4;
-      moveQueueRef.current.push({ type: "turn", direction: "right" });
-      return;
-    }
-
-    if (action === "move" || action === "up" || action === "down") {
-      const [vx, vy, vz] = virtualPositionRef.current;
-      let dx = 0, dy = 0, dz = 0;
-
-      if (action === "move") {
-        [dx, dy, dz] = direction_vectors[virtualDirectionRef.current];
-      } else if (action === "up") {
-        dy = 1;
-      } else if (action === "down") {
-        dy = -1;
-      }
-
-      const targetX = vx + dx;
-      const targetY = vy + dy;
-      const targetZ = vz + dz;
-
-      const { width = 1, depth = 1, height = 99 } = levelSize || {};
-      const safe = isPositionSafe(targetX, targetY, targetZ, width, height, depth);
-
-      if (!safe) {
-        console.warn(`Virtual Crash Detected (${action})!`);
-        virtualCrashRef.current = true;
-        moveQueueRef.current.push({ 
-            type: "crash", 
-            vector: [dx, dy, dz], 
-            x: vx, y: vy, z: vz 
-        });
-        return;
-      }
-      virtualPositionRef.current = [targetX, targetY, targetZ];
-      moveQueueRef.current.push({ type: "move", target: [targetX, targetY, targetZ] });
-    }
-  }, [levelSize]);
-
+  // check if the drone is currently animated or if there are commands in the queue
+  //
   const updateBusyStatus = useCallback(() => {
     const busy = isAnimatingRef.current || moveQueueRef.current.length > 0;
-    onBusyChange(busy);
+    onBusyChange(busy);                      
   }, [onBusyChange]);
+  
 
-  const processRef = useRef<() => void>(null!);
 
+  // takee the next command from the queue and play the corresponding animation
+  //
   const processNextMoveInQueue = useCallback(() => {
     if (isLevelComplete || moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
@@ -325,8 +77,7 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
     isAnimatingRef.current = true;
     updateBusyStatus();
     const command = moveQueueRef.current.shift();
-
-    const duration = 0.4 / playbackSpeed;
+    const duration = 0.4;
 
     // move animation
     if (command.type === "move") {
@@ -335,15 +86,7 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
         x: tx, y: ty, z: tz,
         duration: duration,
         ease: "power2.out",
-        onComplete: () => {
-          const { width = 1, depth = 1, height = 99 } = levelSize || {};
-          if (checkFinishCondition(tx, ty, tz, width, depth, height)) {
-            setIsLevelComplete(true);
-            isAnimatingRef.current = false;
-          } else {
-            processRef.current()
-          }
-        }
+        onComplete: () => processNextMoveInQueue()
       });
     }
 
@@ -354,79 +97,85 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
         y: command.direction === "left" ? `+=${turnAmount}` : `-=${turnAmount}`,
         duration: duration,
         ease: "power2.out",
-        onComplete: () => processRef.current()
+        onComplete: () => processNextMoveInQueue()
       });
     }
 
     // crash animation
     if (command.type === "crash") {
-      const { width = 1, depth = 1, height = 99 } = levelSize || {};
-      const landingY = getCrashLandingHeight(command.x, command.y, command.z, width, depth, height);
-      triggerVisualCrash(command.vector[0], command.vector[1], command.vector[2], landingY);
+      const tl = gsap.timeline();
+      const [dx, dy, dz] = command.vector;
+      const landingY = command.landingY || 0.2; 
+
+      // try to move forward
+      tl.to(droneRef.current.position, {
+        x: "+=" + (dx * 0.4),
+        y: "+=" + (dy * 0.4),
+        z: "+=" + (dz * 0.4),
+        duration: 0.1,
+        ease: "power1.out"
+      })
+      // move back again
+      .to(droneRef.current.position, {
+        x: "-=" + (dx * 0.4),
+        y: "-=" + (dy * 0.4),
+        z: "-=" + (dz * 0.4),
+        duration: 0.4,
+        ease: "power2.in"
+      })
+      // backflip
+      .to(droneRef.current.rotation, {
+        x: "+=" + Math.PI,
+        duration: 0.4
+      }, "<") 
+      // falling to the ground
+      .to(droneRef.current.position, {
+        y: landingY,
+        duration: 0.5,
+        ease: "bounce.out"
+      });
+
+      // prevent any further animations after crash 
       isAnimatingRef.current = false;
-      moveQueueRef.current = []; 
+      moveQueueRef.current = [];
+      updateBusyStatus();
     }
-    
-  }, [levelSize, isLevelComplete, playbackSpeed, updateBusyStatus]);
+  }, [isLevelComplete, updateBusyStatus]);      
 
-  useEffect(() => {
-    processRef.current = processNextMoveInQueue;
-  }, [processNextMoveInQueue]);
 
-  useEffect(() => {
-    gsap.getTweensOf(droneRef.current.position).forEach(t => t.timeScale(playbackSpeed));
-    gsap.getTweensOf(droneRef.current.rotation).forEach(t => t.timeScale(playbackSpeed));
-  }, [playbackSpeed]);
 
-  useEffect(() => {
-    (window as any).droneAction = (action: string) => {
-      executeVirtualAction(action);
-      
-      if (!isAnimatingRef.current) {
-        processNextMoveInQueue();
-        updateBusyStatus();
-      }
-    };
+  // get the level data from the .yaml
+  //
+  const handleLevelLoaded = useCallback((data: LevelLoadData) => {
+    setLevelSize(data.size);
+    setLevelDescription(data.description || "");
+    const startPos: [number, number, number] = [data.spawn.x, data.spawn.y, data.spawn.z];
+    spawnRef.current = startPos;
+    setSpawnPosition(startPos);
+  }, []);
 
-    (window as any).getDroneDirection = () => {
-      const dirs = ["North", "East", "South", "West"];
-      return dirs[virtualDirectionRef.current];
-    };
-    
-    (window as any).getDronePosition = () => {
-        const [x, y, z] = virtualPositionRef.current;
-        return { x, y, z };
-    };
 
-  }, [executeVirtualAction, processNextMoveInQueue, updateBusyStatus]);
 
+  // reset the level status
+  //
   const resetLevel = useCallback(() => {
     if ((window as any).stopPythonEngine) (window as any).stopPythonEngine();
     isAnimatingRef.current = false;
     moveQueueRef.current = [];
-    virtualCrashRef.current = false;
     setIsLevelComplete(false);
-    
     const [sx, sy, sz] = spawnRef.current;
-    virtualPositionRef.current = [sx, sy, sz];
-    virtualDirectionRef.current = 0;
-    
     if (droneRef.current) {
         droneRef.current.position.set(sx, sy, sz);
         droneRef.current.rotation.set(0, 0, 0);
     }
-    
     setDroneKey(prev => prev + 1);
     onBusyChange(false);
   }, [onBusyChange]);
 
-  useEffect(() => {
-    (window as any).resetScene = resetLevel;
-    return () => {
-      (window as any).resetScene = undefined;
-    };
-  }, [resetLevel]);
 
+
+  // reset the camera view
+  //
   const resetCamera = () => {
     if (!controlsRef.current) return;
     const controls = controlsRef.current;
@@ -435,6 +184,10 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
     controls.update();
   };
 
+
+
+  // rotate the compass
+  //
   function calcCompass() {
     if (!controlsRef.current) return;
 
@@ -454,6 +207,37 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
 
     cam.updateProjectionMatrix();
   }
+
+
+
+  // communication with python
+  //
+  useEffect(() => {
+    (window as any).droneAction = (data: any) => {
+      moveQueueRef.current.push(data);
+      if (!isAnimatingRef.current) processNextMoveInQueue();
+    };
+    (window as any).signalWin = () => setIsLevelComplete(true);
+  }, [processNextMoveInQueue]);
+
+
+
+  // communication with ui buttons
+  //
+  useEffect(() => {
+    (window as any).resetScene = resetLevel;
+    return () => { (window as any).resetScene = undefined; };
+  }, [resetLevel]);
+
+
+
+  // change animation speed in real time
+  //
+  useEffect(() => {
+    gsap.globalTimeline.timeScale(playbackSpeed);
+  }, [playbackSpeed]);
+
+
 
   const baseBtn =
     "cursor-pointer rounded-md flex items-center justify-center transition-all focus:outline-none z-30";
@@ -545,14 +329,6 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
           </div>
 
           {/* Info Button (Bright Blue Rectangle) */}
-          {/* <button 
-            onClick={() => setShowInfo(!showInfo)} 
-            className={`${primaryBtn} ${showInfo ? 'ring-2 ring-white' : ''}`}
-            title="Toggle Level Info"
-          >
-            <ScrollText size={18} />
-            <span>Task</span>
-          </button> */}
           <Button
             size="sm"
             onClick={() => setShowInfo(!showInfo)}
@@ -587,7 +363,7 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
         </div>
       </div>
 
-      {/* Win Screen (Optional, just keeping it if you had it) */}
+      {/* Win Screen */}
       {isLevelComplete && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
           <div className="bg-green-500/90 text-white p-6 rounded-xl shadow-2xl backdrop-blur-md animate-in zoom-in">
@@ -598,6 +374,8 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
     </div>
   );
 }
+
+
 
 const Scene = memo(SceneComponent);
 export default Scene;
