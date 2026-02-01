@@ -41,7 +41,7 @@ layers:
   layer_1:
     - [grass, grass, empty, "?", "?", "?", empty, "?", grass]
     - ["?", "?", empty, "?", "?", empty, empty,  "?", empty]
-    - ["?", "?", empty,  empty, "?", grass, empty, "?", "?"]
+    - ["?", grass, empty,  empty, "?", grass, empty, "?", "?"]
     - [empty, "?", empty, "?", "?", "?", empty, "?", empty]
     - ["?", empty, "?", "?", "?", "?", empty,  "?", empty]
     - [empty, "?", "?", "?", "?", empty, "?", "?", "?"]
@@ -50,15 +50,17 @@ layers:
     - ["?", empty, "?", empty, "?", "?", "?", "?", empty]
 
   layer_3:
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", finish_portal, "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - ["?", "?", "?", "?", "?", "?", "?", "?", "?"]
-    - [grass, "?", "?", "?", "?", "?", "?", "?", "?"]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, grass, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, finish_portal, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [grass, empty, empty, empty, empty, empty, empty, empty, empty]
+
+
 
     
 

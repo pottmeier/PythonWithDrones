@@ -40,6 +40,7 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
   const [showInfo, setShowInfo] = useState(true);
   const [droneKey, setDroneKey] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isCrashed, setIsCrashed] = useState(false);
 
   // camera settings
   const { width = 1, depth = 1 } = levelSize || {};
@@ -78,6 +79,15 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
     updateBusyStatus();
     const command = moveQueueRef.current.shift();
     const duration = 0.4;
+
+    if (command.type === "reset") {
+      droneRef.current.position.set(command.pos[0], command.pos[1], command.pos[2]);
+      droneRef.current.rotation.set(0, 0, 0);
+      setIsCrashed(false);
+      moveQueueRef.current = [];
+      isAnimatingRef.current = false;
+      updateBusyStatus();
+    }
 
     // move animation
     if (command.type === "move") {
@@ -159,16 +169,22 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
   // reset the level status
   //
   const resetLevel = useCallback(() => {
-    if ((window as any).stopPythonEngine) (window as any).stopPythonEngine();
+    //(window as any).triggerFullReset?.();
+
+    // 2. Clear Visuals
     isAnimatingRef.current = false;
     moveQueueRef.current = [];
     setIsLevelComplete(false);
+    setIsCrashed(false); // <--- IMPORTANT: Un-flip the drone visually
+
     const [sx, sy, sz] = spawnRef.current;
     if (droneRef.current) {
-        droneRef.current.position.set(sx, sy, sz);
-        droneRef.current.rotation.set(0, 0, 0);
+      gsap.killTweensOf(droneRef.current.position); // Stop active GSAP moves
+      gsap.killTweensOf(droneRef.current.rotation);
+      droneRef.current.position.set(sx, sy, sz);
+      droneRef.current.rotation.set(0, 0, 0);
     }
-    setDroneKey(prev => prev + 1);
+    
     onBusyChange(false);
   }, [onBusyChange]);
 
@@ -340,7 +356,7 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
         </div>
 
         {/* Row 2: Reset Level (Dark Blue Square) */}
-        <Button size="sm" onClick={resetLevel} className={darkBtn}>
+        <Button size="sm" onClick={() => (window as any).triggerFullReset?.()} className={darkBtn}>
           <RotateCcw size={16} />
         </Button>
       </div>
