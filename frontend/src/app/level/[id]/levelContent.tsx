@@ -91,13 +91,6 @@ export default function LevelContent({ level }: LevelContentProps) {
 
 
 
-  // 1. The "Stop" Button (User wants to kill infinite loop)
-  const handleStopButton = useCallback(() => {
-    // If it's just a crash, we can soft reset.
-    // If it's actually running, we hard terminate.
-    terminateWorker(); 
-  }, [terminateWorker]);
-
   // 2. The "Reset Scene" Button (User wants to reset position)
   const handleFullReset = useCallback(() => {
     // A. Tell Python to reset internal coordinates to spawn
@@ -109,13 +102,11 @@ export default function LevelContent({ level }: LevelContentProps) {
 
 
   useEffect(() => {
-    (window as any).stopPythonEngine = handleStopButton;
     (window as any).triggerFullReset = handleFullReset;
     return () => {
-      (window as any).stopPythonEngine = undefined;
       (window as any).triggerFullReset = undefined;
     };
-  }, [handleStopButton, handleFullReset]);
+  }, [handleFullReset]);
 
 
 
@@ -186,7 +177,7 @@ export default function LevelContent({ level }: LevelContentProps) {
                   onSubmit={submitCode}
                   isReady={isReady}
                   isRunning={isSystemActive}
-                  stopCode={handleStopButton}
+                  stopCode={handleFullReset}
                 />
               </div>
             </div>
