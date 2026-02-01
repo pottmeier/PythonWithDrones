@@ -11,7 +11,7 @@ import { ScanEye, RotateCcw, ScrollText } from "lucide-react";
 import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
 import gsap from "gsap";
-
+import { cn, BTN_BASE, BTN_DARK, BTN_PRIMARY, SPEED_CONTAINER, SPEED_BTN_BASE, SPEED_BTN_ACTIVE, SPEED_BTN_INACTIVE } from "@/lib/utils";
 
 
 interface LevelLoadData {
@@ -19,7 +19,6 @@ interface LevelLoadData {
   spawn: { x: number; y: number; z: number };
   description?: string;
 }
-
 
 
 function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChange: (busy: boolean) => void; }) {
@@ -55,10 +54,9 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
   const maxPanZ = mapCenterZ + depth / 2 + PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-
+  
 
   // check if the drone is currently animated or if there are commands in the queue
-  //
   const updateBusyStatus = useCallback(() => {
     const busy = isAnimatingRef.current || moveQueueRef.current.length > 0;
     onBusyChange(busy);                      
@@ -67,7 +65,6 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // takee the next command from the queue and play the corresponding animation
-  //
   const processNextMoveInQueue = useCallback(() => {
     if (isLevelComplete || moveQueueRef.current.length === 0) {
       isAnimatingRef.current = false;
@@ -155,7 +152,6 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // get the level data from the .yaml
-  //
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     setLevelSize(data.size);
     setLevelDescription(data.description || "");
@@ -167,19 +163,15 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // reset the level status
-  //
   const resetLevel = useCallback(() => {
-    //(window as any).triggerFullReset?.();
-
-    // 2. Clear Visuals
     isAnimatingRef.current = false;
     moveQueueRef.current = [];
     setIsLevelComplete(false);
-    setIsCrashed(false); // <--- IMPORTANT: Un-flip the drone visually
+    setIsCrashed(false);
 
     const [sx, sy, sz] = spawnRef.current;
     if (droneRef.current) {
-      gsap.killTweensOf(droneRef.current.position); // Stop active GSAP moves
+      gsap.killTweensOf(droneRef.current.position);
       gsap.killTweensOf(droneRef.current.rotation);
       droneRef.current.position.set(sx, sy, sz);
       droneRef.current.rotation.set(0, 0, 0);
@@ -190,8 +182,12 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
 
+  // trigger the drone reset logic
+  const handleResetClick = () => (window as any).triggerDroneReset?.();
+
+
+
   // reset the camera view
-  //
   const resetCamera = () => {
     if (!controlsRef.current) return;
     const controls = controlsRef.current;
@@ -203,7 +199,6 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // rotate the compass
-  //
   function calcCompass() {
     if (!controlsRef.current) return;
 
@@ -220,14 +215,12 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
     target.z = clamp(target.z, minPanZ, maxPanZ);
     cam.position.x = clamp(cam.position.x, minPanX - 20, maxPanX + 20);
     cam.position.z = clamp(cam.position.z, minPanZ - 20, maxPanZ + 20);
-
     cam.updateProjectionMatrix();
   }
 
 
 
   // communication with python
-  //
   useEffect(() => {
     (window as any).droneAction = (data: any) => {
       moveQueueRef.current.push(data);
@@ -239,7 +232,6 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // communication with ui buttons
-  //
   useEffect(() => {
     (window as any).resetScene = resetLevel;
     return () => { (window as any).resetScene = undefined; };
@@ -248,27 +240,11 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
 
   // change animation speed in real time
-  //
   useEffect(() => {
     gsap.globalTimeline.timeScale(playbackSpeed);
   }, [playbackSpeed]);
 
 
-
-  const baseBtn =
-    "cursor-pointer rounded-md flex items-center justify-center transition-all focus:outline-none z-30";
-
-  const darkBtn = `
-  ${baseBtn}
-  h-8 w-8
-  bg-white text-gray-700 border border-gray-200 hover:bg-gray-50
-  dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700
-`;
-
-  const primaryBtn = `
-  ${baseBtn}
-  bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2
-`;
 
   return (
     <div className="relative w-full h-full">
@@ -325,19 +301,19 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
         {/* Row 1: Reset View + Info */}
         <div className="flex gap-2">
           {/* Reset Camera (Dark Blue Square) */}
-          <Button size="sm" onClick={resetCamera} className={darkBtn}>
+          <Button size="sm" onClick={resetCamera} className={cn(BTN_BASE, BTN_DARK)}>
             <ScanEye size={16} />
           </Button>
 
-          <div className="flex bg-white/90 dark:bg-slate-800 rounded-md shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden h-8">
+          <div className={SPEED_CONTAINER}>
             {[0.5, 1, 2, 5].map((speed) => (
               <button
                 key={speed}
                 onClick={() => setPlaybackSpeed(speed)}
-                className={`px-2 text-[10px] font-bold transition-colors border-r last:border-r-0 border-gray-200 dark:border-slate-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 
-                  ${playbackSpeed === speed 
-                    ? "bg-blue-600 text-white hover:bg-blue-600" 
-                    : "text-gray-600 dark:text-gray-400"}`}
+                className={cn(
+                  SPEED_BTN_BASE,
+                  playbackSpeed === speed ? SPEED_BTN_ACTIVE : SPEED_BTN_INACTIVE
+                )}
               >
                 {speed}x
               </button>
@@ -348,7 +324,7 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
           <Button
             size="sm"
             onClick={() => setShowInfo(!showInfo)}
-            className={`${primaryBtn} ${showInfo ? "ring-2 ring-white" : ""}`}
+            className={cn(BTN_BASE, BTN_PRIMARY, showInfo && "ring-2 ring-white")}
           >
             <ScrollText size={18} />
             Task
@@ -356,7 +332,7 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
         </div>
 
         {/* Row 2: Reset Level (Dark Blue Square) */}
-        <Button size="sm" onClick={() => (window as any).triggerFullReset?.()} className={darkBtn}>
+        <Button size="sm" onClick={handleResetClick} className={cn(BTN_BASE, BTN_DARK)}>
           <RotateCcw size={16} />
         </Button>
       </div>
