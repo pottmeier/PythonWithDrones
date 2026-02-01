@@ -7,13 +7,13 @@ drone = None
 block_registry = {}
 initial_spawn_data = None
 
+
 def initialize_level(spawn, registry, generated_level):
     """Called only when a level is first loaded"""
     global level, drone, block_registry, initial_spawn
     initial_spawn = spawn
     block_registry = registry.to_py()
     level = LevelModel(**generated_level.to_py())
-    
     # Create the drone instance once
     drone = Drone(initial_spawn)
     drone.level_data = level
@@ -21,15 +21,13 @@ def initialize_level(spawn, registry, generated_level):
     drone.reset_to_spawn()
 
 
-
 # custom exception to stop the script when the drone crashes
 class DroneCrashException(Exception):
     pass
 
 # custom exception to stop running code (also infinite loops)
-class UserStopException(Exception):
+class UserStopException(Exception): 
     pass
-
 
 
 class Drone:
@@ -51,8 +49,7 @@ class Drone:
             raise UserStopException("User stopped the execution")
 
     def reset_to_spawn(self):
-        """This is the 'Soft Reset'. It updates variables without deleting the object."""
-        # Extract coords from the spawn object
+        """reset the drone to spawn and uppdate variables without deleting the drone"""
         if hasattr(self.spawn_data, 'x'):
             self.x, self.y, self.z = float(self.spawn_data.x), float(self.spawn_data.y), float(self.spawn_data.z)
         else:
@@ -76,24 +73,20 @@ class Drone:
         js.post_action_to_main(action)
         time.sleep(0.1)  # prevent lags in infinite loops
     
-
-    # ================================================================================
+    # =====================
     # move logic
-    # ================================================================================
+    # =====================
     def move(self):
         """Move forward in current direction"""
-        #elf.check_interrupt()
         dx, dy, dz = self.VECTORS[self.dir]
         self._attempt_move(dx, dy, dz)
 
     def up(self):
         """Move up one block"""
-        #self.check_interrupt()
         self._attempt_move(0, 1, 0)
     
     def down(self):
         """Move down one block"""
-        #self.check_interrupt()
         self._attempt_move(0, -1, 0)
 
     def _attempt_move(self, dx, dy, dz):
@@ -125,12 +118,11 @@ class Drone:
             })
             raise DroneCrashException("drone crashed")
 
-    # ================================================================================
+    # =====================
     # turn logic
-    # ================================================================================
+    # =====================
     def turnLeft(self):
         """Turn 90 degrees left"""
-        #self.check_interrupt()
         if self.is_dead: 
             raise DroneCrashException("drone already dead")
         self.dir = (self.dir + 3) % 4
@@ -138,15 +130,14 @@ class Drone:
     
     def turnRight(self):
         """Turn 90 degrees right"""
-        #self.check_interrupt()
         if self.is_dead: 
             raise DroneCrashException("drone already dead")
         self.dir = (self.dir + 1) % 4
         self.__send_action__({"type": "turn", "direction": "right"})
     
-    # ================================================================================
-    # 
-    # ================================================================================
+    # =====================
+    # info logic         
+    # =====================
     def getDirection(self)->str:
         """Get current direction as string"""
         return self.DIRECTION_NAMES[self.dir]
@@ -154,7 +145,3 @@ class Drone:
     def getPosition(self):
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
-
-
-# Create global instance for backward compatibility
-#drone = Drone(js.initial_spawn)

@@ -1,11 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { useState, useEffect, useCallback } from "react";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CodeCard } from "@/components/code-card";
@@ -17,17 +13,16 @@ import { usePyodideWorker } from "@/hooks/usePyodideWorker";
 import { UserMenu } from "@/components/user-menu";
 import { UsernameDialog } from "@/components/user-dialog";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 type Level = { id: string };
-
 interface LevelContentProps {
   level: Level;
 }
 
+
+
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
-
   const isOpen = isMobile ? openMobile : open;
 
   const close = () => {
@@ -47,13 +42,15 @@ function SidebarBackdrop() {
   );
 }
 
+
+
 export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const { isReady, isRunning, runCode, softReset, terminateWorker, loadLevel, hasCrashed } = usePyodideWorker();
+  const { isReady, isRunning, runCode, softReset, loadLevel, hasCrashed } = usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
 
@@ -65,15 +62,13 @@ export default function LevelContent({ level }: LevelContentProps) {
       loadLevel("prototype_level.yaml");
     }
   }, [isReady, levelId, loadLevel]);
-
+ 
   
-
+  // load the saved code into the code-editor
   useEffect(() => {
     const state = loadState();
     const idNum = Number(levelId);
-    
     setUsername(state.user.username || "");
-    
     if (Number.isFinite(idNum)) {
       const savedCode = state.progress.levels[idNum]?.code ?? "# Start coding here...\nmove()";
       setCode(savedCode);
@@ -81,7 +76,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   }, [levelId]);
 
 
-
+  // save the current code to the local storage
   useEffect(() => {
     const idNum = Number(levelId);
     if (Number.isFinite(idNum) && code !== "") {
@@ -90,44 +85,46 @@ export default function LevelContent({ level }: LevelContentProps) {
   }, [code, levelId]);
 
 
-
-  // 2. The "Reset Scene" Button (User wants to reset position)
-  const handleFullReset = useCallback(() => {
-    // A. Tell Python to reset internal coordinates to spawn
+  // reset the drone virtually and visually
+  const handleDroneReset = useCallback(() => {
+    // reset internal coordinates and rotation inside python to the spawn
     softReset(); 
-    // B. Tell Visuals (Three.js) to clear queue and move mesh to spawn
-    if ((window as any).resetScene) (window as any).resetScene();
+    // reset the visual drone to the spawn and clear the queue
+    (window as any).resetScene?.();
   }, [softReset]);
 
 
-
+  // trigger the drone reset after pressing the button
   useEffect(() => {
-    (window as any).triggerFullReset = handleFullReset;
+    (window as any).triggerDroneReset = handleDroneReset;
     return () => {
-      (window as any).triggerFullReset = undefined;
+      (window as any).triggerDroneReset = undefined;
     };
-  }, [handleFullReset]);
+  }, [handleDroneReset]);
 
 
-
-  // Darkmode
+  // darkmode
   useEffect(() => {
     if (dark) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
+
+  // execute user code
   useEffect(() => {
     (window as any).runPython = runCode;
   }, [runCode]);
 
+
+  // submit user code
   const submitCode = (submittedCode: string) => {
     const id = Number(levelId);
     if (!Number.isFinite(id)) return;
-
     saveLevelProgress(id, {
       code: submittedCode,
     });
   };
+
 
   return (
     <SidebarProvider>
@@ -177,7 +174,7 @@ export default function LevelContent({ level }: LevelContentProps) {
                   onSubmit={submitCode}
                   isReady={isReady}
                   isRunning={isSystemActive}
-                  stopCode={handleFullReset}
+                  stopCode={handleDroneReset}
                 />
               </div>
             </div>
