@@ -57,8 +57,8 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
   //finish block
   finish_portal: {
     id: "finish_portal",
-    isCollidable: false, // Must be FALSE so we can fly into it
-    isFinish: true,      // <-- THE WIN TRIGGER
+    isCollidable: false,
+    isFinish: true,
     isDestructible: false,
     isPickable: false,
     placementValidOn: ["grass", "dirt", "empty"],

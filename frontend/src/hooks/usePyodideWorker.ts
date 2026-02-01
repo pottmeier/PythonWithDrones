@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 
-
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
   const hasCrashedRef = useRef(false);
@@ -11,8 +10,6 @@ export function usePyodideWorker() {
   const [isReady, setIsReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [hasCrashed, setHasCrashed] = useState(false);
-
-
 
   // initialize worker
   const initWorker = useCallback(() => {
@@ -34,7 +31,7 @@ export function usePyodideWorker() {
         console.log("Pyodide Worker Ready");
       } 
       else if (type === "ACTION") {
-        if ((window as any).droneAction) (window as any).droneAction(action);
+        (window as any).droneAction?.(action);
         if (action?.type === "crash") {
           hasCrashedRef.current = true;
           setHasCrashed(true);
@@ -53,19 +50,18 @@ export function usePyodideWorker() {
 
 
 
-  // start the worker on mount
+  // start the worker once on mount
   useEffect(() => {
     initWorker();
     return () => workerRef.current?.terminate();
   }, [initWorker]);
 
 
-  // 
+
+  // load the level/scene once after selecting a level in the app
   const loadLevel = useCallback((levelName: string) => {
     if (!workerRef.current || !isReady) return;
     
-    // We get data from window (assuming your app sets this up globally or you pass it in)
-    // Ideally this should be passed as arguments, but keeping your style:
     const generatedLevel = (window as any).getLevelData?.();
     const spawn = generatedLevel?.spawn || { x: 0, y: 0, z: 0 };
     const blockRegistry = JSON.parse(JSON.stringify((window as any).getBlockRegistry?.() || {}, (k, v) => k === 'component' ? undefined : v));
@@ -80,13 +76,12 @@ export function usePyodideWorker() {
   }, [isReady]);
 
 
-
+  // running the user code
   const runCode = async (userCode: string) => {
     if (!isReady || !workerRef.current) return;
     setHasCrashed(false);
     hasCrashedRef.current = false;
     setIsRunning(true);
-
     workerRef.current.postMessage({ 
       type: "RUN",
       code: userCode
@@ -94,27 +89,9 @@ export function usePyodideWorker() {
   };
 
 
-
-  // 4. Hard Terminate (Infinite Loops)
-  const terminateWorker = useCallback(() => {
-    // This will now only trigger if Python is TRULY stuck in a loop
-    // and cannot send the "FINISHED" message.
-    if (isRunning) {
-        console.log("Hard stopping worker (Infinite Loop)...");
-        softReset();
-        setTimeout(() => {
-          if (isRunning) {
-            console.log("Soft stop failed (Thread locked). Hard Resetting...");
-            initWorker();
-            setIsRunning(false);
-          }
-        }, 500);
-    }
-  }, [isRunning, initWorker]);
-
-  // 5. Soft Reset (Reset Button / Crash Recovery)
+  // reset function to reset the virtual drone inside python after the visual drone has been reset
   const softReset = useCallback(() => {
-    console.log("Soft Resetting Drone Position...");
+    console.log("Resetting Drone");
     const spawn = (window as any).getLevelData?.()?.spawn;
     workerRef.current?.postMessage({ 
         type: "RESET",
@@ -126,5 +103,5 @@ export function usePyodideWorker() {
 
 
   
-  return { isReady, isRunning, runCode, softReset, terminateWorker, loadLevel, hasCrashed };
+  return { isReady, isRunning, runCode, softReset, loadLevel, hasCrashed };
 }
