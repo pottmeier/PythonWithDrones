@@ -1,73 +1,152 @@
-import js
+import js # type: ignore
 import time
-import yaml
-from pyodide.http import pyfetch
 from model import LevelModel
 
-async def load_level()->LevelModel:
-    url = "https://pottmeier.github.io/PythonWithDrones/levels/prototype_level.yaml" #TODO: Maybe change into basepath
-    level_data = {'description':"",'spawn':{'x': 0, 'y': 0, 'z': 0}, 'solve_conditions':{'finish_block': False, 'collected_coins': 0}} # dummy data
-    response = await pyfetch(url)
-    if response.status == 200:
-        yaml_content = await response.string()
-        level_data = yaml.safe_load(yaml_content)
-        print("Level loaded successfully!")
-    return LevelModel(**level_data)
+level = None
+drone = None
+block_registry = {}
+initial_spawn_data = None
 
-level = await load_level()
+def initialize_level(spawn, registry, generated_level):
+    """Called only when a level is first loaded"""
+    global level, drone, block_registry, initial_spawn
+    initial_spawn = spawn
+    block_registry = registry.to_py()
+    level = LevelModel(**generated_level.to_py())
+    
+    # Create the drone instance once
+    drone = Drone(initial_spawn)
+    drone.level_data = level
+    # Initial sync
+    drone.reset_to_spawn()
+
+
+
+# custom exception to stop the script when the drone crashes
+class DroneCrashException(Exception):
+    pass
+
+# custom exception to stop running code (also infinite loops)
+class UserStopException(Exception):
+    pass
+
+
 
 class Drone:
     VECTORS = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0]]  # North, East, South, West
     DIRECTION_NAMES = ["North", "East", "South", "West"]
 
     def __init__(self,spawn):
-        self.x = spawn.x
-        self.y = spawn.y
-        self.z = spawn.z
+        self.spawn_data = spawn 
+        self.x = 0.0
+        self.y = 0.0
+        self.z = 0.0
         self.dir = 0  # 0: North, 1: East, 2: South, 3: West
-        self.level_data = level
+        self.level_data = None
+        self.is_dead = False
+
+    def check_interrupt(self):
+        """Check if JavaScript requested a stop"""
+        if js.interrupt_requested:
+            raise UserStopException("User stopped the execution")
+
+    def reset_to_spawn(self):
+        """This is the 'Soft Reset'. It updates variables without deleting the object."""
+        # Extract coords from the spawn object
+        if hasattr(self.spawn_data, 'x'):
+            self.x, self.y, self.z = float(self.spawn_data.x), float(self.spawn_data.y), float(self.spawn_data.z)
+        else:
+            self.x = float(self.spawn_data.get('x', 0))
+            self.y = float(self.spawn_data.get('y', 0))
+            self.z = float(self.spawn_data.get('z', 0))
+        
+        self.dir = 0 # Reset to North
+        self.is_dead = False
+        
+        # Tell JS to move the visual model
+        js.post_action_to_main({
+            "type": "reset", 
+            "pos": [self.x, self.y, self.z],
+            "dir": self.dir
+        })
 
     def __send_action__(self, action: str):
         """Bridge to the Pyodide WebWorker JS"""
+        self.check_interrupt()
         js.post_action_to_main(action)
-        time.sleep(0.01)  # prevent lags in infinite loops
+        time.sleep(0.1)  # prevent lags in infinite loops
     
-    def __reset_internal_state__(self, spawn)->None:
-        """Reset drone to spawn position"""
-        self.x = float(spawn.x)
-        self.y = float(spawn.y)
-        self.z = float(spawn.z)
-        self.dir = 0
-        print(f"Python state reset to spawn: {self.x}, {self.y}, {self.z}")
-        
+
+    # ================================================================================
+    # move logic
+    # ================================================================================
     def move(self):
         """Move forward in current direction"""
+        #elf.check_interrupt()
         dx, dy, dz = self.VECTORS[self.dir]
-        self.x += dx
-        self.y += dy
-        self.z += dz
-        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
+        self._attempt_move(dx, dy, dz)
+
+    def up(self):
+        """Move up one block"""
+        #self.check_interrupt()
+        self._attempt_move(0, 1, 0)
     
+    def down(self):
+        """Move down one block"""
+        #self.check_interrupt()
+        self._attempt_move(0, -1, 0)
+
+    def _attempt_move(self, dx, dy, dz):
+        if self.is_dead: 
+            raise DroneCrashException("drone already dead")
+        target_x = int(self.x + dx)
+        target_y = int(self.y + dy)
+        target_z = int(self.z + dz)
+
+        # check if the next move is possible
+        if self.level_data and not self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
+            # possible move
+            self.x += dx
+            self.y += dy
+            self.z += dz
+            self.__send_action__({
+                "type": "move", 
+                "target": [self.x, self.y, self.z]
+            })
+        else:
+            # crash
+            self.is_dead = True
+            landing_y = self.level_data.get_floor(int(self.x), int(self.y), int(self.z), block_registry)
+            self.__send_action__({
+                "type": "crash",
+                "vector": [dx, dy, dz],
+                "x": self.x, "y": self.y, "z": self.z, # current position before fall
+                "landingY": landing_y
+            })
+            raise DroneCrashException("drone crashed")
+
+    # ================================================================================
+    # turn logic
+    # ================================================================================
     def turnLeft(self):
         """Turn 90 degrees left"""
+        #self.check_interrupt()
+        if self.is_dead: 
+            raise DroneCrashException("drone already dead")
         self.dir = (self.dir + 3) % 4
         self.__send_action__({"type": "turn", "direction": "left"})
     
     def turnRight(self):
         """Turn 90 degrees right"""
+        #self.check_interrupt()
+        if self.is_dead: 
+            raise DroneCrashException("drone already dead")
         self.dir = (self.dir + 1) % 4
         self.__send_action__({"type": "turn", "direction": "right"})
     
-    def up(self):
-        """Move up one block"""
-        self.y += 1
-        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
-    
-    def down(self):
-        """Move down one block"""
-        self.y -= 1
-        self.__send_action__({ "type": "move", "target": [self.x, self.y, self.z]})
-    
+    # ================================================================================
+    # 
+    # ================================================================================
     def getDirection(self)->str:
         """Get current direction as string"""
         return self.DIRECTION_NAMES[self.dir]
@@ -75,32 +154,7 @@ class Drone:
     def getPosition(self):
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
-    
-    def pathBlocked(self):
-        dx, dy, dz = self.VECTORS[self.dir]
-        target_x = self.x + dx
-        target_y = self.y + dy
-        target_z = self.z + dz
-        
-        block_type = self.level_data.get_block_at(int(target_x),int(target_y),int(target_z))
-        if block_type is None:
-            return True
-        walkable = ["empty","?"]
-
-        return False if block_type in walkable else True
 
 
 # Create global instance for backward compatibility
-drone = Drone(js.initial_spawn)
-
-# Expose methods as module-level functions for backward compatibility
-# move = drone.move
-# turnLeft = drone.turnLeft
-# turnRight = drone.turnRight
-# up = drone.up
-# down = drone.down
-# getDirection = drone.getDirection
-# getPosition = drone.getPosition
-# reset_internal_state = drone.reset_internal_state
-
-print("System loaded. Drone ready.")
+#drone = Drone(js.initial_spawn)

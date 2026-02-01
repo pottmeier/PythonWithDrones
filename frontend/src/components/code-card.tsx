@@ -10,11 +10,12 @@ interface CodeCardProps {
   code: string;
   setCode: (value: string) => void;
   onSubmit: (code: string) => void;
+  isReady: boolean;
   isRunning?: boolean;
   stopCode?: () => void;
 }
 
-export function CodeCard({ code, setCode, onSubmit, isRunning, stopCode }: CodeCardProps) {
+export function CodeCard({ code, setCode, onSubmit, isReady, isRunning, stopCode }: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
 
   useEffect(() => {
@@ -54,9 +55,9 @@ export function CodeCard({ code, setCode, onSubmit, isRunning, stopCode }: CodeC
         <div className="flex items-center gap-2">
           <Button
             onClick={handleRun}
+            disabled={!isReady} 
             size="sm"
-            className={`cursor-pointer font-semibold text-white ${
-              isRunning 
+            className={`cursor-pointer font-semibold text-white ${isRunning 
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
