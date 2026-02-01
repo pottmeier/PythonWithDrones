@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field   # type: ignore
 from typing import List, Dict, Union, Optional
 
 class Spawn(BaseModel):
@@ -29,29 +29,51 @@ class LevelModel(BaseModel):
     layers: Dict[str, List[List[str]]]
     procedural: List[ProceduralRule]
 
-    def get_block_at(self, x:int,y:int, z:int) -> Optional[str]:
-        """
-        Translates spatial coords to the YAML grid.
-        Returns the string ID of the block (e.g., 'dirt', 'empty', '?')
-        """
-        layer_key = f"layer_{y}"
+
+    def get_block_id(self, x:int,y:int, z:int) -> Optional[str]:
+        layer_name = f"layer_{int(y)}"
+        try:
+            return self.layers[layer_name][int(z)][int(x)]
+        except (KeyError, IndexError):
+            return "empty"
+    
+
+    def is_block_collidable(self, x: int, y: int, z: int, registry: dict) -> bool:
+        # get dimensions from base layer
+        base_layer = self.layers.get("layer_0", [])
+        if not base_layer:
+            return True
         
-        # Check for the altitude (Y)
-        if layer_key not in self.layers:
-            return None # Or "out_of_bounds"
-            
-        layer_data = self.layers[layer_key]
+        height = len(self.layers)      # Y limit
+        depth = len(base_layer)        # Z limit
+        width = len(base_layer[0])     # X limit
+
+        # check if block is inside the level
+        if not (0 <= x < width):
+            print(f"Boundary Error: X {x} is outside level width {width}")
+            return True
+        if not (0 <= y < height):
+            print(f"Boundary Error: Y {y} is outside level height {height}")
+            return True
+        if not (0 <= z < depth):
+            print(f"Boundary Error: Z {z} is outside level depth {depth}")
+            return True
+
+        # check registry, if the block is collidable
+        block_id = self.get_block_id(x, y, z)
+        if block_id in registry:
+            return registry[block_id].get("isCollidable", False)
         
-        # Check for Z bounds (Rows)
-        if not (0 <= z < len(layer_data)):
-            return None
+        # safety: if id not found -> collidable
+        print(f"Registry Error: Block '{block_id}' not found in registry")
+        return True
+    
+
+    def get_floor(self, x: int, start_y: int, z: int, registry: dict) -> float:
+        for y in range(int(start_y) - 1, -1, -1):
+            block_id = self.get_block_id(x, y, z)
+            if block_id in registry and registry[block_id].get("isCollidable", False):
+                return float(y + 0.62)
             
-        row = layer_data[z]
-        
-        # Check for X bounds (Columns)
-        print(row)
-        if not (0 <= x < len(row)):
-            return None
-            
-        print(row[x])    
-        return row[x]
+        # if no collidable blocks found
+        return 0.0

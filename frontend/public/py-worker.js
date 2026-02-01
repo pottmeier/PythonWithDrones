@@ -1,46 +1,101 @@
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js");
 
-let isGameInitialized = false;
+const scriptURL = self.location.href;
+const basePath = scriptURL.substring(0, scriptURL.lastIndexOf('/'));
 
 async function loadPyodideAndPackages() {
   try {
-    const instance = await loadPyodide();
-    self.pyodide = instance;
+    // initialize pyodide
+    self.pyodide = await loadPyodide();
     await self.pyodide.loadPackage(['pyyaml','pydantic'])
-    const helperCode = await ( await fetch("https://pottmeier.github.io/PythonWithDrones/python/model.py")).text(); //TODO: Match to basepath
-    self.pyodide.FS.writeFile("model.py", helperCode)
+
+    // convert python objects to JS objects 
     self.post_action_to_main = (action) => {
-      self.postMessage({ type: "ACTION", action: action?.toJs?.({ dict_convert: true }) ?? action });
+      self.postMessage({ 
+        type: "ACTION", 
+        action: action?.toJs?.({ dict_convert: true }) ?? action 
+      });
     };
+
+    // preload python code
+    const modelCode = await (await fetch(`${basePath}/python/model.py`)).text();
+    const gameCode = await (await fetch(`${basePath}/python/game.py`)).text();
+    self.pyodide.FS.writeFile("model.py", modelCode);
+    self.pyodide.FS.writeFile("game.py", gameCode);
+    self.pyodide.FS.mkdirTree("/levels");
+
     self.postMessage({ type: "READY" });
-  } catch (err) {
-    self.postMessage({ type: "ERROR", message: err.message });
+  } catch (error) {
+    self.postMessage({ type: "ERROR", message: error.message });
   }
 }
 
 loadPyodideAndPackages();
+self.interrupt_requested = false;
 
 self.onmessage = async (event) => {
-  const { type, code, gameScript, spawn } = event.data;
+  const { type, code, spawn, registry, generatedLevel, levelName } = event.data;
+
   if (!self.pyodide) {
     self.postMessage({ type: "ERROR", message: "Worker not initialized yet" });
     return;
   }
-  if (type === "RESET") {
-    self.initial_spawn = spawn;
-    await self.pyodide.runPythonAsync("reset_internal_state(js.initial_spawn)");
+
+  if (type === "LOAD_LEVEL") {
+    try {
+      const levelYaml = await fetch(`${basePath}/levels/${levelName}`).then(r => r.text());
+      self.pyodide.FS.writeFile("/levels/active_level.yaml", levelYaml);
+      
+      self.generated_level = generatedLevel;
+      self.block_registry = registry;
+      self.initial_spawn = spawn;
+      
+      await self.pyodide.runPythonAsync(`
+        import game
+        import js
+        game.level = None
+        game.initialize_level(js.initial_spawn, js.block_registry, js.generated_level)
+      `);
+      self.postMessage({ type: "LEVEL_LOADED" });
+    } catch (error) {
+      self.postMessage({ type: "ERROR", message: "Failed to load level file: " + error.message });
+    }
     return;
   }
-  if (type === "RUN") {
-    try {
-      if (!isGameInitialized) {
-        self.initial_spawn = spawn;
-        await self.pyodide.runPythonAsync(gameScript);
-        isGameInitialized = true;
-      }
 
-      await self.pyodide.runPythonAsync(code);
+  if (type === "RUN") {
+    self.interrupt_requested = false;
+    self.user_code = code;
+    try {
+      await self.pyodide.runPythonAsync(`
+        import game
+        import js
+        if game.drone and game.drone.is_dead:
+            game.drone.reset_to_spawn()
+        try:
+          exec(js.user_code, game.__dict__)
+        except Exception:
+          pass
+        finally:
+          if js.interrupt_requested and game.drone:
+              game.drone.reset_to_spawn()
+      `);
       self.postMessage({ type: "FINISHED" });
+    } catch (error) {
+      self.postMessage({ type: "ERROR", message: error.message });
+    }
+  }
+
+  if (type === "RESET") {
+    self.interrupt_requested = true;
+    try {
+      self.spawn = spawn; 
+      await self.pyodide.runPythonAsync(`
+        import game
+        import js
+        if game.drone:
+          game.drone.reset_to_spawn()
+      `);
     } catch (error) {
       self.postMessage({ type: "ERROR", message: error.message });
     }

@@ -1,4 +1,3 @@
-//levelContent.tsx
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -53,54 +52,72 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
-  const { isReady, isRunning, runCode, stopCode, resetWorkerState } = usePyodideWorker();
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const isSystemActive = isRunning || isSceneBusy;
+  const { isReady, isRunning, runCode, softReset, terminateWorker, loadLevel, hasCrashed } = usePyodideWorker();
+  const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
-  const isInitialized = useRef(false);
+
+  // load the level into the worker
+  useEffect(() => {
+    if (isReady && levelId) {
+      // hardcoded testing
+      // TODO: something like: loadLevel(`${levelId}.yaml`)
+      loadLevel("prototype_level.yaml");
+    }
+  }, [isReady, levelId, loadLevel]);
+
+  
 
   useEffect(() => {
-    isInitialized.current = false; 
-    
-    const id = Number(levelId);
-    if (!Number.isFinite(id)) return;
-
     const state = loadState();
+    const idNum = Number(levelId);
+    
     setUsername(state.user.username || "");
     
-    const savedCode = state.progress.levels[id]?.code ?? "# Start coding here...\nmove()";
-    setCode(savedCode);
-
-    isInitialized.current = true;
+    if (Number.isFinite(idNum)) {
+      const savedCode = state.progress.levels[idNum]?.code ?? "# Start coding here...\nmove()";
+      setCode(savedCode);
+    }
   }, [levelId]);
 
+
+
   useEffect(() => {
-    const id = Number(levelId);
-    if (isInitialized.current && Number.isFinite(id) && code !== "") {
-      saveLevelProgress(id, { code });
+    const idNum = Number(levelId);
+    if (Number.isFinite(idNum) && code !== "") {
+      saveLevelProgress(idNum, { code });
     }
   }, [code, levelId]);
 
-  const stopEngineOnly = useCallback(() => {
-    stopCode();
-  }, [stopCode]);
 
+
+  // 1. The "Stop" Button (User wants to kill infinite loop)
+  const handleStopButton = useCallback(() => {
+    // If it's just a crash, we can soft reset.
+    // If it's actually running, we hard terminate.
+    terminateWorker(); 
+  }, [terminateWorker]);
+
+  // 2. The "Reset Scene" Button (User wants to reset position)
   const handleFullReset = useCallback(() => {
-    stopCode();
-    resetWorkerState(); 
-    if ((window as any).resetScene) {
-      (window as any).resetScene();
-    }
-  }, [stopCode]);
+    // A. Tell Python to reset internal coordinates to spawn
+    softReset(); 
+    // B. Tell Visuals (Three.js) to clear queue and move mesh to spawn
+    if ((window as any).resetScene) (window as any).resetScene();
+  }, [softReset]);
+
+
 
   useEffect(() => {
-    (window as any).stopPythonEngine = stopEngineOnly;
+    (window as any).stopPythonEngine = handleStopButton;
     (window as any).triggerFullReset = handleFullReset;
     return () => {
       (window as any).stopPythonEngine = undefined;
       (window as any).triggerFullReset = undefined;
     };
-  }, [stopEngineOnly, handleFullReset]);
+  }, [handleStopButton, handleFullReset]);
+
+
 
   // Darkmode
   useEffect(() => {
@@ -167,8 +184,9 @@ export default function LevelContent({ level }: LevelContentProps) {
                   code={code}
                   setCode={setCode}
                   onSubmit={submitCode}
+                  isReady={isReady}
                   isRunning={isSystemActive}
-                  stopCode={handleFullReset}
+                  stopCode={handleStopButton}
                 />
               </div>
             </div>
