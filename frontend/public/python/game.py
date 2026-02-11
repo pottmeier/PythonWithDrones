@@ -145,3 +145,11 @@ class Drone:
     def getPosition(self):
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
+    
+    def getisCollidable(self):
+        dx, dy, dz = self.VECTORS[self.dir]
+        target_x = int(self.x + dx)
+        target_y = int(self.y + dy)
+        target_z = int(self.z + dz)
+        return self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry)
+        
