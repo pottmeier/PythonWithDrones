@@ -47,11 +47,13 @@ export default function ProgressPage() {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
-              <UserMenu
-                username={username}
-                setUsername={setUsername}
-                onRequireUsername={() => {}}
-              />
+              <div className="pointer-events-none">
+                <UserMenu
+                  username={username}
+                  setUsername={setUsername}
+                  onRequireUsername={() => {}}
+                />
+              </div>
               <DarkModeToggle />
             </div>
           </header>

@@ -571,7 +571,7 @@ function SceneComponent({ levelId, onBusyChange }: SceneProps) {
 
       {/* --- INFO CARD OVERLAY --- */}
       <div
-        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 p-4 pt-28 z-10 transition-all duration-300 ease-in-out transform ${
+        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${
           showInfo
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0 pointer-events-none"

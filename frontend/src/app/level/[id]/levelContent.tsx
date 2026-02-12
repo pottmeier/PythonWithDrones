@@ -138,10 +138,13 @@ export default function LevelContent({ level }: LevelContentProps) {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4 cursor-default">
-              <UserMenu 
-                username={username} 
-                setUsername={setUsername} 
-              />
+              <div className="pointer-events-none">
+                <UserMenu
+                  username={username}
+                  setUsername={setUsername}
+                  onRequireUsername={() => {}}
+                />
+              </div>
               <DarkModeToggle />
             </div>
           </header>
@@ -196,7 +199,6 @@ export default function LevelContent({ level }: LevelContentProps) {
           </main>
         </div>
       </div>
-      <UsernameDialog onSaved={(name) => setUsername(name)} />
       <Toaster position="top-left" richColors closeButton />
     </SidebarProvider>
   );

@@ -59,16 +59,19 @@ export default function DocumentationPage() {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
-              <UserMenu
-                username={username}
-                setUsername={setUsername}
-                onRequireUsername={() => {}}
-              />
+              <div className="pointer-events-none">
+                <UserMenu
+                  username={username}
+                  setUsername={setUsername}
+                  onRequireUsername={() => {}}
+                />
+              </div>
+
               <DarkModeToggle />
             </div>
           </header>
 
-          <main className="flex-1 mx-40 my-10 flex flex-col gap-6">
+          <main className="flex-1 my-6 mx-6 sm:mx-6 md:mx-16 lg:mx-40 flex flex-col gap-6">
             <MarkdownRenderer>{content}</MarkdownRenderer>
           </main>
         </div>
