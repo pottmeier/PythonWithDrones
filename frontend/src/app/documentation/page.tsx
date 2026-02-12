@@ -10,6 +10,7 @@ import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { loadState } from "@/lib/app-state";
 import { UserMenu } from "@/components/user-menu";
+import MarkdownRenderer from "./MardownRenderer";
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -34,9 +35,20 @@ function SidebarBackdrop() {
 
 export default function DocumentationPage() {
   const [username, setUsername] = useState("");
+  const [content, setContent] = useState("");
+
   useEffect(() => {
     setUsername(loadState().user.username || "");
+
+    fetch("/content/docu.md")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      })
+      .then(setContent)
+      .catch((err) => console.error("Failed to load markdown:", err));
   }, []);
+
   return (
     <SidebarProvider>
       <div className="relative min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -56,7 +68,9 @@ export default function DocumentationPage() {
             </div>
           </header>
 
-          <main className="flex-1 p-4 flex flex-col gap-6"></main>
+          <main className="flex-1 mx-40 my-10 flex flex-col gap-6">
+            <MarkdownRenderer>{content}</MarkdownRenderer>
+          </main>
         </div>
       </div>
     </SidebarProvider>
