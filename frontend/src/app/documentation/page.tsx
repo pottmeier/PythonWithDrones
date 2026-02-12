@@ -12,6 +12,8 @@ import { loadState } from "@/lib/app-state";
 import { UserMenu } from "@/components/user-menu";
 import MarkdownRenderer from "./MardownRenderer";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
   const isOpen = isMobile ? openMobile : open;
@@ -40,7 +42,7 @@ export default function DocumentationPage() {
   useEffect(() => {
     setUsername(loadState().user.username || "");
 
-    fetch("/content/docu.md")
+    fetch(`${basePath}/content/docu.md`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.text();
@@ -71,7 +73,7 @@ export default function DocumentationPage() {
             </div>
           </header>
 
-          <main className="flex-1 my-6 mx-6 sm:mx-6 md:mx-16 lg:mx-40 flex flex-col gap-6">
+          <main className="flex-1 my-10 mx-6 sm:mx-6 md:mx-16 lg:mx-40 flex flex-col gap-6">
             <MarkdownRenderer>{content}</MarkdownRenderer>
           </main>
         </div>
