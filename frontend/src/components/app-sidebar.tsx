@@ -1,4 +1,4 @@
-import { Home, FileSearchIcon, Award } from "lucide-react";
+import { Home, FileSearchIcon, Award, Github } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -54,6 +54,19 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="mt-auto flex justify-center pb-6">
+          <a
+            href="https://github.com/pottmeier/PythonWithDrones"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center"
+          >
+            <Github className="w-6 h-6" />
+            <span className="text-xs mt-1 text-muted-foreground">
+              GitHub
+            </span>
+          </a>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
