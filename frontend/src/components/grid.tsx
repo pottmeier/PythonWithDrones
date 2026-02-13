@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import yaml from "js-yaml";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
-import { generateLevel } from "@/lib/level-generator";
+//import { generateLevel } from "@/lib/level-generator";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 interface LevelData {
+  description?: string;
   spawn: { x: number; y: number; z: number};
   layers: { [key: string]: string[][] };
 }
@@ -29,24 +30,23 @@ export default function Grid({ onLevelLoaded }: GridProps) {
         const response = await fetch(`${basePath}/levels/prototype_level.yaml`);
         const yamlText = await response.text();
         const blueprint = yaml.load(yamlText) as LevelData;
-        const generatedLevel = generateLevel(blueprint, 60);
 
-        (window as any).getLevelData = () => generatedLevel; 
+        (window as any).getLevelData = () => blueprint; 
         (window as any).getBlockRegistry = () => BLOCK_REGISTRY;
 
-        const baseLayer = generatedLevel.layers['layer_0'];
+        const baseLayer = blueprint.layers['layer_0'];
 
-        if (baseLayer && generatedLevel.spawn) {
-          const width = baseLayer[0]?.length || 0;                    // Columns (X)
-          const height = Object.keys(generatedLevel.layers).length;   // Layers (Y)
-          const depth = baseLayer.length;                             // Rows (Z)
+        if (baseLayer && blueprint.spawn) {
+          const width = baseLayer[0]?.length || 0;              // Columns (X)
+          const height = Object.keys(blueprint.layers).length;  // Layers (Y)
+          const depth = baseLayer.length;                       // Rows (Z)
           
-          setLevelData(generatedLevel);
+          setLevelData(blueprint);
 
           onLevelLoaded({
             size: { width, height, depth },
-            spawn: generatedLevel.spawn,
-            description: generatedLevel.description || "No description available.", // 3. Pass it up
+            spawn: blueprint.spawn,
+            description: blueprint.description || "No description available.", // 3. Pass it up
           });
         } else {
           console.error("Invalid level data: Missing layer_0 or spawn point");
@@ -65,9 +65,6 @@ export default function Grid({ onLevelLoaded }: GridProps) {
 
 
   const allBlocks = [];
-  const baseLayer = levelData.layers['layer_0'];
-  const mapX = baseLayer[0].length;
-  const mapZ = baseLayer.length;  
 
   for (const layerName in levelData.layers) {
     const layerMatrix = levelData.layers[layerName];

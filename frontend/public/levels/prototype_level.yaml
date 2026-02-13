@@ -39,15 +39,26 @@ layers:
     - [grass, grass, grass, grass, grass, grass, grass, grass, grass]
 
   layer_1:
-    - [grass, grass, empty, "?", "?", "?", empty, "?", grass]
-    - ["?", "?", empty, "?", "?", empty, empty,  "?", empty]
-    - ["?", grass, empty,  empty, "?", grass, empty, "?", "?"]
-    - [empty, "?", empty, "?", "?", "?", empty, "?", empty]
-    - ["?", empty, "?", "?", "?", "?", empty,  "?", empty]
-    - [empty, "?", "?", "?", "?", empty, "?", "?", "?"]
-    - ["?", empty,  "?", "?", "?", "?", empty, "?", "?"]
-    - [empty, "?", "?", empty, empty, "?", empty, empty, grass]
-    - ["?", empty, "?", empty, "?", "?", "?", "?", empty]
+    - [grass, grass, empty, empty, empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, grass, empty, empty, empty, grass, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+
+  layer_2:
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_trunk, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
 
   layer_3:
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
@@ -55,20 +66,19 @@ layers:
     - [empty, empty, grass, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty, empty, empty, finish_portal, empty]
-    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, finish_portal, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, tree_leaves, empty, empty]
     - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
     - [grass, empty, empty, empty, empty, empty, empty, empty, empty]
 
+  layer_4:
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty, empty, empty, empty, empty]
 
-
-    
-
-procedural:
-  - target_layer: layer_1
-    placeholder: "?"
-    items:
-      - id: tree
-        count: 5
-        min_height: 2
-        max_height: 4
