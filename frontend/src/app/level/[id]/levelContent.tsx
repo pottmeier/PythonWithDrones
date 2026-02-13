@@ -50,7 +50,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const { isReady, isRunning, runCode, softReset, loadLevel, hasCrashed } = usePyodideWorker();
+  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed } = usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
 
@@ -88,10 +88,10 @@ export default function LevelContent({ level }: LevelContentProps) {
   // reset the drone virtually and visually
   const handleDroneReset = useCallback(() => {
     // reset internal coordinates and rotation inside python to the spawn
-    softReset(); 
+    hardReset(); 
     // reset the visual drone to the spawn and clear the queue
     (window as any).resetScene?.();
-  }, [softReset]);
+  }, [hardReset]);
 
 
   // trigger the drone reset after pressing the button

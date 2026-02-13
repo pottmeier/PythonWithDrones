@@ -68,8 +68,6 @@ self.onmessage = async (event) => {
       await self.pyodide.runPythonAsync(`
         import game
         import js
-        if game.drone:
-            game.drone.reset_to_spawn()
         exec(js.user_code, game.__dict__)
       `);
       self.postMessage({ type: "FINISHED" });
