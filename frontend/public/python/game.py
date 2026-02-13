@@ -21,10 +21,6 @@ def initialize_level(spawn, registry, generated_level):
     drone.reset_to_spawn()
 
 
-# custom exception to stop the script when the drone crashes
-class DroneCrashException(Exception):
-    pass
-
 class Drone:
     VECTORS = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0]]  # North, East, South, West
     DIRECTION_NAMES = ["North", "East", "South", "West"]
@@ -80,7 +76,7 @@ class Drone:
 
     def _attempt_move(self, dx, dy, dz):
         if self.is_dead: 
-            raise DroneCrashException("drone already dead")
+            return
         target_x = int(self.x + dx)
         target_y = int(self.y + dy)
         target_z = int(self.z + dz)
@@ -98,6 +94,7 @@ class Drone:
         else:
             # crash
             self.is_dead = True
+            print("drone crashed")
             landing_y = self.level_data.get_floor(int(self.x), int(self.y), int(self.z), block_registry)
             self.__send_action__({
                 "type": "crash",
@@ -105,7 +102,6 @@ class Drone:
                 "x": self.x, "y": self.y, "z": self.z, # current position before fall
                 "landingY": landing_y
             })
-            raise DroneCrashException("drone crashed")
 
     # =====================
     # turn logic
@@ -113,14 +109,14 @@ class Drone:
     def turnLeft(self):
         """Turn 90 degrees left"""
         if self.is_dead: 
-            raise DroneCrashException("drone already dead")
+            return
         self.dir = (self.dir + 3) % 4
         self.__send_action__({"type": "turn", "direction": "left"})
     
     def turnRight(self):
         """Turn 90 degrees right"""
         if self.is_dead: 
-            raise DroneCrashException("drone already dead")
+            return
         self.dir = (self.dir + 1) % 4
         self.__send_action__({"type": "turn", "direction": "right"})
     

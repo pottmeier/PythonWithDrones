@@ -5,7 +5,6 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
-  const levelDataRef = useRef<any>(null);
 
   const [isReady, setIsReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -60,15 +59,18 @@ export function usePyodideWorker() {
   const loadLevel = useCallback((levelName: string) => {
     if (!workerRef.current || !isReady) return;
     
-    const generatedLevel = (window as any).getLevelData?.();
-    const spawn = generatedLevel?.spawn || { x: 0, y: 0, z: 0 };
+    const levelData = (window as any).getLevelData?.();
+    if (!levelData) {
+      console.error("No level data found in window.getLevelData");
+      return;
+    }
+    const spawn = levelData.spawn || { x: 0, y: 0, z: 0 };
     const blockRegistry = JSON.parse(JSON.stringify((window as any).getBlockRegistry?.() || {}, (k, v) => k === 'component' ? undefined : v));
 
     workerRef.current.postMessage({
       type: "LOAD_LEVEL",
-      levelName,
-      generatedLevel,
-      spawn,
+      levelData: levelData,
+      spawn: spawn,
       registry: blockRegistry
     });
   }, [isReady]);
