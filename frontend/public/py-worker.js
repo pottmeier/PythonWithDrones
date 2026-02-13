@@ -33,7 +33,7 @@ async function loadPyodideAndPackages() {
 loadPyodideAndPackages();
 
 self.onmessage = async (event) => {
-  const { type, code, spawn, registry, generatedLevel, levelName } = event.data;
+  const { type, code, spawn, registry, levelData, levelName } = event.data;
 
   if (!self.pyodide) {
     self.postMessage({ type: "ERROR", message: "Worker not initialized yet" });
@@ -45,7 +45,7 @@ self.onmessage = async (event) => {
       const levelYaml = await fetch(`${basePath}/levels/${levelName}`).then(r => r.text());
       self.pyodide.FS.writeFile("/levels/active_level.yaml", levelYaml);
       
-      self.generated_level = generatedLevel;
+      self.level_data = levelData;
       self.block_registry = registry;
       self.initial_spawn = spawn;
       
@@ -53,7 +53,7 @@ self.onmessage = async (event) => {
         import game
         import js
         game.level = None
-        game.initialize_level(js.initial_spawn, js.block_registry, js.generated_level)
+        game.initialize_level(js.initial_spawn, js.block_registry, js.level_data)
       `);
       self.postMessage({ type: "LEVEL_LOADED" });
     } catch (error) {

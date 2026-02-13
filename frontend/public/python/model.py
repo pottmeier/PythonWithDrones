@@ -27,7 +27,7 @@ class LevelModel(BaseModel):
     solve_conditions: SolveConditions
     # Using Dict for layers because keys are 'layer_0', 'layer_1', etc.
     layers: Dict[str, List[List[str]]]
-    procedural: List[ProceduralRule]
+    #procedural: List[ProceduralRule]
 
 
     def get_block_id(self, x:int,y:int, z:int) -> Optional[str]:
