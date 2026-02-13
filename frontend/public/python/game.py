@@ -25,11 +25,6 @@ def initialize_level(spawn, registry, generated_level):
 class DroneCrashException(Exception):
     pass
 
-# custom exception to stop running code (also infinite loops)
-class UserStopException(Exception): 
-    pass
-
-
 class Drone:
     VECTORS = [[0, 0, -1], [1, 0, 0], [0, 0, 1], [-1, 0, 0]]  # North, East, South, West
     DIRECTION_NAMES = ["North", "East", "South", "West"]
@@ -42,11 +37,6 @@ class Drone:
         self.dir = 0  # 0: North, 1: East, 2: South, 3: West
         self.level_data = None
         self.is_dead = False
-
-    def check_interrupt(self):
-        """Check if JavaScript requested a stop"""
-        if js.interrupt_requested:
-            raise UserStopException("User stopped the execution")
 
     def reset_to_spawn(self):
         """reset the drone to spawn and uppdate variables without deleting the drone"""
@@ -69,7 +59,6 @@ class Drone:
 
     def __send_action__(self, action: str):
         """Bridge to the Pyodide WebWorker JS"""
-        self.check_interrupt()
         js.post_action_to_main(action)
         time.sleep(0.1)  # prevent lags in infinite loops
     
