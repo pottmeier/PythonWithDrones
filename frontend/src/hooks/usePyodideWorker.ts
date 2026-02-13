@@ -26,24 +26,9 @@ export function usePyodideWorker() {
       const { type, action, message } = event.data;
 
       if (type === "READY") {
-        console.log("Pyodide Worker Ready");
-        
-        // If we have level data saved (from a previous run/load), 
-        // immediately load it into this fresh worker
-        if (levelDataRef.current) {
-          worker.postMessage({
-            type: "LOAD_LEVEL",
-            ...levelDataRef.current
-          });
-        } else {
-          // Only set ready if we aren't waiting for a level load
-          setIsReady(true);
-        }
-      } 
-      else if (type === "LEVEL_LOADED") {
-        // Now the fresh worker is fully synced with the current level
         setIsReady(true);
-      }
+        console.log("Pyodide Worker Ready");
+      } 
       else if (type === "ACTION") {
         (window as any).droneAction?.(action);
         if (action?.type === "crash") {
@@ -73,28 +58,20 @@ export function usePyodideWorker() {
 
   // load the level/scene once after selecting a level in the app
   const loadLevel = useCallback((levelName: string) => {
+    if (!workerRef.current || !isReady) return;
+    
     const generatedLevel = (window as any).getLevelData?.();
     const spawn = generatedLevel?.spawn || { x: 0, y: 0, z: 0 };
     const blockRegistry = JSON.parse(JSON.stringify((window as any).getBlockRegistry?.() || {}, (k, v) => k === 'component' ? undefined : v));
 
-    const payload = {
+    workerRef.current.postMessage({
+      type: "LOAD_LEVEL",
       levelName,
       generatedLevel,
       spawn,
       registry: blockRegistry
-    };
-
-    // 1. Save to ref for future restarts
-    levelDataRef.current = payload;
-
-    // 2. Send to current worker if it exists
-    if (workerRef.current) {
-      workerRef.current.postMessage({
-        type: "LOAD_LEVEL",
-        ...payload
-      });
-    }
-  }, []);
+    });
+  }, [isReady]);
 
 
   // running the user code
@@ -110,16 +87,14 @@ export function usePyodideWorker() {
 
 
   // reset function to reset the virtual drone inside python after the visual drone has been reset
-  const softReset = useCallback(() => {
+  const hardReset = useCallback(() => {
     console.log("Hard Resetting Worker...");
     setIsRunning(false);
     setHasCrashed(false);
-    
-    // Kill and Restart
     initWorker(); 
   }, [initWorker]);
 
 
   
-  return { isReady, isRunning, runCode, softReset, loadLevel, hasCrashed };
+  return { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed };
 }
