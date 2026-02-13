@@ -31,7 +31,6 @@ async function loadPyodideAndPackages() {
 }
 
 loadPyodideAndPackages();
-self.interrupt_requested = false;
 
 self.onmessage = async (event) => {
   const { type, code, spawn, registry, generatedLevel, levelName } = event.data;
@@ -64,38 +63,16 @@ self.onmessage = async (event) => {
   }
 
   if (type === "RUN") {
-    self.interrupt_requested = false;
     self.user_code = code;
     try {
       await self.pyodide.runPythonAsync(`
         import game
         import js
-        if game.drone and game.drone.is_dead:
+        if game.drone:
             game.drone.reset_to_spawn()
-        try:
-          exec(js.user_code, game.__dict__)
-        except Exception:
-          pass
-        finally:
-          if js.interrupt_requested and game.drone:
-              game.drone.reset_to_spawn()
+        exec(js.user_code, game.__dict__)
       `);
       self.postMessage({ type: "FINISHED" });
-    } catch (error) {
-      self.postMessage({ type: "ERROR", message: error.message });
-    }
-  }
-
-  if (type === "RESET") {
-    self.interrupt_requested = true;
-    try {
-      self.spawn = spawn; 
-      await self.pyodide.runPythonAsync(`
-        import game
-        import js
-        if game.drone:
-          game.drone.reset_to_spawn()
-      `);
     } catch (error) {
       self.postMessage({ type: "ERROR", message: error.message });
     }

@@ -5,7 +5,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
-  const hasCrashedRef = useRef(false);
+  const levelDataRef = useRef<any>(null);
 
   const [isReady, setIsReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -20,20 +20,33 @@ export function usePyodideWorker() {
     workerRef.current = worker;
     setIsReady(false);
     setHasCrashed(false);
-    hasCrashedRef.current = false;
 
     // listen to messages from python
     worker.onmessage = (event) => {
       const { type, action, message } = event.data;
 
       if (type === "READY") {
-        setIsReady(true);
         console.log("Pyodide Worker Ready");
+        
+        // If we have level data saved (from a previous run/load), 
+        // immediately load it into this fresh worker
+        if (levelDataRef.current) {
+          worker.postMessage({
+            type: "LOAD_LEVEL",
+            ...levelDataRef.current
+          });
+        } else {
+          // Only set ready if we aren't waiting for a level load
+          setIsReady(true);
+        }
       } 
+      else if (type === "LEVEL_LOADED") {
+        // Now the fresh worker is fully synced with the current level
+        setIsReady(true);
+      }
       else if (type === "ACTION") {
         (window as any).droneAction?.(action);
         if (action?.type === "crash") {
-          hasCrashedRef.current = true;
           setHasCrashed(true);
         }
       }
@@ -60,27 +73,34 @@ export function usePyodideWorker() {
 
   // load the level/scene once after selecting a level in the app
   const loadLevel = useCallback((levelName: string) => {
-    if (!workerRef.current || !isReady) return;
-    
     const generatedLevel = (window as any).getLevelData?.();
     const spawn = generatedLevel?.spawn || { x: 0, y: 0, z: 0 };
     const blockRegistry = JSON.parse(JSON.stringify((window as any).getBlockRegistry?.() || {}, (k, v) => k === 'component' ? undefined : v));
 
-    workerRef.current.postMessage({
-      type: "LOAD_LEVEL",
+    const payload = {
       levelName,
       generatedLevel,
       spawn,
       registry: blockRegistry
-    });
-  }, [isReady]);
+    };
+
+    // 1. Save to ref for future restarts
+    levelDataRef.current = payload;
+
+    // 2. Send to current worker if it exists
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: "LOAD_LEVEL",
+        ...payload
+      });
+    }
+  }, []);
 
 
   // running the user code
   const runCode = async (userCode: string) => {
     if (!isReady || !workerRef.current) return;
     setHasCrashed(false);
-    hasCrashedRef.current = false;
     setIsRunning(true);
     workerRef.current.postMessage({ 
       type: "RUN",
@@ -91,15 +111,13 @@ export function usePyodideWorker() {
 
   // reset function to reset the virtual drone inside python after the visual drone has been reset
   const softReset = useCallback(() => {
-    console.log("Resetting Drone");
-    const spawn = (window as any).getLevelData?.()?.spawn;
-    workerRef.current?.postMessage({ 
-        type: "RESET",
-        spawn: spawn 
-    });
+    console.log("Hard Resetting Worker...");
+    setIsRunning(false);
     setHasCrashed(false);
-    hasCrashedRef.current = false;
-  }, []);
+    
+    // Kill and Restart
+    initWorker(); 
+  }, [initWorker]);
 
 
   
