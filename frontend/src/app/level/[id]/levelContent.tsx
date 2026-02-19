@@ -59,7 +59,7 @@ export default function LevelContent({ level }: LevelContentProps) {
     if (isReady && levelId) {
       // hardcoded testing
       // TODO: something like: loadLevel(`${levelId}.yaml`)
-      loadLevel("prototype_level.yaml");
+      loadLevel("Level_1.yaml");
     }
   }, [isReady, levelId, loadLevel]);
  
