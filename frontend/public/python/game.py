@@ -102,6 +102,7 @@ class Drone:
                 "x": self.x, "y": self.y, "z": self.z, # current position before fall
                 "landingY": landing_y
             })
+        # finish logic when goal is reached, post to main
         if self.level_data.get_block_id(int(self.x),int(self.y),int(self.z)) == "finish_portal":
             self.__send_action__({"type":"goal"})
             return
