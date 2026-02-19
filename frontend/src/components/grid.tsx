@@ -27,7 +27,7 @@ export default function Grid({ onLevelLoaded }: GridProps) {
   useEffect(() => {
     async function loadLevel() {
       try {
-        const response = await fetch(`${basePath}/levels/prototype_level.yaml`);
+        const response = await fetch(`${basePath}/levels/Level_1.yaml`);
         const yamlText = await response.text();
         const blueprint = yaml.load(yamlText) as LevelData;
 

@@ -1,6 +1,6 @@
 import js # type: ignore
 import time
-from model import LevelModel
+from model import LevelModel,Spawn,SolveConditions
 
 level = None
 drone = None
@@ -31,7 +31,7 @@ class Drone:
         self.y = 0.0
         self.z = 0.0
         self.dir = 0  # 0: North, 1: East, 2: South, 3: West
-        self.level_data = None
+        self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),solve_conditions=SolveConditions(finish_block=True, collected_coins=False),layers={"layer_0":[["empty"]]})
         self.is_dead = False
 
     def reset_to_spawn(self):
@@ -64,17 +64,17 @@ class Drone:
     def move(self):
         """Move forward in current direction"""
         dx, dy, dz = self.VECTORS[self.dir]
-        self._attempt_move(dx, dy, dz)
+        self.__attempt_move__(dx, dy, dz)
 
     def up(self):
         """Move up one block"""
-        self._attempt_move(0, 1, 0)
+        self.__attempt_move__(0, 1, 0)
     
     def down(self):
         """Move down one block"""
-        self._attempt_move(0, -1, 0)
+        self.__attempt_move__(0, -1, 0)
 
-    def _attempt_move(self, dx, dy, dz):
+    def __attempt_move__(self, dx, dy, dz):
         if self.is_dead: 
             return
         target_x = int(self.x + dx)
@@ -82,11 +82,11 @@ class Drone:
         target_z = int(self.z + dz)
 
         # check if the next move is possible
-        if self.level_data and not self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
+        if self.level_data and not self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry): 
             # possible move
-            self.x += dx
-            self.y += dy
-            self.z += dz
+            self.x = target_x
+            self.y = target_y
+            self.z = target_z
             self.__send_action__({
                 "type": "move", 
                 "target": [self.x, self.y, self.z]
@@ -102,18 +102,21 @@ class Drone:
                 "x": self.x, "y": self.y, "z": self.z, # current position before fall
                 "landingY": landing_y
             })
+        if self.level_data.get_block_id(int(self.x),int(self.y),int(self.z)) == "finish_portal":
+            self.__send_action__({"type":"goal"})
+            return
 
     # =====================
     # turn logic
     # =====================
-    def turnLeft(self):
+    def turn_left(self):
         """Turn 90 degrees left"""
         if self.is_dead: 
             return
         self.dir = (self.dir + 3) % 4
         self.__send_action__({"type": "turn", "direction": "left"})
     
-    def turnRight(self):
+    def turn_right(self):
         """Turn 90 degrees right"""
         if self.is_dead: 
             return
@@ -123,15 +126,15 @@ class Drone:
     # =====================
     # info logic         
     # =====================
-    def getDirection(self)->str:
+    def get_direction(self)->str:
         """Get current direction as string"""
         return self.DIRECTION_NAMES[self.dir]
     
-    def getPosition(self):
+    def get_position(self):
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
     
-    def getisCollidable(self):
+    def is_path_blocked(self):
         dx, dy, dz = self.VECTORS[self.dir]
         target_x = int(self.x + dx)
         target_y = int(self.y + dy)

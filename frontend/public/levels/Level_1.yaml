@@ -1,0 +1,50 @@
+homepage_intro: "First Movement Command"
+
+tags:
+  - Easy
+  - Intro
+  - Basic Movement
+
+description: |
+  Welcome to **Level 1** - Basic Movement!
+  
+  We are here to teach you the basics of Python!<br>
+  In this application for better understanding we are using a drone to show you what is possible.<br>
+  Try to reach the end of the level by combining the instructions.<br>
+  <br>
+  The world you are seeing is where the drone can move, if you try to escape it or are moving for instance into a tree,<br>
+  the drone will crash and the level needs to be reset.<br>
+  
+  ### Instructions:
+  1. Use the command `drone.move()` to fly forward.
+  2. Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  3. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+
+spawn: { x: 0, y: 1, z: 8}
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 3
+
+layers:
+  layer_0: 
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [dirt]
+
+  layer_1:
+    - [finish_portal]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]

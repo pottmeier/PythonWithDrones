@@ -54,14 +54,14 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
   const maxPanZ = mapCenterZ + depth / 2 + PAN_FACTOR;
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-  
+
 
   // check if the drone is currently animated or if there are commands in the queue
   const updateBusyStatus = useCallback(() => {
     const busy = isAnimatingRef.current || moveQueueRef.current.length > 0;
-    onBusyChange(busy);                      
+    onBusyChange(busy);
   }, [onBusyChange]);
-  
+
 
 
   // takee the next command from the queue and play the corresponding animation
@@ -108,11 +108,16 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
       });
     }
 
+    // Goal update based on command queue
+    if (command.type === "goal") {
+      setIsLevelComplete(true);
+    }
+
     // crash animation
     if (command.type === "crash") {
       const tl = gsap.timeline();
       const [dx, dy, dz] = command.vector;
-      const landingY = command.landingY || 0.2; 
+      const landingY = command.landingY || 0.2;
 
       // try to move forward
       tl.to(droneRef.current.position, {
@@ -122,32 +127,32 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
         duration: 0.1,
         ease: "power1.out"
       })
-      // move back again
-      .to(droneRef.current.position, {
-        x: "-=" + (dx * 0.4),
-        y: "-=" + (dy * 0.4),
-        z: "-=" + (dz * 0.4),
-        duration: 0.4,
-        ease: "power2.in"
-      })
-      // backflip
-      .to(droneRef.current.rotation, {
-        x: "+=" + Math.PI,
-        duration: 0.4
-      }, "<") 
-      // falling to the ground
-      .to(droneRef.current.position, {
-        y: landingY,
-        duration: 0.5,
-        ease: "bounce.out"
-      });
+        // move back again
+        .to(droneRef.current.position, {
+          x: "-=" + (dx * 0.4),
+          y: "-=" + (dy * 0.4),
+          z: "-=" + (dz * 0.4),
+          duration: 0.4,
+          ease: "power2.in"
+        })
+        // backflip
+        .to(droneRef.current.rotation, {
+          x: "+=" + Math.PI,
+          duration: 0.4
+        }, "<")
+        // falling to the ground
+        .to(droneRef.current.position, {
+          y: landingY,
+          duration: 0.5,
+          ease: "bounce.out"
+        });
 
       // prevent any further animations after crash 
       isAnimatingRef.current = false;
       moveQueueRef.current = [];
       updateBusyStatus();
     }
-  }, [isLevelComplete, updateBusyStatus]);      
+  }, [isLevelComplete, updateBusyStatus]);
 
 
 
@@ -176,7 +181,7 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
       droneRef.current.position.set(sx, sy, sz);
       droneRef.current.rotation.set(0, 0, 0);
     }
-    
+
     onBusyChange(false);
   }, [onBusyChange]);
 
@@ -339,11 +344,10 @@ function SceneComponent({ levelId, onBusyChange }: { levelId: string; onBusyChan
 
       {/* --- INFO CARD OVERLAY --- */}
       <div
-        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${
-          showInfo
-            ? "translate-x-0 opacity-100"
-            : "-translate-x-full opacity-0 pointer-events-none"
-        }`}
+        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${showInfo
+          ? "translate-x-0 opacity-100"
+          : "-translate-x-full opacity-0 pointer-events-none"
+          }`}
       >
         <div className="h-full overflow-y-auto">
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
