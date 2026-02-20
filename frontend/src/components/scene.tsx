@@ -21,6 +21,7 @@ import {
   SPEED_BTN_ACTIVE,
   SPEED_BTN_INACTIVE,
 } from "@/lib/utils";
+import { saveLevelProgress } from "@/lib/app-state";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -266,6 +267,19 @@ function SceneComponent({
     gsap.globalTimeline.timeScale(playbackSpeed);
   }, [playbackSpeed]);
 
+  // update status when finished
+  useEffect(() => {
+    if (!isLevelComplete) return;
+
+    saveLevelProgress(Number(levelId), {
+      status: "completed",
+    });
+
+    saveLevelProgress(Number(levelId) + 1, {
+      status: "unlocked",
+    });
+  }, [isLevelComplete, levelId]);
+
   return (
     <div className="relative w-full h-full">
       <Canvas
@@ -391,7 +405,7 @@ function SceneComponent({
 
       {/* Win Screen */}
       {isLevelComplete && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
           <div className="bg-green-500/90 text-white p-6 rounded-xl shadow-2xl backdrop-blur-md animate-in zoom-in">
             <h1 className="text-4xl font-bold mb-2">Level Complete!</h1>
           </div>
