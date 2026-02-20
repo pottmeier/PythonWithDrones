@@ -1,25 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState, saveLevelProgress, updateState } from "@/lib/app-state";
+import { loadState, saveLevelProgress } from "@/lib/app-state";
 import { usePyodideWorker } from "@/hooks/usePyodideWorker";
 import { UserMenu } from "@/components/user-menu";
-import { UsernameDialog } from "@/components/user-dialog";
-
 
 type Level = { id: string };
 interface LevelContentProps {
   level: Level;
 }
-
-
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -42,39 +42,39 @@ function SidebarBackdrop() {
   );
 }
 
-
-
 export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed } = usePyodideWorker();
+  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed } =
+    usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
+  useEffect(() => {
+    console.log("LEVEL PROP:", level);
+  }, [level]);
 
   // load the level into the worker
   useEffect(() => {
     if (isReady && levelId) {
-      // hardcoded testing
-      // TODO: something like: loadLevel(`${levelId}.yaml`)
-      loadLevel("Level_1.yaml");
+      const file = `Level_${levelId}.yaml`;
+      loadLevel(file);
     }
   }, [isReady, levelId, loadLevel]);
- 
-  
+
   // load the saved code into the code-editor
   useEffect(() => {
     const state = loadState();
     const idNum = Number(levelId);
     setUsername(state.user.username || "");
     if (Number.isFinite(idNum)) {
-      const savedCode = state.progress.levels[idNum]?.code ?? "# Start coding here...\nmove()";
+      const savedCode =
+        state.progress.levels[idNum]?.code ?? "# Start coding here...\nmove()";
       setCode(savedCode);
     }
   }, [levelId]);
-
 
   // save the current code to the local storage
   useEffect(() => {
@@ -84,15 +84,13 @@ export default function LevelContent({ level }: LevelContentProps) {
     }
   }, [code, levelId]);
 
-
   // reset the drone virtually and visually
   const handleDroneReset = useCallback(() => {
     // reset internal coordinates and rotation inside python to the spawn
-    hardReset(); 
+    hardReset();
     // reset the visual drone to the spawn and clear the queue
     (window as any).resetScene?.();
   }, [hardReset]);
-
 
   // trigger the drone reset after pressing the button
   useEffect(() => {
@@ -102,19 +100,16 @@ export default function LevelContent({ level }: LevelContentProps) {
     };
   }, [handleDroneReset]);
 
-
   // darkmode
   useEffect(() => {
     if (dark) document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
   }, [dark]);
 
-
   // execute user code
   useEffect(() => {
     (window as any).runPython = runCode;
   }, [runCode]);
-
 
   // submit user code
   const submitCode = (submittedCode: string) => {
@@ -124,7 +119,6 @@ export default function LevelContent({ level }: LevelContentProps) {
       code: submittedCode,
     });
   };
-
 
   return (
     <SidebarProvider>
@@ -168,7 +162,7 @@ export default function LevelContent({ level }: LevelContentProps) {
             */}
             <div className="w-full lg:w-1/3 lg:min-w-[350px] shrink-0 h-[500px] lg:h-full flex flex-col">
               <div className="h-full flex flex-col">
-                <CodeCard 
+                <CodeCard
                   code={code}
                   setCode={setCode}
                   onSubmit={submitCode}
@@ -187,11 +181,10 @@ export default function LevelContent({ level }: LevelContentProps) {
             <div className="w-full lg:flex-1 h-[400px] lg:h-full min-w-0">
               <div className="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 relative overflow-hidden shadow-sm">
                 <div className="w-full h-full relative">
-                  <div className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}>
-                    <Scene 
-                      levelId={levelId} 
-                      onBusyChange={setIsSceneBusy} 
-                    />
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}
+                  >
+                    <Scene levelId={levelId} onBusyChange={setIsSceneBusy} />
                   </div>
                   {!isReady && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">

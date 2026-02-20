@@ -22,6 +22,7 @@ import { Search } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 import { loadState } from "@/lib/app-state";
 import { UsernameDialog } from "@/components/user-dialog";
+import yaml from "js-yaml";
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -46,52 +47,63 @@ function SidebarBackdrop() {
 
 export default function Home() {
   const [dark, setDark] = useState(true);
-  type LevelStatus = "locked" | "unlocked" | "completed";
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [levelsState, setLevelsState] = useState<LevelsState>({
+    levels: {},
+  });
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | LevelStatus>("all");
+
   const handleLevelClick = (id: number) => {
     router.push(`/level/${id}`);
   };
 
-  // TODO: get levels from /public/levels
-  const levels = [
-    {
-      id: 1,
-      title: "Level 1",
-      description: "Introduction",
-      status: "completed" as LevelStatus,
-      tags: ["Easy", "Variables", "Console Output"],
-    },
-    {
-      id: 2,
-      title: "Level 2",
-      description: "Basics",
-      status: "unlocked" as LevelStatus,
-      tags: ["Easy", "Conditions", "For-Loop"],
-    },
-    {
-      id: 3,
-      title: "Level 3",
-      description: "Advanced",
-      status: "locked" as LevelStatus,
-      tags: ["Medium", "Functions", "Arrays", "While-Loop"],
-    },
-    {
-      id: 4,
-      title: "Level 4",
-      description: "Advanced",
-      status: "unlocked" as LevelStatus,
-      tags: ["Medium", "Functions", "Arrays", "While-Loop"],
-    },
-  ];
+  type LevelStatus = "locked" | "unlocked" | "completed";
 
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | LevelStatus>("all");
+  interface Level {
+    id: number;
+    title: string;
+    homepage_intro: string;
+    status: LevelStatus;
+    tags: string[];
+  }
+
+  type LevelsState = {
+    levels: Record<
+      number,
+      {
+        status: LevelStatus;
+        code: string;
+      }
+    >;
+  };
+
+  useEffect(() => {
+    const loadLevels = async () => {
+      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+      const files = ["Level_1.yaml", "Level_2.yaml"];
+
+      const loadedLevels = await Promise.all(
+        files.map(async (file) => {
+          const res = await fetch(`${basePath}/levels/${file}`);
+          const text = await res.text();
+          return yaml.load(text) as Level;
+        }),
+      );
+
+      setLevels(loadedLevels);
+    };
+
+    loadLevels();
+  }, []);
 
   const filteredLevels = levels.filter((level) => {
     const matchesSearch =
       level.title.toLowerCase().includes(search.toLowerCase()) ||
-      level.description.toLowerCase().includes(search.toLowerCase());
+      level.homepage_intro.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter =
       filterStatus === "all" ||
@@ -108,6 +120,7 @@ export default function Home() {
 
   useEffect(() => {
     setUsername(loadState().user.username || "");
+    setLevelsState(loadState().progress || "");
   }, []);
 
   return (
@@ -171,8 +184,8 @@ export default function Home() {
                       key={level.id}
                       id={level.id}
                       title={level.title}
-                      description={level.description}
-                      status={level.status}
+                      description={level.homepage_intro}
+                      status={levelsState.levels[level.id].status}
                       tags={level.tags}
                       onClick={handleLevelClick}
                     />
