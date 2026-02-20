@@ -61,7 +61,7 @@ export function AppSidebar() {
             rel="noopener noreferrer"
             className="flex flex-col items-center"
           >
-            <Github className="w-6 h-6" />
+            <Github className="w-6 h-6 text-muted-foreground" />
             <span className="text-xs mt-1 text-muted-foreground">
               GitHub
             </span>
