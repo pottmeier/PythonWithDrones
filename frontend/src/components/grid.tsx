@@ -19,15 +19,16 @@ interface GridProps {
     spawn: { x: number; y: number; z: number};
     description?: string;
   }) => void;
+  levelId: string;
 }
 
-export default function Grid({ onLevelLoaded }: GridProps) {
+export default function Grid({ onLevelLoaded, levelId }: GridProps) {
   const [levelData, setLevelData] = useState<LevelData | null>(null);
 
   useEffect(() => {
     async function loadLevel() {
       try {
-        const response = await fetch(`${basePath}/levels/Level_1.yaml`);
+        const response = await fetch(`${basePath}/levels/Level_${levelId}.yaml`);
         const yamlText = await response.text();
         const blueprint = yaml.load(yamlText) as LevelData;
 
