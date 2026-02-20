@@ -23,6 +23,7 @@ import { UserMenu } from "@/components/user-menu";
 import { loadState } from "@/lib/app-state";
 import { UsernameDialog } from "@/components/user-dialog";
 import yaml from "js-yaml";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -45,6 +46,20 @@ function SidebarBackdrop() {
   );
 }
 
+function LevelCardSkeleton() {
+  return (
+    <div className="rounded-xl border bg-card p-4 space-y-3">
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <div className="flex gap-2 pt-2">
+        <Skeleton className="h-6 w-16 rounded-full" />
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [dark, setDark] = useState(true);
   const router = useRouter();
@@ -55,6 +70,7 @@ export default function Home() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | LevelStatus>("all");
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleLevelClick = (id: number) => {
     router.push(`/level/${id}`);
@@ -95,10 +111,13 @@ export default function Home() {
       );
 
       setLevels(loadedLevels);
+      setIsLoading(false);
     };
 
     loadLevels();
   }, []);
+
+  console.log(levels);
 
   const filteredLevels = levels.filter((level) => {
     const matchesSearch =
@@ -107,7 +126,7 @@ export default function Home() {
 
     const matchesFilter =
       filterStatus === "all" ||
-      level.status === filterStatus ||
+      levelsState.levels[level.id].status === filterStatus ||
       (level.tags?.includes(filterStatus) ?? false);
 
     return matchesSearch && matchesFilter;
@@ -122,6 +141,8 @@ export default function Home() {
     setUsername(loadState().user.username || "");
     setLevelsState(loadState().progress || "");
   }, []);
+
+  console.log(levelsState);
 
   return (
     <SidebarProvider>
@@ -179,21 +200,29 @@ export default function Home() {
             <div className="flex flex-col md:flex-row flex-1 gap-4">
               <main className="flex-1 p-4 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredLevels.map((level) => (
-                    <LevelCard
-                      key={level.id}
-                      id={level.id}
-                      title={level.title}
-                      description={level.homepage_intro}
-                      status={levelsState.levels[level.id].status}
-                      tags={level.tags}
-                      onClick={handleLevelClick}
-                    />
-                  ))}
-                  {filteredLevels.length === 0 && (
-                    <p className="text-center text-muted-foreground col-span-full">
-                      No levels found.
-                    </p>
+                  {isLoading
+                    ? Array.from({ length: 2 }).map((_, i) => (
+                        <LevelCardSkeleton key={i} />
+                      ))
+                    : filteredLevels.map((level) => (
+                        <LevelCard
+                          key={level.id}
+                          id={level.id}
+                          title={level.title}
+                          description={level.homepage_intro}
+                          status={levelsState.levels[level.id].status}
+                          tags={level.tags}
+                          onClick={handleLevelClick}
+                        />
+                      ))}
+
+                  {!isLoading && filteredLevels.length === 0 && (
+                    <div className="col-span-full py-20 text-center">
+                      <h3 className="text-lg font-medium">No levels found</h3>
+                      <p className="mt-2 text-muted-foreground text-sm">
+                        Adjust your filters and try again.
+                      </p>
+                    </div>
                   )}
                 </div>
               </main>
