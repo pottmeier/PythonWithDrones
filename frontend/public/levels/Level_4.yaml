@@ -1,0 +1,64 @@
+id: 4
+
+title: Level 4
+
+homepage_intro: "Remember Things with Variables"
+
+tags:
+  - Easy
+  - Variables
+  - Loops
+
+description: |
+  Welcome to **Level 4** - Variables!
+
+  In Python you can store information in **variables**.<br>
+  Think of a variable like a box where you put a value inside and give it a name.<br>
+  <br>
+
+  ### Example:
+  ```python
+  steps = 5
+  for i in range(steps):
+      drone.move()
+
+  Now instead of a fixed number you use a named value.<br>
+  This makes your code easier to read and change!<br>
+  <br>
+  The path ahead has two straight sections of different lengths.<br>
+  Use variables to define how many steps each section needs!<br>
+Instructions:
+
+    Use variables to store the number of steps.
+    Use for loops with your variables.
+    Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+    Collect all <span class="text-yellow-500 font-bold">Coins</span>.
+
+spawn: { x: 0, y: 1, z: 8 }
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 4
+
+layers:
+  layer_0:
+    - [grass, grass, grass, grass, grass]
+    - [empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, grass]
+    - [empty, empty, empty, empty, grass]
+    - [grass, grass, grass, grass, grass]
+    - [grass, empty, empty, empty, empty]
+    - [grass, empty, empty, empty, empty]
+    - [dirt, empty, empty, empty, empty]
+
+  layer_1:
+    - [finish_portal, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, coin]
+    - [empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, coin]
+    - [empty, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty]
+    - [coin, empty, empty, empty, empty]
+    - [empty, empty, empty, empty, empty]
+    - [coin, empty, empty, empty, empty]

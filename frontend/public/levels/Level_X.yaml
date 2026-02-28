@@ -1,0 +1,75 @@
+id: 3
+
+title: Level 3
+
+homepage_intro: "Second Movement Command"
+
+tags:
+  - Easy
+  - if else
+  - Basic Movement
+
+description: |
+  Welcome to **Level 3** - Basic Movement!
+  
+  In your third level we are looking forward on how to use if and else, for that you will need to understand
+  the difference between a positive condition `True` and a negative one `False`. In this Level you will need to maneuvor around
+  the tree and while it is possible to do so with simple commands in a loop we are looking for a more automated solution.
+
+  ### Instructions:
+  - Use a for loop or while True to iterate your solution.
+  - Use the command `drone.is_path_blocked()` to retrieve a boolean either `True` or `False`.
+  - Use if block in combination with the other instructions to create a working script!
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+
+spawn: { x: 0, y: 1, z: 8}
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 3
+
+layers:
+  layer_0: 
+    - [dirt,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+    - [grass,dirt]
+
+  layer_1:
+    - [finish_portal,dirt]
+    - [empty,dirt]
+    - [empty,empty]
+    - [tree_trunk,empty]
+    - [empty,empty]
+    - [empty,dirt]
+    - [empty,dirt]
+    - [empty,dirt]
+    - [empty,dirt]
+
+  layer_2:
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [tree_trunk,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+
+  layer_3:
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [tree_leaves,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]
+    - [empty,empty]

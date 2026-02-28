@@ -100,7 +100,9 @@ export default function Home() {
     const loadLevels = async () => {
       const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-      const files = ["Level_1.yaml", "Level_2.yaml"];
+      // This constant needs to be present for static export aka GitHub Pages
+      // TODO: Please add the level that needs to be represented, by adding it to the list.
+      const files = ["Level_1.yaml", "Level_2.yaml","Level_3.yaml", "Level_4.yaml"];
 
       const loadedLevels = await Promise.all(
         files.map(async (file) => {
