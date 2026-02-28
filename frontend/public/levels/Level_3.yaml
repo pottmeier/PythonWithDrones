@@ -1,0 +1,54 @@
+id: 3
+
+title: Level 3
+
+homepage_intro: "Stop Repeating Yourself!"
+
+tags:
+  - Easy
+  - Loops
+  - Basic Movement
+
+description: |
+  Welcome to **Level 3** - Loops!
+
+  You might have noticed you are writing `drone.move()` over and over again.<br>
+  In Python there is a smarter way to repeat actions — the **for loop**!<br>
+  <br>
+  Instead of writing the same command 5 times, you can write it once inside a loop.<br>
+
+  ### Example:
+  ```python
+  for i in range(5):
+      drone.move()
+  ```
+  Complete the first level with your new knowledge!
+
+spawn: { x: 0, y: 1, z: 8}
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 3
+
+layers:
+  layer_0: 
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [dirt]
+
+  layer_1:
+    - [finish_portal]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]
+    - [empty]

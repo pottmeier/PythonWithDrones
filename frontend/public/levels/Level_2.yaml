@@ -2,74 +2,53 @@ id: 2
 
 title: Level 2
 
-homepage_intro: "Second Movement Command"
+homepage_intro: "Learn to Turn"
 
 tags:
   - Easy
-  - if else
+  - Intro
   - Basic Movement
+  - Turning
 
 description: |
-  Welcome to **Level 2** - Basic Movement!
-  
-  In your second level we are looking forward on how to use if and else, for that you will need to understand
-  the difference between a positive condition `True` and a negative one `False`. In this Level you will need to maneuvor around
-  the tree and while it is possible to do so with simple commands in a loop we are looking for a more automated solution.
+  Welcome to **Level 2** - Turning & Direction!
+
+  Great job completing Level 1! Now it's time to learn how to **turn** your drone.<br>
+  Moving forward is great, but what if the path changes direction?<br>
+  <br>
+  You will need to combine movement with turning to navigate the path.<br>
 
   ### Instructions:
-  - Use a for loop or while True to iterate your solution.
-  - Use the command `drone.is_path_blocked()` to retrieve a boolean either `True` or `False`.
-  - Use if block in combination with the other instructions to create a working script!
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+  1. Use `drone.move()` to fly forward.
+  2. Use `drone.turn_left()` or `drone.turn_right()` to change direction.
+  3. Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  4. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
-spawn: { x: 0, y: 1, z: 8}
+spawn: { x: 2, y: 1, z: 8 }
 
 solve_conditions:
   finish_block: true
   collected_coins: 3
 
 layers:
-  layer_0: 
-    - [dirt,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
-    - [grass,dirt]
+  layer_0:
+    - [grass, grass, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, grass]
+    - [dirt, dirt, dirt]
 
   layer_1:
-    - [finish_portal,dirt]
-    - [empty,dirt]
-    - [empty,empty]
-    - [tree_trunk,empty]
-    - [empty,empty]
-    - [empty,dirt]
-    - [empty,dirt]
-    - [empty,dirt]
-    - [empty,dirt]
-
-  layer_2:
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [tree_trunk,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-
-  layer_3:
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [tree_leaves,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
-    - [empty,empty]
+    - [finish_portal, empty, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
+    - [dirt, dirt, empty]
