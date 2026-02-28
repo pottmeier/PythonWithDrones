@@ -8,21 +8,21 @@ tags:
   - Easy
   - Loops
   - Basic Movement
+  - Variables
 
 description: |
-  Welcome to **Level 3** - Loops!
+  Welcome to **Level 3** - Loops & Variables!
+  Have you noticed yourself typing `drone.move()` over and over? There's a smarter way!
+  Python's **for loop** lets you repeat an action multiple times without rewriting the same line.<br>
+  And with **variables**, you can store values and reuse them — think of a variable as a labeled box that holds a value.
 
-  You might have noticed you are writing `drone.move()` over and over again.<br>
-  In Python there is a smarter way to repeat actions — the **for loop**!<br>
-  <br>
-  Instead of writing the same command 5 times, you can write it once inside a loop.<br>
-
-  ### Example:
   ```python
-  for i in range(5):
+  STEPS = 5
+  for i in range(STEPS):
       drone.move()
   ```
-  Complete the first level with your new knowledge!
+  Instead of calling `drone.move()` five times, we store the number in `STEPS` and let the loop handle the rest.<br>
+  Now use what you've learned to complete the level!
 
 spawn: { x: 0, y: 1, z: 8}
 
@@ -44,11 +44,11 @@ layers:
 
   layer_1:
     - [finish_portal]
-    - [empty]
-    - [empty]
-    - [empty]
-    - [empty]
-    - [empty]
-    - [empty]
-    - [empty]
-    - [empty]
+    - [air]
+    - [air]
+    - [air]
+    - [air]
+    - [air]
+    - [air]
+    - [air]
+    - [air]

@@ -68,6 +68,14 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
   // --- SPECIAL ---
   empty: {
     id: "empty",
+    isCollidable: true,
+    isDestructible: false,
+    isPickable: false,
+    placementValidOn: [],
+    component: () => null, // Renders nothing
+  },
+  air: {
+    id: "air",
     isCollidable: false,
     isDestructible: false,
     isPickable: false,
