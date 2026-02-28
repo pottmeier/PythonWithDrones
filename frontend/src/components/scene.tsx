@@ -21,7 +21,7 @@ import {
   SPEED_BTN_ACTIVE,
   SPEED_BTN_INACTIVE,
 } from "@/lib/utils";
-import { saveLevelProgress } from "@/lib/app-state";
+import { loadState, saveLevelProgress } from "@/lib/app-state";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -275,6 +275,11 @@ function SceneComponent({
       status: "completed",
     });
 
+    const state = loadState()
+    const nextLevelId = Number(levelId)+1;
+    const nextLevel = state.progress.levels[nextLevelId]
+
+    if (!nextLevel || nextLevel?.status === "locked")
     saveLevelProgress(Number(levelId) + 1, {
       status: "unlocked",
     });
