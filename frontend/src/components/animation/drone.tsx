@@ -5,7 +5,7 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import Rotor from "./rotor";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 interface DroneProps {
   groupRef: React.RefObject<THREE.Group>
@@ -14,7 +14,7 @@ interface DroneProps {
 
 export default function Drone({ groupRef, initialPosition }: DroneProps) {
   const { scene, nodes } = useGLTF(`${basePath}/models/drone_body.glb`);
- 
+
   useEffect(() => {
     scene.traverse((c: any) => (c.castShadow = true));
     if (groupRef.current) {

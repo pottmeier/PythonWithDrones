@@ -1,9 +1,9 @@
 import React from "react";
-import GrassTile from "@/components/grass-tile";
-import DirtTile from "@/components/dirt-tile";
-import TrunkBlock from "@/components/trunk-block"; 
-import LeavesBlock from "@/components/leaves-block";
-import FinishPortalBlock from "@/components/finish-portal-block";
+import GrassTile from "@/components/animation/grass-tile";
+import DirtTile from "@/components/animation/dirt-tile";
+import TrunkBlock from "@/components/animation/trunk-block"; 
+import LeavesBlock from "@/components/animation/leaves-block";
+import FinishPortalBlock from "@/components/animation/finish-portal-block";
 
 // 1. Define the capabilities of a block
 export interface BlockDefinition {
