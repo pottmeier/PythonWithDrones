@@ -212,7 +212,7 @@ export default function Home() {
                           id={level.id}
                           title={level.title}
                           description={level.homepage_intro}
-                          status={levelsState.levels[level.id].status}
+                          status={levelsState.levels[level.id]?.status ?? "locked"}
                           tags={level.tags}
                           onClick={handleLevelClick}
                         />
