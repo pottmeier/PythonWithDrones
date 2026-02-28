@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import Drone from "./drone";
+import Drone from "./animation/drone";
 import Grid from "./grid";
 import Compass from "./compass";
 import * as THREE from "three";
@@ -276,13 +276,13 @@ function SceneComponent({
     });
 
     const state = loadState()
-    const nextLevelId = Number(levelId)+1;
+    const nextLevelId = Number(levelId) + 1;
     const nextLevel = state.progress.levels[nextLevelId]
 
     if (!nextLevel || nextLevel?.status === "locked")
-    saveLevelProgress(Number(levelId) + 1, {
-      status: "unlocked",
-    });
+      saveLevelProgress(Number(levelId) + 1, {
+        status: "unlocked",
+      });
   }, [isLevelComplete, levelId]);
 
   return (
@@ -314,8 +314,7 @@ function SceneComponent({
         <Drone
           key={droneKey}
           groupRef={droneRef}
-          initialPosition={spawnPosition}
-        />
+          initialPosition={spawnPosition} />
         <OrbitControls
           ref={controlsRef}
           enablePan
@@ -392,11 +391,10 @@ function SceneComponent({
 
       {/* --- INFO CARD OVERLAY --- */}
       <div
-        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${
-          showInfo
+        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${showInfo
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0 pointer-events-none"
-        }`}
+          }`}
       >
         <div className="h-full overflow-y-auto">
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
