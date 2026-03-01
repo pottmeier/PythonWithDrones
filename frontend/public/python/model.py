@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field   # type: ignore
 from typing import List, Dict, Union, Optional
 
+#TODO: Move some of pydantic to optional fields so levels stay valid when some requirement is not met
+
 class Spawn(BaseModel):
     x: float
     y: float
@@ -49,15 +51,10 @@ class LevelModel(BaseModel):
         width = len(base_layer[0])     # X limit
 
         # check if block is inside the level
-        if not (0 <= x < width):
-            print(f"Boundary Error: X {x} is outside level width {width}")
-            return True
-        if not (0 <= y < height):
-            print(f"Boundary Error: Y {y} is outside level height {height}")
-            return True
-        if not (0 <= z < depth):
-            print(f"Boundary Error: Z {z} is outside level depth {depth}")
-            return True
+        for val, limit, axis in ((x, width, "X"), (y, height, "Y"), (z, depth, "Z")):
+            if not (0 <= val < limit):
+                print(f"Boundary Error: {axis} {val} is outside level {axis} {limit}")
+                return True
 
         # check registry, if the block is collidable
         block_id = self.get_block_id(x, y, z)
