@@ -20,9 +20,9 @@ description: |
   the drone will crash and the level needs to be reset.<br>
   
   ### Instructions:
-  1. Use the command `drone.move()` to fly forward.
-  2. Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  3. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+  - Use the command `drone.move()` to fly forward.
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
 spawn: { x: 0, y: 1, z: 8}
 

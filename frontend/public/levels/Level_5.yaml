@@ -1,0 +1,83 @@
+id: 5
+
+title: Level 5
+
+homepage_intro: "Make Decisision with If / Else"
+
+tags:
+  - Medium
+  - Conditionals
+  - Logic
+
+description: |
+  Welcome to **Level 5** - Conditionals!
+
+  Sometimes your drone needs to **make a decision**.<br>
+  In Python we use `if` and `else` to do different things based on a condition.<br>
+  The if and else works with `True` and `False` values for that, which means if the `if` should check for
+  a number we need to compare that number, look in the example for better understanding.
+
+  ### Instructions
+  - Use `drone.is_path_blocked()` together with if to check whether the block in front of the drone is a world border or something else that blocks the path
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 ">World Border</span> or the tree.
+
+  ### Example
+  ```code
+  value = 5
+  if (value <= 5):
+    print("value is smaller or equals 5")
+  else:
+    print("value is greater than 5")
+  ```
+
+spawn: { x: 0, y: 1, z: 8}
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 3
+
+layers:
+  layer_0: 
+    - [grass,empty]
+    - [grass,empty]
+    - [dirt,dirt]
+    - [grass,dirt]
+    - [dirt,dirt]
+    - [grass,empty]
+    - [grass,empty]
+    - [grass,empty]
+    - [grass,empty]
+
+  layer_1:
+    - [finish_portal,empty]
+    - [air,empty]
+    - [air,air]
+    - [tree_trunk,air]
+    - [air,air]
+    - [air,empty]
+    - [air,empty]
+    - [air,empty]
+    - [air,empty]
+
+  layer_2:
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [tree_trunk,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+
+  layer_3:
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [tree_leaves,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
