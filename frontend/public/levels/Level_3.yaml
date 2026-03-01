@@ -13,10 +13,14 @@ tags:
 description: |
   Welcome to **Level 3** - Loops & Variables!
   Have you noticed yourself typing `drone.move()` over and over? There's a smarter way!
-  Python's **for loop** lets you repeat an action multiple times without rewriting the same line.<br>
-  And with **variables**, you can store values and reuse them — think of a variable as a labeled box that holds a value.
+  Python's **for loop** lets you repeat an action multiple times without rewriting the same line 
+  and with **variables**, you can store values and reuse them. Think of a variable as a labeled box that holds a value.
 
-  ```python
+  **Note:** Loops require a certain syntax to work. A for loop needs an iterator i and something iterable such as a range(), after that
+  a colon is needed to explain to python that now an idented block is comming and the iterator uses the block. Look at the example for a better understanding.
+
+  ### Example
+  ```code
   STEPS = 5
   for i in range(STEPS):
       drone.move()
