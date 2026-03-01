@@ -6,7 +6,6 @@ homepage_intro: "Learn to Turn"
 
 tags:
   - Easy
-  - Intro
   - Basic Movement
   - Turning
 
@@ -19,10 +18,10 @@ description: |
   You will need to combine movement with turning to navigate the path.<br>
 
   ### Instructions:
-  1. Use `drone.move()` to fly forward.
-  2. Use `drone.turn_left()` or `drone.turn_right()` to change direction.
-  3. Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  4. Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+  - Use `drone.move()` to fly forward.
+  - Use `drone.turn_left()` or `drone.turn_right()` to change direction.
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
 spawn: { x: 2, y: 1, z: 8 }
 

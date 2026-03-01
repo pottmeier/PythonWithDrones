@@ -2,39 +2,39 @@ id: 4
 
 title: Level 4
 
-homepage_intro: "Remember Things with Variables"
+homepage_intro: "Build Your Own Commands"
 
 tags:
-  - Easy
-  - Variables
-  - Loops
+  - Medium
+  - Functions
+  - Reusability
 
 description: |
-  Welcome to **Level 4** - Variables!
+  Welcome to **Level 4** - Functions!
 
-  In Python you can store information in **variables**.<br>
-  Think of a variable like a box where you put a value inside and give it a name.<br>
-  <br>
+  You have learned loops and variables. Now let's take it further with **functions**!
+  A function is a **reusable block of code** you give a name to. You can also use functions with parameters like variables see the example.<br>
+  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
+  ### Instructions:
+  - Define a def function for the repeating path pattern.
+  - Call your function multiple times.
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
 
   ### Example:
-  ```python
-  steps = 5
-  for i in range(steps):
+  
+  ```code
+  def move(steps):
+    for i in range(steps)
       drone.move()
 
-  Now instead of a fixed number you use a named value.<br>
-  This makes your code easier to read and change!<br>
+  move(1)
+  move(2)
+  ```
   <br>
-  The path ahead has two straight sections of different lengths.<br>
-  Use variables to define how many steps each section needs!<br>
-Instructions:
-
-    Use variables to store the number of steps.
-    Use for loops with your variables.
-    Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-    Collect all <span class="text-yellow-500 font-bold">Coins</span>.
+  The path ahead repeats a pattern, define a function to handle it cleanly!  
 
 spawn: { x: 0, y: 1, z: 8 }
+orientation: 3
 
 solve_conditions:
   finish_block: true
@@ -43,22 +43,22 @@ solve_conditions:
 layers:
   layer_0:
     - [grass, grass, grass, grass, grass]
+    - [grass, empty, empty, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, grass, grass, empty, grass]
     - [empty, empty, empty, empty, grass]
-    - [empty, empty, empty, empty, grass]
-    - [empty, empty, empty, empty, grass]
-    - [empty, empty, empty, empty, grass]
-    - [grass, grass, grass, grass, grass]
-    - [grass, empty, empty, empty, empty]
-    - [grass, empty, empty, empty, empty]
-    - [dirt, empty, empty, empty, empty]
+    - [dirt, grass, grass, grass, grass]
 
   layer_1:
-    - [finish_portal, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, coin]
-    - [empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, coin]
-    - [empty, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty]
-    - [coin, empty, empty, empty, empty]
-    - [empty, empty, empty, empty, empty]
-    - [coin, empty, empty, empty, empty]
+    - [air, air, air, air, air]
+    - [air, empty, empty, empty, air]
+    - [air, empty, finish_portal, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, air, air, empty, air]
+    - [empty, empty, empty, empty, air]
+    - [air, air, air, air, air]
