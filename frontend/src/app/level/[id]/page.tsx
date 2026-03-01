@@ -1,7 +1,7 @@
 import LevelContent from "./levelContent";
 
 // hardcoded zum testen
-const levels = [{ id: "1" }, { id: "2" }, { id: "3" },{ id: "4" },{ id: "5" }];
+const levels = [{ id: "1" }, { id: "2" }, { id: "3" },{ id: "4" },{ id: "5" }, { id:"6"}];
 
 export async function generateStaticParams() {
   return levels.map((level) => ({

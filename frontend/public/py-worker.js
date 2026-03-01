@@ -42,8 +42,9 @@ self.onmessage = async (event) => {
 
   if (type === "LOAD_LEVEL") {
     try {
-      const levelYaml = await fetch(`${basePath}/levels/${levelName}`).then(r => r.text());
-      self.pyodide.FS.writeFile("/levels/active_level.yaml", levelYaml);
+      // if needed renable at the moment only makes unnecessary calls
+      //const levelYaml = await fetch(`${basePath}/levels/${levelName}`).then(r => r.text());
+      //self.pyodide.FS.writeFile("/levels/active_level.yaml", levelYaml);
       
       self.level_data = levelData;
       self.block_registry = registry;
