@@ -49,12 +49,12 @@ function SidebarBackdrop() {
 function LevelCardSkeleton() {
   return (
     <div className="rounded-xl border bg-card p-4 space-y-3">
-      <Skeleton className="h-6 w-3/4" />
-      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-5 w-full" />
       <div className="flex gap-2 pt-2">
-        <Skeleton className="h-6 w-16 rounded-full" />
-        <Skeleton className="h-6 w-20 rounded-full" />
-        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-5 w-20 rounded-full" />
       </div>
     </div>
   );
@@ -203,7 +203,7 @@ export default function Home() {
               <main className="flex-1 p-4 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {isLoading
-                    ? Array.from({ length: 2 }).map((_, i) => (
+                    ? Array.from({ length: 6 }).map((_, i) => (
                         <LevelCardSkeleton key={i} />
                       ))
                     : filteredLevels.map((level) => (

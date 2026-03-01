@@ -1,8 +1,30 @@
 export type LevelStatus = "locked" | "unlocked" | "completed";
 
+// This constant needs to be present for localStorage
+// TODO: Please add the level that needs to be represented, by adding it to the list.
 const INITIAL_LEVELS: Record<number, LevelProgress> = {
   1: {
     status: "unlocked",
+    code: "#start here...",
+  },
+  2: {
+    status: "locked",
+    code: "#start here...",
+  },
+  3: {
+    status: "locked",
+    code: "#start here...",
+  },
+  4: {
+    status: "locked",
+    code: "#start here...",
+  },
+  5: {
+    status: "locked",
+    code: "#start here...",
+  },
+  6: {
+    status: "locked",
     code: "#start here...",
   },
 };
