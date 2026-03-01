@@ -141,4 +141,6 @@ class Drone:
         target_y = int(self.y + dy)
         target_z = int(self.z + dz)
         return self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry)
-        
+
+    def at_portal(self):
+        return self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) == "finish_portal"        
