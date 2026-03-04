@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
-import { Play, Send, Square } from "lucide-react";
+import { Play } from "lucide-react";
 
 interface CodeCardProps {
   code: string;
@@ -15,7 +15,14 @@ interface CodeCardProps {
   stopCode?: () => void;
 }
 
-export function CodeCard({ code, setCode, onSubmit, isReady, isRunning, stopCode }: CodeCardProps) {
+export function CodeCard({
+  code,
+  setCode,
+  onSubmit,
+  isReady,
+  isRunning,
+  stopCode,
+}: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
 
   useEffect(() => {
@@ -37,7 +44,7 @@ export function CodeCard({ code, setCode, onSubmit, isReady, isRunning, stopCode
       toast.warning("Engine not ready.");
       return;
     }
-    (window as any).runPython(localCode); 
+    (window as any).runPython(localCode);
   };
 
   const submitCode = () => {
@@ -55,44 +62,19 @@ export function CodeCard({ code, setCode, onSubmit, isReady, isRunning, stopCode
         <div className="flex items-center gap-2">
           <Button
             onClick={handleRun}
-            disabled={!isReady} 
+            disabled={!isReady}
             size="sm"
-            className={`cursor-pointer font-semibold text-white ${isRunning 
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className="cursor-pointer font-semibold text-white bg-blue-600 hover:bg-blue-700"
           >
-            {isRunning ? (
-              <>
-                <Square size={14} className="mr-1.5 fill-current" />
-                Stop
-              </>
-            ) : (
-              <>
-                <Play size={14} className="mr-1.5" />
-                Run
-              </>
-            )}
-          </Button>
-
-          <Button
-            onClick={submitCode}
-            size="sm"
-            variant="secondary"
-            className="cursor-pointer bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700"
-          >
-            <Send size={14} className="mr-1.5" />
-            Submit
+            <Play size={14} className="mr-1.5" />
+            Run
           </Button>
         </div>
       </div>
 
       {/* --- EDITOR CONTENT --- */}
       <div className="flex-1 min-h-0 relative bg-gray-50 dark:bg-gray-900">
-        <CodeEditor 
-          code={localCode} 
-          setCode={handleCodeChange} 
-        />
+        <CodeEditor code={localCode} setCode={handleCodeChange} />
       </div>
     </div>
   );
