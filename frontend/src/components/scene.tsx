@@ -275,9 +275,9 @@ function SceneComponent({
       status: "completed",
     });
 
-    const state = loadState()
+    const state = loadState();
     const nextLevelId = Number(levelId) + 1;
-    const nextLevel = state.progress.levels[nextLevelId]
+    const nextLevel = state.progress.levels[nextLevelId];
 
     if (!nextLevel || nextLevel?.status === "locked")
       saveLevelProgress(Number(levelId) + 1, {
@@ -314,7 +314,8 @@ function SceneComponent({
         <Drone
           key={droneKey}
           groupRef={droneRef}
-          initialPosition={spawnPosition} />
+          initialPosition={spawnPosition}
+        />
         <OrbitControls
           ref={controlsRef}
           enablePan
@@ -391,10 +392,11 @@ function SceneComponent({
 
       {/* --- INFO CARD OVERLAY --- */}
       <div
-        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 z-10 transition-all duration-300 ease-in-out transform ${showInfo
+        className={`absolute top-0 left-0 h-full w-full md:w-1/2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-xl border-r border-gray-200 dark:border-gray-800 px-3 pt-24 pb-3 z-10 transition-all duration-300 ease-in-out transform ${
+          showInfo
             ? "translate-x-0 opacity-100"
             : "-translate-x-full opacity-0 pointer-events-none"
-          }`}
+        }`}
       >
         <div className="h-full overflow-y-auto">
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
@@ -408,9 +410,19 @@ function SceneComponent({
 
       {/* Win Screen */}
       {isLevelComplete && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-          <div className="bg-green-500/90 text-white p-6 rounded-xl shadow-2xl backdrop-blur-md animate-in zoom-in">
-            <h1 className="text-4xl font-bold mb-2">Level Complete!</h1>
+        <div className="absolute inset-0 flex items-center justify-center z-30">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(34,197,94,0.35),transparent_55%)]" />
+          <div className="animate-in zoom-in-50 duration-300">
+            <div className="relative px-8 py-6 rounded-3xl bg-green-500/90 text-white shadow-2xl border border-green-400/40">
+              <h1 className="text-4xl font-bold mb-2 text-center drop-shadow-md">
+                Level Complete!
+              </h1>
+
+              <p className="text-center text-white/90">
+                Good job! Now check out the next level!
+              </p>
+            </div>
           </div>
         </div>
       )}
