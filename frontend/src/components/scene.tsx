@@ -22,6 +22,7 @@ import {
   SPEED_BTN_INACTIVE,
 } from "@/lib/utils";
 import { loadState, saveLevelProgress } from "@/lib/app-state";
+import { useRouter } from "next/navigation";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -43,6 +44,7 @@ function SceneComponent({
   const controlsRef = useRef<any>(null);
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const compassRef = useRef<HTMLDivElement>(null);
+  const NUM_LEVELS = 6;
 
   // ui states and config
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
@@ -285,6 +287,16 @@ function SceneComponent({
       });
   }, [isLevelComplete, levelId]);
 
+  const router = useRouter();
+  const goToNextLevel = () => {
+    if (Number(levelId) === NUM_LEVELS) {
+      router.push(`/`);
+    } else {
+      const nextLevel = Number(levelId) + 1;
+      router.push(`/level/${nextLevel}`);
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
       <Canvas
@@ -419,9 +431,22 @@ function SceneComponent({
                 Level Complete!
               </h1>
 
-              <p className="text-center text-white/90">
-                Good job! Now check out the next level!
+              <p className="text-center text-white/90 mb-4">
+                {Number(levelId) === NUM_LEVELS
+                  ? "Awesome! You completed all levels 🎉"
+                  : "Good job! Now check out the next level!"}
               </p>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={goToNextLevel}
+                  className="px-6 py-2 rounded-xl bg-white text-green-600 font-semibold shadow-md hover:bg-green-100 transition cursor-pointer"
+                >
+                  {Number(levelId) === NUM_LEVELS
+                    ? "Back to Home"
+                    : "Next Level"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

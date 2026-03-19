@@ -3,7 +3,7 @@
 import Editor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-python";
-import 'prismjs/themes/prism-tomorrow.css';
+import "prismjs/themes/prism-tomorrow.css";
 
 interface CodeEditorProps {
   code: string;
@@ -13,13 +13,11 @@ interface CodeEditorProps {
 export function CodeEditor({ code, setCode }: CodeEditorProps) {
   return (
     <div className="relative flex-1 w-full h-full min-h-0 bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      
       {/* 
         1. THE SCROLLABLE PARENT 
         This div stays fixed size and handles the scrollbars.
       */}
       <div className="absolute inset-0 overflow-auto">
-        
         {/* 
           2. THE GROWING WRAPPER
           min-h-full: Ensures it fills the screen if code is short.
@@ -29,16 +27,15 @@ export function CodeEditor({ code, setCode }: CodeEditorProps) {
           Because it holds both columns, they stretch together.
         */}
         <div className="min-h-full flex items-stretch">
-          
           {/* 3. LINE NUMBERS */}
           <div
             className="shrink-0 text-right bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-700 text-gray-400 select-none"
             style={{
               fontFamily: '"Fira Code", monospace',
               fontSize: 14,
-              lineHeight: '21px',
-              padding: '16px 8px', // Matches Editor padding
-              width: '48px',
+              lineHeight: "21px",
+              padding: "16px 8px",
+              width: "48px",
             }}
           >
             {code.split("\n").map((_, i) => (
@@ -47,6 +44,20 @@ export function CodeEditor({ code, setCode }: CodeEditorProps) {
           </div>
 
           {/* 4. THE EDITOR */}
+          {code.length === 0 && (
+            <div
+              className="absolute top-0 left-0 p-4 text-gray-400 pointer-events-none select-none"
+              style={{
+                fontFamily: '"Fira Code", monospace',
+                fontSize: 14,
+                lineHeight: "21px",
+                marginLeft: "48px",
+              }}
+            >
+              start coding...
+            </div>
+          )}
+
           <Editor
             value={code}
             onValueChange={setCode}
@@ -58,9 +69,9 @@ export function CodeEditor({ code, setCode }: CodeEditorProps) {
             style={{
               fontFamily: '"Fira Code", monospace',
               fontSize: 14,
-              lineHeight: '21px',
+              lineHeight: "21px",
               backgroundColor: "transparent",
-              minHeight: "100%", // Ensures it stretches to match line numbers
+              minHeight: "100%",
             }}
           />
         </div>

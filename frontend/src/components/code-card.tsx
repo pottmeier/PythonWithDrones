@@ -13,6 +13,7 @@ interface CodeCardProps {
   isReady: boolean;
   isRunning?: boolean;
   stopCode?: () => void;
+  error?: string;
 }
 
 export function CodeCard({
@@ -22,6 +23,7 @@ export function CodeCard({
   isReady,
   isRunning,
   stopCode,
+  error,
 }: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
 
@@ -47,9 +49,16 @@ export function CodeCard({
     (window as any).runPython(localCode);
   };
 
-  const submitCode = () => {
-    onSubmit(localCode);
-    console.log("Code submitted:", localCode);
+  const formatError = (msg: string) => {
+    if (!msg) return "";
+    const lines = msg.split("\n").filter(Boolean);
+    const errorLine = lines.find((line) => /error|exception/i.test(line));
+
+    if (errorLine) {
+      return errorLine;
+    }
+
+    return lines[lines.length - 1];
   };
 
   return (
@@ -62,7 +71,7 @@ export function CodeCard({
         <div className="flex items-center gap-2">
           <Button
             onClick={handleRun}
-            disabled={!isReady}
+            disabled={!isReady || isRunning}
             size="sm"
             className="cursor-pointer font-semibold text-white bg-blue-600 hover:bg-blue-700"
           >
@@ -73,8 +82,21 @@ export function CodeCard({
       </div>
 
       {/* --- EDITOR CONTENT --- */}
-      <div className="flex-1 min-h-0 relative bg-gray-50 dark:bg-gray-900">
-        <CodeEditor code={localCode} setCode={handleCodeChange} />
+      <div className="flex-1 min-h-0 flex flex-col bg-gray-50 dark:bg-gray-900">
+
+        <div className="flex-1 min-h-0">
+          <CodeEditor code={localCode} setCode={handleCodeChange} />
+        </div>
+
+        {error && (
+          <div
+            className="overflow-auto p-3 border-t font-mono rounded-b-xl bg-red-100 text-red-800 border-red-400 dark:bg-red-900 dark:text-red-400 dark:border-red-500">
+            <div className="font-bold mb-1">Error</div>
+            <pre className="whitespace-pre-wrap break-words text-sm">
+              {formatError(error)}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
