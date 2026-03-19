@@ -5,27 +5,27 @@ export type LevelStatus = "locked" | "unlocked" | "completed";
 const INITIAL_LEVELS: Record<number, LevelProgress> = {
   1: {
     status: "unlocked",
-    code: "#start here...",
+    code: "",
   },
   2: {
     status: "locked",
-    code: "#start here...",
+    code: "",
   },
   3: {
     status: "locked",
-    code: "#start here...",
+    code: "",
   },
   4: {
     status: "locked",
-    code: "#start here...",
+    code: "",
   },
   5: {
     status: "locked",
-    code: "#start here...",
+    code: "",
   },
   6: {
     status: "locked",
-    code: "#start here...",
+    code: "",
   },
 };
 

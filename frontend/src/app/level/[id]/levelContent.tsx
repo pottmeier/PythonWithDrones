@@ -48,13 +48,9 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [username, setUsername] = useState("");
   const [dark] = useState(true);
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed } =
+  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
     usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
-
-  useEffect(() => {
-    console.log("LEVEL PROP:", level);
-  }, [level]);
 
   // load the level into the worker
   useEffect(() => {
@@ -71,7 +67,7 @@ export default function LevelContent({ level }: LevelContentProps) {
     setUsername(state.user.username || "");
     if (Number.isFinite(idNum)) {
       const savedCode =
-        state.progress.levels[idNum]?.code ?? "# Start coding here...\nmove()";
+        state.progress.levels[idNum]?.code ?? "# Start coding here...";
       setCode(savedCode);
     }
   }, [levelId]);
@@ -169,6 +165,7 @@ export default function LevelContent({ level }: LevelContentProps) {
                   isReady={isReady}
                   isRunning={isSystemActive}
                   stopCode={handleDroneReset}
+                  error={error}
                 />
               </div>
             </div>

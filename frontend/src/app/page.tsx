@@ -119,8 +119,6 @@ export default function Home() {
     loadLevels();
   }, []);
 
-  console.log(levels);
-
   const filteredLevels = levels.filter((level) => {
     const matchesSearch =
       level.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -143,8 +141,6 @@ export default function Home() {
     setUsername(loadState().user.username || "");
     setLevelsState(loadState().progress || "");
   }, []);
-
-  console.log(levelsState);
 
   return (
     <SidebarProvider>

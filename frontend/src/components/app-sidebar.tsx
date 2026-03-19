@@ -19,11 +19,6 @@ const items = [
     icon: Home,
   },
   {
-    title: "Progress",
-    url: `${basePath}/progress`,
-    icon: Award,
-  },
-  {
     title: "Documentation",
     url: `${basePath}/documentation`,
     icon: FileSearchIcon,
