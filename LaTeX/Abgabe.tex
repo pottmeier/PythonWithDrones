@@ -1,0 +1,92 @@
+\documentclass[a4paper,12pt]{article}
+
+% Pakete
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{csquotes}
+\usepackage{tabularx}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\renewcommand*{\figurename}{Abb.}
+\renewcommand*{\contentsname}{Inhaltsverzeichnis}
+\usepackage{booktabs}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\pagenumbering{gobble}
+
+\begin{document}
+\begin{titlepage}
+	\centering
+	
+	% --- Kopfzeile ---
+	{\large Technische Hochschule Ostwestfalen-Lippe \par}
+	\vspace{0.5cm}
+	{\large Bachelor of Science – Data Science \par}
+	\vspace{0.5cm}
+	{\large Software Design\par}
+	
+	\vfill
+	
+	\includegraphics[scale=0.2]{Images/PythonWithDrones.png}
+	
+	\vfill
+	
+	
+	% --- Titel ---
+	{\large Ausarbeitung zum Thema: \par}
+	\vspace{0.5cm}
+	{\LARGE \textbf{Python with Drones} \par}
+	
+	\vfill
+	\vfill
+	
+	% --- Persönliche Daten (linksbündig) ---
+	\begin{flushleft}
+		\begin{tabular}{ll}
+			Erstellt von:   & Niclas Falke, Stefan Reitemeyer und Jonas Pottmeier\\[0.5cm]
+			Matrikelnummer:  & (Niclas),(Stefan) und 20116026 (Jonas) \\[0.5cm]
+			Fachsemester:    & 3\\[0.5cm]
+			Abgabedatum:     & 08.04.2026\\[0.5cm]
+			Prüfer:          & Prof. Dr.-Ing Rainer Rasche\\
+		\end{tabular}
+	\end{flushleft}
+	
+	\end{titlepage}	
+	\newpage
+	\tableofcontents
+	\newpage
+	\pagenumbering{arabic}
+	
+	\section{Zusammenfassung}
+	\section{Einleitung}
+	\section{Grundlagen}
+	\section{Verwendete Technologien}
+	\section{Methodik}
+	\section{Ergebnisse}
+	\section{Diskussion}
+	\section{Schlussfolgerung}
+	\section{Literaturverzeichnis}
+		\bibliography{my_bib}
+		\bibliographystyle{plain}
+	\section{Anhang}
+
+	% Beispiel für Bilder
+	%\begin{figure}[h!]
+	%	\centering
+	%	\includegraphics[scale=0.6]{Images/}
+	%	\caption{}
+	%	\label{fig:Abb_1}
+	%\end{figure}
+	
+	%\cite{} zum zitieren
+	
+\end{document}
