@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Stars } from "@react-three/drei";
 import Drone from "./animation/drone";
 import Grid from "./grid";
 import Compass from "./compass";
@@ -305,11 +305,19 @@ function SceneComponent({
         camera={{ position: START_POSITION, fov: 50 }}
         style={{ borderRadius: 8 }}
       >
-        <ambientLight intensity={0.2} />
+        <ambientLight intensity={0.3} />
         <hemisphereLight
           color={"#ffffff"}
           groundColor={"#888888"}
-          intensity={0.8}
+          intensity={0.4}
+        />
+        <Stars 
+          radius={30} 
+          depth={1} 
+          count={2000} 
+          factor={1} 
+          saturation={1} 
+          fade speed={1} 
         />
         <directionalLight
           position={[10, 20, 10]}
@@ -321,6 +329,10 @@ function SceneComponent({
           shadow-camera-right={10}
           shadow-camera-top={10}
           shadow-camera-bottom={-10}
+        />
+        <directionalLight
+          position={[-10, 10, -10]} // Gegenüberliegende Seite
+          intensity={0.7}           // Schwächer als das Hauptlicht
         />
         <Grid onLevelLoaded={handleLevelLoaded} levelId={levelId} />
         <Drone

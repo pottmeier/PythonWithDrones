@@ -5,8 +5,8 @@ import { useGLTF } from "@react-three/drei";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
 
-export default function TrunkBlock(props: any) {
-  const { scene } = useGLTF(`${basePath}/models/trunk_block_1.glb`);
+export default function StonePillar(props: any) {
+  const { scene } = useGLTF(`${basePath}/models/stone_pillar_1.glb`);
   const clonedScene = scene.clone();
 
   useEffect(() => {
@@ -20,4 +20,4 @@ export default function TrunkBlock(props: any) {
   return <primitive object={clonedScene} scale={1} {...props} />;
 }
 
-useGLTF.preload(`${basePath}/models/trunk_block_1.glb`);
+useGLTF.preload(`${basePath}/models/stone_pillar_1.glb`);
