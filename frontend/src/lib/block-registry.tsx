@@ -1,9 +1,11 @@
 import React from "react";
 import GrassTile from "@/components/animation/grass-tile";
 import DirtTile from "@/components/animation/dirt-tile";
+import StoneTile from "@/components/animation/stone-tile";
 import TrunkBlock from "@/components/animation/trunk-block"; 
 import LeavesBlock from "@/components/animation/leaves-block";
 import FinishPortalBlock from "@/components/animation/finish-portal-block";
+import StonePillar from "@/components/animation/stone-pillar";
 
 // 1. Define the capabilities of a block
 export interface BlockDefinition {
@@ -34,6 +36,24 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     isPickable: false,
     placementValidOn: ["dirt"],
     component: DirtTile,
+  },
+  stone: {
+    id: "stone",
+    isCollidable: true,
+    isDestructible: true,
+    isPickable: false,
+    placementValidOn: ["stone"],
+    component: StoneTile,
+  },
+
+  // --- deco ---
+  stone_pillar: {
+    id: "stone_pillar",
+    isCollidable: true,
+    isDestructible: true,
+    isPickable: false,
+    placementValidOn: ["stone", "stone_pillar"],
+    component: StonePillar,
   },
   
   // --- VEGETATION BLOCKS (The Tree Parts) ---

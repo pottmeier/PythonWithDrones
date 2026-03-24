@@ -1,12 +1,23 @@
 "use client";
-import React from "react";
+
+import React, { useEffect } from "react";
+import { useGLTF } from "@react-three/drei";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''; 
 
 export default function LeavesBlock(props: any) {
-  return (
-    <mesh {...props} castShadow receiveShadow>
-      {/* A simple green box */}
-      <boxGeometry args={[1, 1, 1]} /> 
-      <meshStandardMaterial color="#228B22" transparent opacity={0.9} />
-    </mesh>
-  );
+  const { scene } = useGLTF(`${basePath}/models/tree_leaves.glb`);
+  const clonedScene = scene.clone();
+
+  useEffect(() => {
+    clonedScene.traverse((child: any) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+  }, [clonedScene]);
+
+  return <primitive object={clonedScene} scale={1} {...props} />;
 }
+
+useGLTF.preload(`${basePath}/models/tree_leaves.glb`);
