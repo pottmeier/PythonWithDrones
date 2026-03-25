@@ -1,10 +1,16 @@
 \contentsline {section}{\numberline {1}Zusammenfassung}{1}{section.1}%
 \contentsline {section}{\numberline {2}Einleitung}{1}{section.2}%
 \contentsline {section}{\numberline {3}Grundlagen}{1}{section.3}%
-\contentsline {section}{\numberline {4}Verwendete Technologien}{1}{section.4}%
-\contentsline {section}{\numberline {5}Methodik}{1}{section.5}%
-\contentsline {section}{\numberline {6}Ergebnisse}{1}{section.6}%
-\contentsline {section}{\numberline {7}Diskussion}{1}{section.7}%
-\contentsline {section}{\numberline {8}Schlussfolgerung}{1}{section.8}%
-\contentsline {section}{\numberline {9}Literaturverzeichnis}{1}{section.9}%
-\contentsline {section}{\numberline {10}Anhang}{1}{section.10}%
+\contentsline {subsection}{\numberline {3.1}Spielbasiertes Lernen und Computational Thinking}{1}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Browserbasierte Python-Ausführung}{2}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Verwendete Technologien}{2}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Next.js und TypeScript}{3}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Three.js}{3}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Pyodide}{3}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}GitHub Actions und Pages}{3}{subsubsection.3.3.4}%
+\contentsline {section}{\numberline {4}Methodik}{4}{section.4}%
+\contentsline {section}{\numberline {5}Ergebnisse}{4}{section.5}%
+\contentsline {section}{\numberline {6}Diskussion}{4}{section.6}%
+\contentsline {section}{\numberline {7}Schlussfolgerung}{4}{section.7}%
+\contentsline {section}{\numberline {8}Literaturverzeichnis}{4}{section.8}%
+\contentsline {section}{\numberline {9}Anhang}{4}{section.9}%
