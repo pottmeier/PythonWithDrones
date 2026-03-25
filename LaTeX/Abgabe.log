@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.10)  23 MAR 2026 20:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.3.10)  25 MAR 2026 14:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -460,7 +460,7 @@ Package hyperref Info: Link coloring OFF on input line 26.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-<Images/PythonWithDrones.png, id=44, 1027.84pt x 1027.84pt>
+<Images/PythonWithDrones.png, id=68, 1027.84pt x 1027.84pt>
 File: Images/PythonWithDrones.png Graphic file (type png)
 <use Images/PythonWithDrones.png>
 Package pdftex.def Info: Images/PythonWithDrones.png  used on input line 39.
@@ -489,35 +489,55 @@ een already used, duplicate ignored
 <to be read again> 
                    \relax 
 l.66 	\newpage
-               [1] (./Abgabe.bbl
+               [1]
+Overfull \hbox (17.13445pt too wide) in paragraph at lines 109--120
+\T1/cmr/m/n/12 sprachen ist dieser Ansatz beson-ders geeignet. Durch so-for-tig
+es vi-suelles Feed-back beobachten
+ []
+
+
+Overfull \hbox (13.00124pt too wide) in paragraph at lines 121--128
+[]\T1/cmr/m/n/12 Darüber hin-aus fördert das Pro-jekt Fähigkeiten des struk-tur
+i-erten, al-go-rith-mis-chen Denkens.
+ []
+
+[1] [2]
+Overfull \hbox (1.5762pt too wide) in paragraph at lines 199--210
+\T1/cmr/m/n/12 Aus-führung von Python voll-ständig im Browser, ohne ser-ver-sei
+t-ige In-fras-truk-tur zu benöti-
+ []
+
+(./Abgabe.bbl
 
 LaTeX Warning: Empty `thebibliography' environment on input line 3.
 
-) [1] (./Abgabe.aux)
+) [3] [4] (./Abgabe.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `Abgabe.out' has not changed.
-(rerunfilecheck)             Checksum: CE7DBDFA33DB80812D22DA53D6D6F222;1075.
+(rerunfilecheck)             Checksum: C0257D626BDC4A78C83BCC9A186ED9DF;2219.
  ) 
 Here is how much of TeX's memory you used:
- 11974 strings out of 469515
- 179146 string characters out of 5470807
- 607141 words of memory out of 5000000
- 40462 multiletter control sequences out of 15000+600000
- 637769 words of font info for 65 fonts, out of 8000000 for 9000
+ 12001 strings out of 469515
+ 179556 string characters out of 5470807
+ 614207 words of memory out of 5000000
+ 40476 multiletter control sequences out of 15000+600000
+ 639541 words of font info for 68 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,6n,79p,371b,546s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,371b,546s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/t
-exmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/share/texmf-dist/fonts
-/type1/public/cm-super/sfbx2074.pfb></usr/share/texmf-dist/fonts/type1/public/c
-m-super/sfrm1200.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm144
-0.pfb>
-Output written on Abgabe.pdf (3 pages, 1871818 bytes).
+exmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf-dist/fonts
+/type1/public/cm-super/sfbx1728.pfb></usr/share/texmf-dist/fonts/type1/public/c
+m-super/sfbx2074.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm120
+0.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/sha
+re/texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/share/texmf-dist/f
+onts/type1/public/cm-super/sftt1200.pfb>
+Output written on Abgabe.pdf (6 pages, 1957772 bytes).
 PDF statistics:
- 105 PDF objects out of 1000 (max. 8388607)
- 87 compressed objects within 1 object stream
- 15 named destinations out of 1000 (max. 500000)
- 86 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 168 PDF objects out of 1000 (max. 8388607)
+ 140 compressed objects within 2 object streams
+ 25 named destinations out of 1000 (max. 500000)
+ 134 words of extra memory for PDF output out of 10000 (max. 10000000)
 
