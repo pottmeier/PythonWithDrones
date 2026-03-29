@@ -1,6 +1,8 @@
-This is BibTeX, Version 0.99e (TeX Live 2026/Arch Linux)
+This is BibTeX, Version 0.99d
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Abgabe.aux
+Reallocating 'name_of_file' (item size: 1) to 7 items.
+Reallocating 'name_of_file' (item size: 1) to 6 items.
 The style file: plain.bst
 I found no \citation commands---while reading file Abgabe.aux
 Database file #1: my_bib.bib
