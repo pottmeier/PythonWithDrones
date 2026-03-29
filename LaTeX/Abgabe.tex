@@ -6,6 +6,7 @@
 \usepackage{csquotes}
 \usepackage{tabularx}
 
+\usepackage[ngerman]{babel} 
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{tabularx}
@@ -17,13 +18,13 @@
 \geometry{margin=2.5cm}
 \renewcommand*{\figurename}{Abb.}
 \renewcommand*{\contentsname}{Inhaltsverzeichnis}
-\usepackage{booktabs}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 \pagenumbering{gobble}
 
 \begin{document}
+% MARK: Titlepage
 \begin{titlepage}
 	\centering
 	
@@ -52,10 +53,10 @@
 	% --- Persönliche Daten (linksbündig) ---
 	\begin{flushleft}
 		\begin{tabular}{ll}
-			Erstellt von:   & Niclas Falke, Stefan Reitemeyer und Jonas Pottmeier\\[0.5cm]
+			Erstellt von:	 & Niclas Falke, Stefan Reitemeyer und Jonas Pottmeier\\[0.5cm]
 			Matrikelnummer:  & (Niclas),(Stefan) und 20116026 (Jonas) \\[0.5cm]
 			Fachsemester:    & 3\\[0.5cm]
-			Abgabedatum:     & 08.04.2026\\[0.5cm]
+			Abgabedatum:     & \today\\[0.5cm]
 			Prüfer:          & Prof. Dr.-Ing Rainer Rasche\\
 		\end{tabular}
 	\end{flushleft}
@@ -66,7 +67,10 @@
 	\newpage
 	\pagenumbering{arabic}
 	
-	\section{Zusammenfassung}
+	% MARK: Abstract
+	\section{Abstract}
+
+	% MARK: Einleitung
 	\section{Einleitung}
 	
 	Die Vermittlung von Programmierkenntnissen stellt Lehrende und Lernende
@@ -97,8 +101,9 @@
 	Softwarearchitekturprinzipien. Die vollständig browserbasierte Anwendung
 	ist ohne jegliche lokale Installation unter
 	\url{https://pottmeier.github.io/PythonWithDrones/} erreichbar.
-	\section{Grundlagen}
-	
+
+	% MARK: Grundlagen
+ 	\section{Grundlagen}
 	Dieses Kapitel legt die konzeptionellen und technischen Grundlagen dar,
 	auf denen \linebreak \textit{PythonWithDrones} aufbaut. Zunächst werden
 	pädagogische Konzepte des spielbasierten Lernens erläutert, anschließend
@@ -140,7 +145,9 @@
 	\textit{PythonWithDrones} nutzt diesen Ansatz konsequent. Die gesamte
 	Anwendung ist als statische Webseite deployt und benötigt keinerlei
 	Backend. Lernende benötigen ausschließlich einen modernen Browser, um
-	sofort mit dem Programmieren zu beginnen. Wir haben diese Entscheidung getroffen um es allen Studierenden der Hochschule zu ermöglichen unser Projekt zu nutzen.
+	sofort mit dem Programmieren zu beginnen. Wir haben diese Entscheidung 
+	getroffen um es allen Studierenden der Hochschule zu ermöglichen unser 
+	Projekt zu nutzen.
 	
 	\subsection{Verwendete Technologien}
 	
@@ -173,7 +180,9 @@
 	\subsubsection{Next.js und TypeScript}
 	Next.js ist ein auf React basierendes Framework, das
 	dateibasiertes Routing, Static Site Generation sowie eine klare
-	Projektstruktur mitbringt. Als typisierte Obermenge von JavaScript ermöglicht TypeScript statische Typprüfung bereits zur Kompilierzeit, was besonders für die Definition
+	Projektstruktur mitbringt. Als typisierte Obermenge von JavaScript 
+	ermöglicht TypeScript statische Typprüfung bereits zur Kompilierzeit, 
+	was besonders für die Definition
 	von Datenstrukturen wie dem Drohnenzustand (\texttt{DroneState}) sowie
 	der Schnittstelle zwischen Pyodide und der 3D-Engine von Vorteil ist.
 	Die Entscheidung für Next.js ermöglicht es zudem, die Anwendung als
@@ -188,7 +197,7 @@
 	Schnittstelle zur Erstellung von 3D-Szenen im Browser. Konzepte wie
 	Szene, Kamera, Beleuchtung und Geometrien entsprechen denen
 	professioneller 3D-Engines und ermöglichen die räumliche Darstellung
-	komplexer Welten. In \textit{PythonWithDrones} wird Three.js eingesetzt,
+	komplexer Welten. In \textit{PythonWithDrones} wird \textit{Three.js} eingesetzt,
 	um Drohne, Hindernisse und Zielportal dreidimensional darzustellen. Die
 	Drohnenbewegung wird über einen Zustandsvektor aus Position und Rotation
 	gesteuert, den der Python-Interpreter bei jeder Befehlsausführung
@@ -204,7 +213,7 @@
 	Drohnenbefehle als Python-Funktionen wie etwa \texttt{move()},
 	\texttt{turn\_left()} oder \texttt{turn\_right()} in den Python-Namespace
 	injiziert werden. Jeder Funktionsaufruf übersetzt sich in eine
-	Zustandsänderung des Drohnenobjekts, die Three.js anschließend
+	Zustandsänderung des Drohnenobjekts, die \textit{Three.js} anschließend
 	visualisiert. Diese Brücke zwischen Python und JavaScript bildet das
 	Kernstück der gesamten Anwendung.
 	
@@ -215,10 +224,216 @@
 	Next.js-Export erzeugt und auf \textit{GitHub Pages} veröffentlicht.
 	Diese Kombination ermöglicht uns ein vollständig serverfreies und kostenloses
 	Deployment.
-	\section{Methodik}
+
+	% MARK: Implementierung
+	\section{Implementierung}
+	\subsection{Systemarchitektur \& Komponentenübersicht}
+	In diesem Kapitel wird die Implementierung der vorgestellten Technologien 
+	beschrieben, welche im Projekt \textit{PythonWithDrones} verwendet wurden, wobei 
+	hier die React-Benutzeroberfläche, die Python-Ausführung durch Pyodide im 
+	Web Worker und die 3D-Visualisierung mit Hilfe von \textit{Three.js} den Kernelemente sind.
+
+	Der erste Bestandteil ist die React-Schicht, mit der die Nutzerinteraktionen 
+	verarbeitet und Code-Editor, Level-Auswahl, sowie Fortschrittsverwaltung 
+	bereitgestellt werden. Der Spielfortschritt wird ohne Backend ausschließlich im 
+	localStorage des Browsers gespeichert, um eine serverseitige Infrastruktur zu 
+	vermeiden. Dazu gehören zum Beispiel die Info, welche Level geschafft wurden, 
+	oder der zuletzt geschrieben Code in einem Level. Das UI-Styling wird hier durch 
+	\textit{shadcn} realisiert, wodurch fertige Komponenten für die Benutzeroberfläche, 
+	wie zum Beispiel Buttons oder die Sidebar, direkt in das Projekt integriert werden 
+	nutzbar sind.
+
+	Die zweite wichtige Komponente ist die Ausführung des Python-Codes mit Hilfe 
+	von Pyodide. Um die Anwendung nicht zu blockieren, wird der Code des Nutzers 
+	nicht im Hauptthread ausgeführt, sondern in einen Web Worker ausgelagert. 
+	So wird sichergestellt, dass React und \textit{Three.js} ansprechbar bleiben. Die 
+	Kommunikation zwischen dem Worker und Hauptthread erfolgt über den Befehl 
+	\texttt{postMessage}. Dabei empfängt der Worker Befehle wie \texttt{LOAD\_LEVEL} 
+	oder \texttt{RUN} und schickt dann Nachrichten vom Typ \texttt{ACTION}, 
+	\texttt{FINISHED} oder \texttt{ERROR} zurück.
+
+	Außerdem gibt es noch die 3D-Darstellung der gesamten Szene. Hier ist das 
+	globale \texttt{window}-Objekt die Brücke zwischen Python und der angezeigten Visualisierung. 
+	Wenn der Worker eine \texttt{ACTION}-Nachricht sendet, wird durch den Hook 
+	\texttt{usePyodideWorker} die Funktion \texttt{window.droneAction} aufgerufen, 
+	die von der Szenenkomponente registriert wurde. So kann jeder Befehl als 
+	strukturiertes Datenobjekt an die Animationsschicht übergeben werden, 
+	ohne dass Python und \textit{Three.js} direkt voneinander abhängen. In der anderen 
+	Richtung werden über \texttt{window.getLevelData} und 
+	\texttt{window.getBlockRegistry} die für die Simulation benötigten 
+	Leveldaten und Blockinformationen bereitgestellt, auf welche der Worker
+	beim Laden eines Levels zugreift.
+
+	In den folgenden Unterkapiteln werden die einzelnen Bereiche 
+	Level-System, Python-Ausführung, Kommunikationsprotokoll und 3D-Visualiserung 
+	näher beschrieben.
+
+	\subsection{Level-System \& Datenstruktur}
+	Jedes Level in \textit{PythonWithDrones} wird in einer eigenen YAML-Datei 
+	definiert und beinhaltet alle relevanten Informationen: Id, Titel, 
+	Kurzbeschreibung, Tags, Beschreibung, Startpunkt der Drohne, Gewinnbedingung 
+	und die Levelgeometrie. Durch die Trennung von Levelinhalt und Anwendungslogik 
+	können leicht neue Level geschrieben und hinzugefügt werden, um das 
+	Projekt erweiterbar zu halten. Titel, Tags und Kurzbeschreibung werden für 
+	die Auswahl im Menü benötigt. Die Beschreibung wird im Level selber 
+	angezeigt und enthält eine kurze Problemstellung mit Lösungshinweisen, 
+	beispielsweise wie man Schleifen in Python verwendet.
+
+	Die Geometrie der Level ist als Voxelsystem aufgebaut, wodurch klare 
+	Regeln geschaffen werden, die leicht verständlich sind, damit der Nutzer 
+	sich auf die Programmierung mit Python fokussieren kann. In der YAML-Datei 
+	werden dafür beliebig viele Schichten (\texttt{layer\_0}, \texttt{layer\_1, etc.}) 
+	angelegt, welche jeweils einer horizontalen Ebene in der 3D-Welt entsprechen. 
+	Jede Ebene enthält dabei eine Matrix, in der die Blöcke über Block-IDs 
+	definiert sind. Durch dieses einfache Prinzip lassen sich beliebig komplexe 
+	3D-Level erschaffen und in strukturierter Textform speichern.
+	
+	Ein weiterer zentraler Bestandteil des Level-Systems ist die \texttt{block-registry.tsx}. 
+	In dieser Datei werden alle Arten von Blöcken mit ihren Eigenschaften definiert. 
+	So sind Informationen, wie die Block-ID, ob ein Block Kollisionen besitzt, 
+	ein Block als Ziel zählt, oder welche React-Komponente ihn visuell darstellt, 
+	festgelegt. Dadurch ergibt sich eine einzige Datenquelle, auf die sowohl von 
+	der virtuellen Python Logik, als auch von der visuellen 3D-Darstellung, 
+	zurückgegriffen wird. Die gesamte Anwendung bleibt so leicht wartbar und 
+	erweiterbar.
+
+	Beim Laden eines Levels wird dann durch \texttt{grid.tsx} die YAML-Datei 
+	eingelesen. Hier wird für jeden Block eine Instanz mit der zugehörigen 
+	React-Komponente aus der Registry erstellt. Zusätzlich werden über 
+	\texttt{window.getLevelData} die Daten des Levels für die virtuelle 
+	Python Berechnung bereitgestellt.
+
+	\subsection{Python-Ausführung im Browser}
+	Die Ausführung von Python-Code direkt im Browser ist das Schlüsselelement von 
+	\textit{PythonWithDrones}. Grundlage dafür ist Pyodide, das den CPython-Interpreter 
+	via WebAssembly im Browser lauffähig macht. Ursprünglich wurde Pyodide direkt im 
+	Hauptthread betrieben, wodurch die Anwendung aber bei Endlosschleifen eingefroren ist. 
+	Als Lösung dafür wird Pyodide deshalb in einen Web Worker ausgelagert, sodass auch 
+	eine \texttt{while True}-Schleife im Nutzercode vom Hauptthread isoliert wird und 
+	die Bedienoberfläche, sowie die 3D-Szene ansprechbar bleiben.
+
+	Der Worker wird beim Start eines Levels initialisiert, lädt dabei Pyodide zusammen 
+	mit den benötigten Python-Paketen (\texttt{pyyaml}, \texttt{pydantic}) und schreibt 
+	die \texttt{game.py} und \texttt{model.py} direkt in das virtuelle Dateisystem von 
+	Pyodide, damit diese zur Laufzeit importiert werden können. Die Kommunikation zwischen 
+	dem Hook \texttt{usePyodideWorker} und dem Worker wird über ein Nachrichtenprotokoll 
+	via \texttt{postMessage} realisiert. Dabei nutzt der der Worker drei eingehende 
+	Nachrichtentypen. \texttt{LOAD\_LEVEL} wird zum Initialisieren eines neuen Levels benötigt. 
+	Zum Ausführen des Nutzercodes wird \texttt{RUN} genutzt. Außerdem gibt es den impliziten 
+	Initialisierungsschritt bei Start des Workers. Ausgehend werden die Nachrichtentypen 
+	\texttt{READY}, \texttt{ACTION}, \texttt{FINISHED} und \texttt{ERROR} verwendet, abhängig 
+	davon, ob eine Drohnenaktion ausgelöst wurde, die Ausführung erfolgreich war oder ein 
+	Fehler aufgetreten ist.
+
+	Der Nutzercode wird zudem nicht isoliert gestartet, sondern über \texttt{exec()} im 
+	Namespace von \texttt{game.py} ausgeführt. Auf diese Weise sind die definierten Objekte, 
+	wie die Drohne, im Nutzercode verfügbar, ohne zusätzliche Imports anzugeben. Lernende 
+	müssen sich so nicht mit den Modulstrukturen auseinandersetzen, sondern können 
+	sich auf das Wesentliche konzentrieren und Funktionen, wie \texttt{drone.move()} oder 
+	\texttt{drone.turn\_left()}, direkt nutzen.
+
+	\subsection{Kommunikation zwischen Python und JavaScript}
+	Da Python im Web Worker und die 3D-Szene im Hauptthread laufen, können die beiden 
+	Seiten nicht direkt miteinander kommunizieren. Als Brücke dient die folgende Lösung. 
+	Mit jedem Drohnenbefehl wird in Python ein strukturiertes Datenobjekt, eine Action, 
+	erzeugt und mit Hilfe von \texttt{postMessage} an den Hauptthread gesendet. Diese 
+	Nachricht wird vom Hook \texttt{usePyodideWorker} entgegengenommen, welcher 
+	wiederum \texttt{window.droneAction} aufruft. Dadurch ist die virtuelle Logik in 
+	Python von der visuellen Darstellung durch \textit{Three.js} entkoppelt. Es wird nur ein 
+	Datenobjekt gesendet, das die Bewegung auf ein bestimmtes Feld oder die Drehrichtung 
+	beschreibt.
+	
+	Um eine saubere Animation der eingehenden Aktionen zu gewährleisten, werden diese 
+	nicht direkt in der 3D-Welt ausgeführt, sondern in einer Warteschlange eingereiht. 
+	Durch eine eigenständige Funktion wird dieser Puffer an Befehlen dann sequenziell 
+	abgearbeitet. Dabei muss immer eine Animation abgeschlossen sein, bevor die nächste 
+	ausgelöst wird. Dieses Prinzip stellt sicher, dass die Bewegungen in der richtigen 
+	Reihenfolge und ohne Überlappungen ausgeführt werden. Dadurch ist die visuelle 
+	Darstellung unabhängig von der Verarbeitungsgeschwindigkeit der virtuellen Drohne in 
+	Python, welche schneller abgeschlossen ist als die sichtbaren Animationen.
+
+	Eine konkrete Einschränkung entsteht jedoch bei Endlosschleifen, in denen die Drohne 
+	nicht abstürzt. Ohne eine Verzögerung würde Python in hoher Frequenz Befehle in die 
+	Warteschlange einreihen, was die gesamte Anwendung verlangsamen würde. Eine einfache 
+	Lösung wurde hier durch ein \texttt{time.sleep(0.1)} in der 
+	\texttt{\_\_send\_action\_\_} umgesetzt. Durch diese Pause von 100 Millisekunden 
+	wird die Rate von eingehenden Befehlen auf ein kontrolliertes Maß begrenzt, ohne 
+	zusätzliche Logiken einzubauen.
+
+	Neben den regulären Aktionen gibt es bislang zwei Sonderfälle. Bei einem Absturz der Drohne 
+	sendet Python eine \texttt{crash}-Action, wodurch in der Szene eine Absturzanimation 
+	ausgelöst wird und verbleibende Aktionen in der Warteschlange verworfen werden. 
+	Gleichzeitig wird im Hook \texttt{usePyodideWorker} der Zustand \texttt{hasCrashed} auf 
+	\texttt{true} gesetzt, wodurch der Run-Button für den Nutzer deaktiviert bleibt, bis die 
+	Drone manuell zurückgesetzt wird. Beim Erreichen des Ziels sendet Python eine 
+	\texttt{goal}-Action, wodurch das Level in der Szene als abgeschlossen markiert 
+	und der Fortschritt im \texttt{localStorage} gespeichert wird. 
+
+	\subsection{Visualisierung der 3D-Szene}
+	Die Szene wird mit Hilfe von \textit{React Three Fiber} gerendert, einer deklarativen 
+	React-Abstraktion über \textit{Three.js}. Sie erlaubt es die Szenebeleuchtung, Kamera 
+	und 3D-Objekte als gewöhnliche React-Komponenten zu behandeln. 
+
+	Die Blockkomponenten nutzen derzeit zwei verschiedene Ansätze zur Darstellung. So wird 
+	das Zielportal noch mit einem einfachen geometrischen Primitive direkt im Code definiert. 
+	Andere Blöcke wurden bereits durch \texttt{.glb}-Dateien ersetzt, welche in \textit{Blender} 
+	modelliert und in das Projekt geladen wurden. Die Drohne selbst ist als eigene Komponente 
+	implementiert und wird über eine \texttt{groupRef} angesteuert. Eingehende Aktionen aus 
+	der Warteschlange lösen dabei \textit{GSAP}-Animationen für die Drohnenposition und -rotation 
+	aus. Die Geschwindigkeit der Drohne lässt sich über \texttt{gsap.globalTimeline.timeScale()} 
+	zur Laufzeit anpassen, damit Nutzer bei langen Programmabläufen die Animationen beschleunigen 
+	können, um so verschiedene Varianten zu testen, ohne zu lange warten zu müssen. Da es sich 
+	um eine dreidimensionale Spieltwelt handelt, ist die Kamera als frei drehbare Instanz 
+	konfiguriert, die Rotation, Translation und Zoom innerhalb der Levelgrenzen erlaubt. 
+
 	\section{Ergebnisse}
-	\section{Diskussion}
-	\section{Schlussfolgerung}
+	%\subsection{Funktionsumfang der fertigen Anwendung}
+	\textit{PythonWithDrones} liegt als funktionsfähiger Prototyp vor, welcher die Idee einer 
+	browserbasierten Lernplatform vollständig umsetzt. Die Anwendung umfasst bislang sechs 
+	spielbare Level, von denen jedes ein neues Konzept einführt. Dabei wird in Level 1 \& 2 zunächst 
+	erklärt, wie man die Drohne in der Welt bewegen und drehen kann. 
+	In den folgenden Leveln werden dann grundlegende Programmierkonzepte wie Schleifen, 
+	Funktionen und bedingte Anweisungen vorgestellt. Die Level 
+	bauen dabei aufeinander auf und werden der Reihe nach freigeschaltet.
+
+	Lernenden steht hierfür eine minimale Python-API zur Verfügung. Es sind bereits 
+	Drohnenbefehle, wie \texttt{drone.move()} oder \texttt{drone.turn\_left()}, sowie 
+	Zustandsabfragen, wie \texttt{is\_path\_blocked()} oder \texttt{at\_portal()} verfügbar.
+	Der Fortschritt und zuletzt geschrieben Code werden im Browser automatisch gespeichert, 
+	sodass die Anwendung jederzeit verlassen werden kann, um zu einem späteren Zeitpunkt 
+	fortzufahren. Außerdem wird keinerlei Installation benötigt, da das Projekt direkt über 
+	\textit{GitHub Pages} unter \url{https://pottmeier.github.io/PythonWithDrones/} erreichbar 
+	ist und sowohl auf Desktop- und Mobilgeräten genutzt werden kann.
+
+	%\subsection{Erfüllung der Lernziele}
+	Das Hauptziel der Anwendung ist die Vermittlung von Programmierkonzepten durch 
+	interaktive und spielerische Elemente. In \textit{PythonWithDrones} wird jeder 
+	Python-Befehl in sichtbare Bewegungen der Drohne umgesetzt, wobei auch ein Fehler, wie 
+	das Abstürzen der Drohne mit einer entsprechenden Animation dargestellt werden. Da 
+	es als Lernplatform konzipiert ist, wird die Schwierigkeit mit jedem Level gesteigert. 
+	Die Lernkurve basiert auf internen Einschätzungen und wurde noch nicht mit echten 
+	Testpersonen ohne Programmiererfahrung getestet.  
+
+	%\subsection{Einschränkungen}
+	Da es sich noch um einen Prototyp handelt, gibt es einige bekannte Einschränkungen. 
+	Zur Zeit wird der Web Worker noch bei jedem Zurücksetzen der Szene neu gestartet, statt 
+	nur einmalig beim Laden eines Levels initialisiert zu werden. Außerdem ist die Anzahl 
+	an Leveln noch begrenzt, kann aber durch die verwendeten Strukturen leicht erweitert werden.
+
+	% MARK: Diskussion
+	\section{Auswertung \& Diskussion}
+
+	% MARK: Fazit
+	\section{Zusammenfassung \& Asublick}
+	
+	ausblick ideen:
+	- integrierter 3d level-Editor
+	- random level generator
+	- mehr level 
+	- worker nur beim laden neustarten, nicht bei jedem reset der drone 
+	- geräteübergreifende speicherung vom Fortschritt
+	- 
+
 	\section{Literaturverzeichnis}
 		\bibliography{my_bib}
 		\bibliographystyle{plain}

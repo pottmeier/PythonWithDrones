@@ -47,7 +47,7 @@ export default function Grid({ onLevelLoaded, levelId }: GridProps) {
           onLevelLoaded({
             size: { width, height, depth },
             spawn: blueprint.spawn,
-            description: blueprint.description || "No description available.", // 3. Pass it up
+            description: blueprint.description || "No description available.",
           });
         } else {
           console.error("Invalid level data: Missing layer_0 or spawn point");
