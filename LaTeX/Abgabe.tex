@@ -54,9 +54,9 @@
 	\begin{flushleft}
 		\begin{tabular}{ll}
 			Erstellt von:	 & Niclas Falke, Stefan Reitemeyer und Jonas Pottmeier\\[0.5cm]
-			Matrikelnummer:  & (Niclas),(Stefan) und 20116026 (Jonas) \\[0.5cm]
+			Matrikelnummer:  & 20122542 (Niclas),(Stefan) und 20116026 (Jonas) \\[0.5cm]
 			Fachsemester:    & 3\\[0.5cm]
-			Abgabedatum:     & \today\\[0.5cm]
+			Abgabedatum:     & 08.04.2026\\[0.5cm]
 			Prüfer:          & Prof. Dr.-Ing Rainer Rasche\\
 		\end{tabular}
 	\end{flushleft}
@@ -66,9 +66,16 @@
 	\tableofcontents
 	\newpage
 	\pagenumbering{arabic}
-	
-	% MARK: Abstract
-	\section{Abstract}
+
+	% MARK: Abstrakt
+	\section{Abstrakt}
+	Die vorliegende Arbeit befasst sich mit der Entwicklung von \textit{PythonWithDrones}, 
+	einer vollständig browserbasierten Lernplattform, die darauf abzielt, 
+	grundlegende Python-Konzepte mithilfe interaktiver 3D-Simulationen zu 
+	vermitteln. In dieser Umgebung steuern Lernende eine virtuelle Drohne 
+	durch selbst geschriebene Python-Skripte. Die technische Umsetzung basiert 
+	auf mehreren zentralen Komponenten, welche im Verlauf der Arbeit detailliert 
+	beschrieben werden.
 
 	% MARK: Einleitung
 	\section{Einleitung}
@@ -136,10 +143,10 @@
 	Traditionell setzt die Ausführung von Python-Code eine lokale
 	Interpreter-Installation voraus, was für Lernumgebungen eine erhebliche
 	Einstiegshürde darstellt. Moderne Technologien ermöglichen es jedoch,
-	Python direkt im Browser auszuführen, ohne serverseitige Infrastruktur
+	\cite{python} Python direkt im Browser auszuführen, ohne serverseitige Infrastruktur
 	zu benötigen. Grundlage hierfür ist WebAssembly, ein binäres
 	Instruktionsformat, das in modernen Browsern nahezu nativ ausgeführt
-	werden kann. Auf dieser Basis ermöglicht Pyodide die vollständige
+	werden kann. Auf dieser Basis ermöglicht \cite{pyodide} Pyodide die vollständige
 	Ausführung des CPython-Interpreters im Browser.
 	
 	\textit{PythonWithDrones} nutzt diesen Ansatz konsequent. Die gesamte
@@ -171,6 +178,7 @@
 			Pyodide          & Wasm-Runtime    & Python-Ausführung im Browser \\
 			Python           & Lernsprache     & Drohnensteuerung via Befehls-API \\
 			CSS              & Styling         & Layout und visuelle Gestaltung \\
+			shadcn		 	 & UI-Framework    & Fertige React-Komponenten für die Benutzeroberfläche \\
 			GitHub Actions   & CI/CD           & Automatisierter Build und Deployment \\
 			GitHub Pages     & Hosting         & Statisches, serverfreies Deployment \\
 			\bottomrule
@@ -178,10 +186,10 @@
 	\end{table}
 	
 	\subsubsection{Next.js und TypeScript}
-	Next.js ist ein auf React basierendes Framework, das
+	\cite{nextjs} Next.js ist ein auf React basierendes Framework, das
 	dateibasiertes Routing, Static Site Generation sowie eine klare
 	Projektstruktur mitbringt. Als typisierte Obermenge von JavaScript 
-	ermöglicht TypeScript statische Typprüfung bereits zur Kompilierzeit, 
+	ermöglicht \cite{typescript} TypeScript statische Typprüfung bereits zur Kompilierzeit, 
 	was besonders für die Definition
 	von Datenstrukturen wie dem Drohnenzustand (\texttt{DroneState}) sowie
 	der Schnittstelle zwischen Pyodide und der 3D-Engine von Vorteil ist.
@@ -193,7 +201,7 @@
 	entwickelt und getestet werden.
 	
 	\subsubsection{Three.js}
-	\textit{Three.js} abstrahiert die WebGL-API und bietet eine deklarative
+	\cite{threejs} \textit{Three.js} abstrahiert die WebGL-API und bietet eine deklarative
 	Schnittstelle zur Erstellung von 3D-Szenen im Browser. Konzepte wie
 	Szene, Kamera, Beleuchtung und Geometrien entsprechen denen
 	professioneller 3D-Engines und ermöglichen die räumliche Darstellung
@@ -216,12 +224,20 @@
 	Zustandsänderung des Drohnenobjekts, die \textit{Three.js} anschließend
 	visualisiert. Diese Brücke zwischen Python und JavaScript bildet das
 	Kernstück der gesamten Anwendung.
-	
+
+	\subsubsection{shadcn}
+	\cite{shadcn} \textit{shadcn} ist eine Sammlung von vorgefertigten React-Komponenten, 
+	die mit Tailwind CSS gestaltet wurden. Sie ermöglichen eine schnelle und 
+	konsistente Entwicklung der Benutzeroberfläche, ohne sich um das Design 
+	und die Implementierung der einzelnen Elemente kümmern zu müssen.
+	In \textit{PythonWithDrones} wurden shadcn-Komponenten für die Gestaltung 
+	von Buttons, Sidebars, Modals und anderen UI-Elementen verwendet.
+
 	\subsubsection{GitHub Actions und Pages}
-	Der gesamte Build- und Deploymentprozess wird über \textit{GitHub Actions}
+	Der gesamte Build- und Deploymentprozess wird über \cite{githubactions} \textit{GitHub Actions}
 	automatisiert. Bei jedem Push auf den \texttt{main}-Branch wird eine
 	Pipeline ausgelöst, die den TypeScript-Code kompiliert, den statischen
-	Next.js-Export erzeugt und auf \textit{GitHub Pages} veröffentlicht.
+	Next.js-Export erzeugt und auf \cite{githubpages} \textit{GitHub Pages} veröffentlicht.
 	Diese Kombination ermöglicht uns ein vollständig serverfreies und kostenloses
 	Deployment.
 
@@ -410,33 +426,95 @@
 	interaktive und spielerische Elemente. In \textit{PythonWithDrones} wird jeder 
 	Python-Befehl in sichtbare Bewegungen der Drohne umgesetzt, wobei auch ein Fehler, wie 
 	das Abstürzen der Drohne mit einer entsprechenden Animation dargestellt werden. Da 
-	es als Lernplatform konzipiert ist, wird die Schwierigkeit mit jedem Level gesteigert. 
-	Die Lernkurve basiert auf internen Einschätzungen und wurde noch nicht mit echten 
-	Testpersonen ohne Programmiererfahrung getestet.  
-
-	%\subsection{Einschränkungen}
-	Da es sich noch um einen Prototyp handelt, gibt es einige bekannte Einschränkungen. 
-	Zur Zeit wird der Web Worker noch bei jedem Zurücksetzen der Szene neu gestartet, statt 
-	nur einmalig beim Laden eines Levels initialisiert zu werden. Außerdem ist die Anzahl 
-	an Leveln noch begrenzt, kann aber durch die verwendeten Strukturen leicht erweitert werden.
+	es als Lernplatform konzipiert ist, wird die Schwierigkeit mit jedem Level gesteigert.   
 
 	% MARK: Diskussion
 	\section{Auswertung \& Diskussion}
+	Da es sich bei der Anwendung noch um einen Prototyp handelt, gibt es einige bekannte Einschränkungen. 
+	Zur Zeit wird der Web Worker noch bei jedem Zurücksetzen der Szene neu gestartet, statt 
+	nur einmalig beim Laden eines Levels initialisiert zu werden. Zudem ist noch nicht klar, 
+	wie die Anwendung von echten Nutzern angenommen wird, da bisher noch keine relevanten Tests 
+	mit Personen ohne Programmiererfahrung durchgeführt wurden. Es könnte sich herausstellen, 
+	dass die Lernkurve zu steil ist oder dass bestimmte Konzepte nicht ausreichend erklärt werden. 
+	Hier wäre es wichtig, Feedback von echten Nutzern einzuholen, um die Anwendung iterativ zu 
+	verbessern und an die Bedürfnisse der Zielgruppe anzupassen. Außerdem ist die Anzahl an Leveln 
+	noch begrenzt und dementsprechend noch nicht genug, um ein vollumfassendes Python-Tutorial darzustellen. 
+	Auf der anderen Seite, ist die Infrastruktur bereits soweit fertig, dass neue Level einfach hinzugefügt 
+	werden können, wodurch die Erweiterung des Lernangebots relativ unkompliziert möglich ist. Bereits jetzt 
+	können neue Level Requests über \url{https://github.com/pottmeier/PythonWithDrones/issues/new?template=level-request.md} 
+	eingereicht werden.
 
 	% MARK: Fazit
-	\section{Zusammenfassung \& Asublick}
+	\section{Schlussfolgerung}
+	\subsection{Zusammenfassung}
+	\textit{PythonWithDrones} demonstriert die Machbarkeit einer vollständig browserbasierten Lernplattform,
+	die Python-Programmierung mit einem interaktiven, spielerischen Element verbindet. Durch die Kombination von 
+	\textit{Pyodide} für die Python-Ausführung, \textit{Three.js} für die 3D-Visualisierung und einem klar strukturierten 
+	Level-System bietet die Anwendung eine motivierende Umgebung für Einsteiger, um grundlegende Programmierkonzepte 
+	zu erlernen. Die Entscheidung für ein serverfreies Deployment über \textit{GitHub Pages} ermöglicht einen einfachen Zugang 
+	für alle Nutzer, ohne technische Hürden. Die Anwendung befindet sich im Bezug auf die Level noch in einem frühen Stadium, 
+	bietet aber bereits eine solide Grundlage mit der nötigen Infrastruktur, um das Lernangebot sukzessive zu erweitern.
+
+	\subsection{Nächste Schritte und Erweiterungsmöglichkeiten}
+	\begin{itemize}
+		\item \textbf{Benutzertests:} Durchführung von Tests mit Personen ohne Programmiererfahrung, um die Benutzerfreundlichkeit und die Effektivität der Lerninhalte zu evaluieren.
+
+		\item \textbf{Level:} Erweiterung des Level-Angebots, um ein umfassenderes Python-Tutorial zu bieten.
 	
-	ausblick ideen:
-	- integrierter 3d level-Editor
-	- random level generator
-	- mehr level 
-	- worker nur beim laden neustarten, nicht bei jedem reset der drone 
-	- geräteübergreifende speicherung vom Fortschritt
-	- 
+		\item \textbf{Level-Editor:} Einführung eines integrierten Editors, der es ermöglicht, neue Level einfach zu erstellen und anzupassen.
+		
+		\item \textbf{Randomisierter Level-Generator:} Entwicklung eines Systems, das automatisch variierende Level erzeugt, um für mehr Abwechslung und langfristige Motivation zu sorgen.
+		
+		\item \textbf{Optimierung der Web-Worker-Logik:} Verbesserung der Performance, indem der Web Worker nur einmal beim Laden eines Levels initialisiert wird und nicht bei jedem Reset der Drohne.
+		
+		\item \textbf{Geräteübergreifende Speicherung:} Implementierung einer Funktion, die es Nutzern erlaubt, ihren Fortschritt über verschiedene Geräte hinweg zu speichern und abzurufen.
+		
+		\item \textbf{Leaderboard:} Einführung einer Rangliste, die Nutzer dazu motiviert, Level effizient zu lösen und sich mit anderen zu messen.
+	\end{itemize}
+	\newpage
 
 	\section{Literaturverzeichnis}
-		\bibliography{my_bib}
-		\bibliographystyle{plain}
+		\begin{thebibliography}{9}
+
+		\bibitem{python}
+		Python Documentation
+		\url{https://docs.python.org}
+
+		\bibitem{pyodide}
+		Pyodide Documentation
+		\url{https://pyodide.org}
+
+		\bibitem{nextjs}
+		Next.js Documentation
+		\url{https://nextjs.org}
+
+		\bibitem{typescript}
+		TypeScript Documentation
+		\url{https://www.typescriptlang.org}
+
+		\bibitem{threejs}
+		Three.js Documentation
+		\url{https://threejs.org}
+
+		\bibitem{css}
+		CSS Documentation
+		\url{https://developer.mozilla.org/en-US/docs/Web/CSS}
+
+		\bibitem{shadcn}
+		shadcn Documentation
+		\url{https://ui.shadcn.com/docs}
+
+		\bibitem{githubactions}
+		GitHub Actions Documentation
+		\url{https://docs.github.com/en/actions}
+
+		\bibitem{githubpages}
+		GitHub Pages Documentation
+		\url{https://docs.github.com/en/pages}
+
+		\end{thebibliography}
+	\newpage
+
 	\section{Anhang}
 
 	% Beispiel für Bilder
