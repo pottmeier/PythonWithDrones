@@ -1,22 +1,25 @@
 \babel@toc {ngerman}{}\relax 
-\contentsline {section}{\numberline {1}Abstract}{1}{section.1}%
+\contentsline {section}{\numberline {1}Abstrakt}{1}{section.1}%
 \contentsline {section}{\numberline {2}Einleitung}{1}{section.2}%
 \contentsline {section}{\numberline {3}Grundlagen}{1}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Spielbasiertes Lernen und Computational Thinking}{1}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Browserbasierte Python-Ausführung}{2}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Verwendete Technologien}{2}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}Next.js und TypeScript}{3}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.1}Next.js und TypeScript}{2}{subsubsection.3.3.1}%
 \contentsline {subsubsection}{\numberline {3.3.2}Three.js}{3}{subsubsection.3.3.2}%
 \contentsline {subsubsection}{\numberline {3.3.3}Pyodide}{3}{subsubsection.3.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.4}GitHub Actions und Pages}{3}{subsubsection.3.3.4}%
+\contentsline {subsubsection}{\numberline {3.3.4}shadcn}{3}{subsubsection.3.3.4}%
+\contentsline {subsubsection}{\numberline {3.3.5}GitHub Actions und Pages}{4}{subsubsection.3.3.5}%
 \contentsline {section}{\numberline {4}Implementierung}{4}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Systemarchitektur \& Komponentenübersicht}{4}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Level-System \& Datenstruktur}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.2}Level-System \& Datenstruktur}{5}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Python-Ausführung im Browser}{5}{subsection.4.3}%
 \contentsline {subsection}{\numberline {4.4}Kommunikation zwischen Python und JavaScript}{6}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Visualisierung der 3D-Szene}{6}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.5}Visualisierung der 3D-Szene}{7}{subsection.4.5}%
 \contentsline {section}{\numberline {5}Ergebnisse}{7}{section.5}%
-\contentsline {section}{\numberline {6}Auswertung \& Diskussion}{7}{section.6}%
-\contentsline {section}{\numberline {7}Zusammenfassung \& Asublick}{7}{section.7}%
-\contentsline {section}{\numberline {8}Literaturverzeichnis}{8}{section.8}%
-\contentsline {section}{\numberline {9}Anhang}{8}{section.9}%
+\contentsline {section}{\numberline {6}Auswertung \& Diskussion}{8}{section.6}%
+\contentsline {section}{\numberline {7}Schlussfolgerung}{8}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Zusammenfassung}{8}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Nächste Schritte und Erweiterungsmöglichkeiten}{8}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Literaturverzeichnis}{10}{section.8}%
+\contentsline {section}{\numberline {9}Anhang}{11}{section.9}%
