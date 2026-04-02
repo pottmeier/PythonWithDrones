@@ -99,22 +99,20 @@
 	erfahrbare, räumliche Welt übertragen werden.
 	
 	Die Grundidee des Projekts gründet in der Überzeugung, dass Programmieren
-	für jeden erlernbar ist und ähnliche wie das Erlernen einer natürlichen Sprache
-	durch Wiederholung und Übung gefestigt wird. Durch unmittelbares Feedback und schrittweise
-	steigende Schwierigkeitsgrade soll der Einstieg in die Programmierung
-	ermöglicht und erleichtert werden. Das Projekt wurde im Rahmen des
+	für jeden erlernbar ist und ähnlich wie das Erlernen einer natürlichen Sprache
+	durch Wiederholung und Übung gefestigt wird. Durch unmittelbares, visuelles Feedback 
+	und schrittweise steigende Schwierigkeitsgrade soll der Einstieg in die Programmierung
+	ermöglicht und nachhaltig erleichtert werden. Das Projekt wurde im Rahmen des
 	Hochschulmoduls \textit{Software Design} entwickelt und demonstriert
-	dabei sowohl einen pädagogischen Ansatz als auch moderne
+	dabei sowohl innovative pädagogische Ansätze als auch bewährte moderne
 	Softwarearchitekturprinzipien. Die vollständig browserbasierte Anwendung
-	ist ohne jegliche lokale Installation unter
+	ist ohne jegliche lokale Installation oder Registrierung unter
 	\url{https://pottmeier.github.io/PythonWithDrones/} erreichbar.
 
 	% MARK: Grundlagen
  	\section{Grundlagen}
 	Dieses Kapitel legt die konzeptionellen und technischen Grundlagen dar,
-	auf denen \linebreak \textit{PythonWithDrones} aufbaut. Zunächst werden
-	pädagogische Konzepte des spielbasierten Lernens erläutert, anschließend
-	die eingesetzten Technologien beschrieben.
+	auf denen \linebreak \textit{PythonWithDrones} aufbaut. Zunächst werden pädagogische Konzepte des spielbasierten Lernens erläutert, anschließend die eingesetzten Technologien beschrieben.
 	
 	\subsection{Spielbasiertes Lernen und Computational Thinking}
 	
@@ -131,12 +129,12 @@
 	und Bedingungsanweisungen voraussetzen.
 	
 	Darüber hinaus fördert das Projekt Fähigkeiten des strukturierten,
-	algorithmischen Denkens. Das Navigieren einer Drohne durch einen
-	Hindernisparcours erfordert die Zerlegung des Gesamtproblems in einzelne
-	Teilschritte, das Erkennen von Bewegungsmustern sowie die präzise
+	algorithmischen Denkens, das für die moderne Informatik zentral ist. Das Navigieren 
+	einer Drohne durch einen Hindernisparcours erfordert die Zerlegung des Gesamtproblems 
+	in einzelne Teilschritte, das Erkennen von Bewegungsmustern sowie die präzise
 	Formulierung eines Algorithmus in Python-Syntax. Diese Kompetenzen
 	sind grundlegend für das Programmieren und bilden eine solide Basis
-	für weiterführende Themen der Informatik.
+	für weiterführende Themen der Informatik und Softwareentwicklung.
 	
 	\subsection{Browserbasierte Python-Ausführung}
 	
@@ -226,63 +224,82 @@
 	Kernstück der gesamten Anwendung.
 
 	\subsubsection{shadcn}
-	\cite{shadcn} \textit{shadcn} ist eine Sammlung von vorgefertigten React-Komponenten, 
-	die mit Tailwind CSS gestaltet wurden. Sie ermöglichen eine schnelle und 
-	konsistente Entwicklung der Benutzeroberfläche, ohne sich um das Design 
-	und die Implementierung der einzelnen Elemente kümmern zu müssen.
-	In \textit{PythonWithDrones} wurden shadcn-Komponenten für die Gestaltung 
-	von Buttons, Sidebars, Modals und anderen UI-Elementen verwendet.
+	\cite{shadcn} \textit{shadcn} ist eine Sammlung von vorgefertigten, wiederverwendbaren 
+	React-Komponenten, die mit dem CSS-Framework Tailwind CSS gestaltet wurden. Sie ermöglichen 
+	eine schnelle und konsistente Entwicklung der Benutzeroberfläche, ohne sich um das Design 
+	und die manuelle Implementierung der einzelnen UI-Elemente kümmern zu müssen.
+	In \textit{PythonWithDrones} wurden shadcn-Komponenten für die professionelle Gestaltung 
+	von Buttons, Sidebars, Modals und anderen interaktiven UI-Elementen verwendet, um eine
+	intuitive Bedienoberfläche zu schaffen.
 
 	\subsubsection{GitHub Actions und Pages}
 	Der gesamte Build- und Deploymentprozess wird über \cite{githubactions} \textit{GitHub Actions}
-	automatisiert. Bei jedem Push auf den \texttt{main}-Branch wird eine
-	Pipeline ausgelöst, die den TypeScript-Code kompiliert, den statischen
-	Next.js-Export erzeugt und auf \cite{githubpages} \textit{GitHub Pages} veröffentlicht.
-	Diese Kombination ermöglicht uns ein vollständig serverfreies und kostenloses
-	Deployment.
+	vollautomatisiert und kontinuierlich verwaltet. Bei jedem Push auf den \texttt{main}-Branch 
+	wird eine CI/CD-Pipeline ausgelöst, die den TypeScript-Code überprüft und kompiliert, 
+	den statischen Next.js-Export erzeugt und das Resultat auf \cite{githubpages} 
+	\textit{GitHub Pages} veröffentlicht. Diese moderne DevOps-Kombination ermöglicht uns 
+	ein vollständig serverfreies, wartungsarmes und kostenloses Deployment, das Qualität 
+	und Verfügbarkeit sichert.
 
 	% MARK: Implementierung
 	\section{Implementierung}
 	\subsection{Systemarchitektur \& Komponentenübersicht}
 	In diesem Kapitel wird die Implementierung der vorgestellten Technologien 
-	beschrieben, welche im Projekt \textit{PythonWithDrones} verwendet wurden, wobei 
-	hier die React-Benutzeroberfläche, die Python-Ausführung durch Pyodide im 
-	Web Worker und die 3D-Visualisierung mit Hilfe von \textit{Three.js} den Kernelemente sind.
+	beschrieben, welche im Projekt \textit{PythonWithDrones} verwendet wurde. Die 
+	Architektur folgt dabei einem klaren Schichtenmodell (siehe Abbildung~\ref{fig:architektur}), 
+	das sich in vier Ebenen untergliedert: Die Präsentationsschicht mit React-Komponenten, 
+	die Business-Logic-Schicht für Zustandsverwaltung und Level-Generierung, die Python-Runtime 
+	in einem Web Worker für die Drohnenlogik, und schließlich die Datenzugriffsschicht für 
+	Speicherung und Level-Definitionen.
+
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.95\textwidth]{Images/architektur.png}
+		\caption{Schichtmodell der Systemarchitektur von \textit{PythonWithDrones}. Die 
+		Präsentationsschicht (oben) verwaltet die Benutzerinteraktion, während die 
+		Business-Logic-Schicht diese mit der Python-Runtime verbindet. Die Python-Ausführung 
+		läuft isoliert in einem Web Worker ab, um die Bedienoberfläche responsiv zu halten. 
+		Die Datenzugriffsschicht (unten) verwaltet Level-Definitionen und Spielfortschritt.}
+		\label{fig:architektur}
+	\end{figure}
 
 	Der erste Bestandteil ist die React-Schicht, mit der die Nutzerinteraktionen 
 	verarbeitet und Code-Editor, Level-Auswahl, sowie Fortschrittsverwaltung 
-	bereitgestellt werden. Der Spielfortschritt wird ohne Backend ausschließlich im 
-	localStorage des Browsers gespeichert, um eine serverseitige Infrastruktur zu 
-	vermeiden. Dazu gehören zum Beispiel die Info, welche Level geschafft wurden, 
-	oder der zuletzt geschrieben Code in einem Level. Das UI-Styling wird hier durch 
-	\textit{shadcn} realisiert, wodurch fertige Komponenten für die Benutzeroberfläche, 
-	wie zum Beispiel Buttons oder die Sidebar, direkt in das Projekt integriert werden 
-	nutzbar sind.
+	bereitgestellt werden. Diese Präsentationsschicht ist mit der Business-Logic-Schicht 
+	über Custom Hooks wie \texttt{usePyodideWorker} verbunden. Der Spielfortschritt wird 
+	ohne Backend ausschließlich im localStorage des Browsers gespeichert, um eine 
+	serverseitige Infrastruktur zu vermeiden. Dazu gehören zum Beispiel die Info, welche 
+	Level geschafft wurden, oder der zuletzt geschrieben Code in einem Level. Das 
+	UI-Styling wird hier durch \textit{shadcn} realisiert, wodurch fertige Komponenten für 
+	die Benutzeroberfläche, wie zum Beispiel Buttons oder die Sidebar, direkt in das 
+	Projekt integriert werden.
 
-	Die zweite wichtige Komponente ist die Ausführung des Python-Codes mit Hilfe 
-	von Pyodide. Um die Anwendung nicht zu blockieren, wird der Code des Nutzers 
-	nicht im Hauptthread ausgeführt, sondern in einen Web Worker ausgelagert. 
-	So wird sichergestellt, dass React und \textit{Three.js} ansprechbar bleiben. Die 
-	Kommunikation zwischen dem Worker und Hauptthread erfolgt über den Befehl 
-	\texttt{postMessage}. Dabei empfängt der Worker Befehle wie \texttt{LOAD\_LEVEL} 
-	oder \texttt{RUN} und schickt dann Nachrichten vom Typ \texttt{ACTION}, 
+	Die zweite wichtige Komponente ist die sichere Ausführung des Python-Codes mit Hilfe 
+	von Pyodide in der Python-Runtime-Schicht. Um die Anwendung nicht zu blockieren oder 
+	einzufrieren, wird der Code des Nutzers nicht im Hauptthread ausgeführt, sondern in einen 
+	Web Worker ausgelagert, der die Pyodide-Runtime sicher kapselt. So wird zuverlässig 
+	sichergestellt, dass React und \textit{Three.js} ansprechbar bleiben, auch wenn der 
+	Nutzercode lange Schleifen oder rechenintensive Operationen enthält. Die Kommunikation 
+	zwischen dem Worker und Hauptthread erfolgt über das standardisierte und sichere 
+	\texttt{postMessage}-Protokoll. Dabei empfängt der Worker Befehle wie \texttt{LOAD\_LEVEL} 
+	oder \texttt{RUN} und schickt dann strukturierte Nachrichten vom Typ \texttt{ACTION}, 
 	\texttt{FINISHED} oder \texttt{ERROR} zurück.
 
-	Außerdem gibt es noch die 3D-Darstellung der gesamten Szene. Hier ist das 
-	globale \texttt{window}-Objekt die Brücke zwischen Python und der angezeigten Visualisierung. 
-	Wenn der Worker eine \texttt{ACTION}-Nachricht sendet, wird durch den Hook 
-	\texttt{usePyodideWorker} die Funktion \texttt{window.droneAction} aufgerufen, 
-	die von der Szenenkomponente registriert wurde. So kann jeder Befehl als 
-	strukturiertes Datenobjekt an die Animationsschicht übergeben werden, 
-	ohne dass Python und \textit{Three.js} direkt voneinander abhängen. In der anderen 
-	Richtung werden über \texttt{window.getLevelData} und 
-	\texttt{window.getBlockRegistry} die für die Simulation benötigten 
-	Leveldaten und Blockinformationen bereitgestellt, auf welche der Worker
+	Außerdem gibt es noch die 3D-Darstellung der gesamten Szene in der Präsentationsschicht. 
+	Hier ist das globale \texttt{window}-Objekt die Brücke zwischen Python-Runtime und der 
+	angezeigten Visualisierung. Wenn der Worker eine \texttt{ACTION}-Nachricht sendet, wird 
+	durch den Hook \texttt{usePyodideWorker} die Funktion \texttt{window.droneAction} aufgerufen, 
+	die von der Szenenkomponente registriert wurde. \newpage So kann jeder Befehl als strukturiertes 
+	Datenobjekt an die Animationsschicht übergeben werden, ohne dass Python und \textit{Three.js} 
+	direkt voneinander abhängen. In der anderen Richtung werden über \texttt{window.getLevelData} 
+	und \texttt{window.getBlockRegistry} die für die Simulation benötigten Leveldaten und 
+	Blockinformationen aus der Datenzugriffsschicht bereitgestellt, auf welche der Worker
 	beim Laden eines Levels zugreift.
 
-	In den folgenden Unterkapiteln werden die einzelnen Bereiche 
-	Level-System, Python-Ausführung, Kommunikationsprotokoll und 3D-Visualiserung 
-	näher beschrieben.
+	In den folgenden Unterkapiteln werden die einzelnen Komponenten der Architektur 
+	detailliert beleuchtet. Das Level-System und die zugrunde liegende Datenstruktur, 
+	die Python-Ausführung in der isolierten Runtime, das verwendete Kommunikationsprotokoll 
+	zwischen den Schichten, und schließlich die 3D-Visualisierung mit \textit{Three.js}.
 
 	\subsection{Level-System \& Datenstruktur}
 	Jedes Level in \textit{PythonWithDrones} wird in einer eigenen YAML-Datei 
@@ -454,7 +471,8 @@
 	zu erlernen. Die Entscheidung für ein serverfreies Deployment über \textit{GitHub Pages} ermöglicht einen einfachen Zugang 
 	für alle Nutzer, ohne technische Hürden. Die Anwendung befindet sich im Bezug auf die Level noch in einem frühen Stadium, 
 	bietet aber bereits eine solide Grundlage mit der nötigen Infrastruktur, um das Lernangebot sukzessive zu erweitern.
-
+	
+	\newpage
 	\subsection{Nächste Schritte und Erweiterungsmöglichkeiten}
 	\begin{itemize}
 		\item \textbf{Benutzertests:} Durchführung von Tests mit Personen ohne Programmiererfahrung, um die Benutzerfreundlichkeit und die Effektivität der Lerninhalte zu evaluieren.
@@ -512,19 +530,5 @@
 		GitHub Pages Documentation
 		\url{https://docs.github.com/en/pages}
 
-		\end{thebibliography}
-	\newpage
-
-	\section{Anhang}
-
-	% Beispiel für Bilder
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=0.6]{Images/}
-	%	\caption{}
-	%	\label{fig:Abb_1}
-	%\end{figure}
-	
-	%\cite{} zum zitieren
-	
+		\end{thebibliography}	
 \end{document}
