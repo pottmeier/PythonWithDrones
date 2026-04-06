@@ -215,9 +215,14 @@ INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\tex\latex\base\t1cmtt.fd
 INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\tex\latex\base\t1cmtt.fd
 INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ectt1200.tfm
 INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecbx1440.tfm
-INPUT .\Abgabe.bbl
-INPUT .\Abgabe.bbl
-INPUT Abgabe.bbl
+INPUT .\Images\systemarchitektur.pdf
+INPUT .\Images\systemarchitektur.pdf
+INPUT .\Images\systemarchitektur.pdf
+INPUT .\Images\systemarchitektur.pdf
+INPUT .\Images\systemarchitektur.pdf
+INPUT .\Images\systemarchitektur.pdf
+INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\tcrm1200.tfm
+INPUT C:\Users\stefan\AppData\Local\Programs\MiKTeX\fonts\enc\dvips\cm-super\cm-super-ts1.enc
 INPUT Abgabe.aux
 INPUT .\Abgabe.out
 INPUT .\Abgabe.out
