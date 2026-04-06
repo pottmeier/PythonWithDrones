@@ -1,21 +1,13 @@
 # Fdb version 4
-["bibtex Abgabe"] 1774805110.76648 "Abgabe.aux" "Abgabe.bbl" "Abgabe" 1774805112.48212 0
-  "./my_bib.bib" 1774300229 0 d41d8cd98f00b204e9800998ecf8427e ""
-  "Abgabe.aux" 1774805111 3213 905e9cfabe3e2e7cfbeb94ffa38fbbd7 "pdflatex"
-  "C:/Users/stefan/AppData/Local/Programs/MiKTeX/bibtex/bst/bibtex/plain.bst" 1291864736 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  (generated)
-  "Abgabe.bbl"
-  "Abgabe.blg"
-  (rewritten before read)
-["pdflatex"] 1774805110.96638 "c:/Users/stefan/vscodeProjects/PythonWithDrones/LaTeX/Abgabe.tex" "Abgabe.pdf" "Abgabe" 1774805112.48245 0
-  "Abgabe.aux" 1774805111 3213 905e9cfabe3e2e7cfbeb94ffa38fbbd7 "pdflatex"
-  "Abgabe.bbl" 1774805110 52 0eba253fc001332e731e8aba3f23127b "bibtex Abgabe"
-  "Abgabe.out" 1774805111 3525 06fa36c4b100ce97dfeafb4b97f91d7a "pdflatex"
-  "Abgabe.tex" 1774805108 24331 94bd6f7327d34f8dd0d8697b3b71db81 ""
-  "Abgabe.toc" 1774805111 1833 126de571a1a46fef21802ad3831ae1f6 "pdflatex"
+["pdflatex"] 1775509704.76261 "c:/Users/stefan/vscodeProjects/PythonWithDrones/LaTeX/Abgabe.tex" "Abgabe.pdf" "Abgabe" 1775509705.76659 0
+  "Abgabe.aux" 1775509705 4727 b910c40227ffabed04725a101c8b6c36 "pdflatex"
+  "Abgabe.out" 1775509705 3876 73365161cb2121122a3ec3d748ee0525 "pdflatex"
+  "Abgabe.tex" 1775509704 30533 5c48822c69b340bc313f3f852de79dc4 ""
+  "Abgabe.toc" 1775509705 2018 b357830ccfac96b7b98e808e9e3f941d "pdflatex"
   "C:/Users/stefan/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1774646246 504711 1d7cb6f499d955adcaaeea5f40f22ad2 ""
   "C:/Users/stefan/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1764437082 24225519 4258cd0bbb39303386678d535fffb38e ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1001775420 2971 def0b6c1f0b107b3b936def894055589 ""
+  "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1001775420 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecbx1200.tfm" 993061958 3200 b8d69bc738e5ef3e08cefeef3109ff56 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecbx1440.tfm" 993061960 3196 0b37fa3083e15c57cfa8c4ff52f2807a ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecbx1728.tfm" 993061962 3204 d35cb76836b6cb4ed404dd64a550530d ""
@@ -26,6 +18,7 @@
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecrm2074.tfm" 993062130 3184 b2541675eba9fa86d240ec0ecc913558 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ecti1200.tfm" 993062324 2832 28bbd97ca29f46e76c87a158a9915203 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/ectt1200.tfm" 993062344 1348 c48a0620e07683860afba1730adf9e53 ""
+  "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/jknappen/ec/tcrm1200.tfm" 993062508 1444 95ffe0f19b974d50849790c8225c7ef7 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233951848 1004 54797486969f23fa377b128694d548df ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1233951848 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1233951854 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -124,7 +117,8 @@
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/tex/latex/url/url.sty" 1388490452 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
   "C:/Users/stefan/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1700127522 55487 80a65caedd3722f4c20a14a69e785d8f ""
   "Images/PythonWithDrones.png" 1774300229 1677768 6e49ee12d7d06ebc3fd08f90c98cd8a7 ""
-  "c:/Users/stefan/vscodeProjects/PythonWithDrones/LaTeX/Abgabe.tex" 1774805108 24331 94bd6f7327d34f8dd0d8697b3b71db81 ""
+  "Images/systemarchitektur.pdf" 1775495036 104237 26de4b04693367c04bc08f719ec4491c ""
+  "c:/Users/stefan/vscodeProjects/PythonWithDrones/LaTeX/Abgabe.tex" 1775509704 30533 5c48822c69b340bc313f3f852de79dc4 ""
   (generated)
   "Abgabe.aux"
   "Abgabe.log"

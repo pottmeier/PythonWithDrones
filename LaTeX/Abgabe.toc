@@ -21,4 +21,4 @@
 \contentsline {section}{\numberline {7}Schlussfolgerung}{9}{section.7}%
 \contentsline {subsection}{\numberline {7.1}Zusammenfassung}{9}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}Nächste Schritte und Erweiterungsmöglichkeiten}{10}{subsection.7.2}%
-\contentsline {section}{\numberline {8}Literaturverzeichnis}{11}{section.8}%
+\contentsline {section}{Literatur}{11}{subsection.7.2}%

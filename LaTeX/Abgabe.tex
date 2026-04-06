@@ -140,12 +140,12 @@
 	
 	Traditionell setzt die Ausführung von Python-Code eine lokale
 	Interpreter-Installation voraus, was für Lernumgebungen eine erhebliche
-	Einstiegshürde darstellt. Moderne Technologien ermöglichen es jedoch,
-	\cite{python} Python direkt im Browser auszuführen, ohne serverseitige Infrastruktur
-	zu benötigen. Grundlage hierfür ist WebAssembly, ein binäres
+	Einstiegshürde darstellt. Moderne Technologien ermöglichen es jedoch, Python 
+	direkt im Browser auszuführen, ohne serverseitige Infrastruktur
+	zu benötigen \cite{python}. Grundlage hierfür ist WebAssembly, ein binäres
 	Instruktionsformat, das in modernen Browsern nahezu nativ ausgeführt
-	werden kann. Auf dieser Basis ermöglicht \cite{pyodide} Pyodide die vollständige
-	Ausführung des CPython-Interpreters im Browser.
+	werden kann. Auf dieser Basis ermöglicht Pyodide die vollständige
+	Ausführung des CPython-Interpreters im Browser \cite{pyodide}.
 	
 	\textit{PythonWithDrones} nutzt diesen Ansatz konsequent. Die gesamte
 	Anwendung ist als statische Webseite deployt und benötigt keinerlei
@@ -184,13 +184,13 @@
 	\end{table}
 	
 	\subsubsection{Next.js und TypeScript}
-	\cite{nextjs} Next.js ist ein auf React basierendes Framework, das
+	Next.js ist ein auf React basierendes Framework, das
 	dateibasiertes Routing, Static Site Generation sowie eine klare
-	Projektstruktur mitbringt. Als typisierte Obermenge von JavaScript 
-	ermöglicht \cite{typescript} TypeScript statische Typprüfung bereits zur Kompilierzeit, 
+	Projektstruktur mitbringt \cite{nextjs}. Als typisierte Obermenge von JavaScript 
+	ermöglicht TypeScript statische Typprüfung bereits zur Kompilierzeit, 
 	was besonders für die Definition
 	von Datenstrukturen wie dem Drohnenzustand (\texttt{DroneState}) sowie
-	der Schnittstelle zwischen Pyodide und der 3D-Engine von Vorteil ist.
+	der Schnittstelle zwischen Pyodide und der 3D-Engine von Vorteil ist \cite{typescript}.
 	Die Entscheidung für Next.js ermöglicht es zudem, die Anwendung als
 	vollständig statischen Export zu bauen und direkt über GitHub Pages
 	auszuliefern, ohne einen eigenen Server betreiben zu müssen. Komponenten
@@ -199,8 +199,8 @@
 	entwickelt und getestet werden.
 	
 	\subsubsection{Three.js}
-	\cite{threejs} \textit{Three.js} abstrahiert die WebGL-API und bietet eine deklarative
-	Schnittstelle zur Erstellung von 3D-Szenen im Browser. Konzepte wie
+	\textit{Three.js} abstrahiert die WebGL-API und bietet eine deklarative
+	Schnittstelle zur Erstellung von 3D-Szenen im Browser \cite{threejs}. Konzepte wie
 	Szene, Kamera, Beleuchtung und Geometrien entsprechen denen
 	professioneller 3D-Engines und ermöglichen die räumliche Darstellung
 	komplexer Welten. In \textit{PythonWithDrones} wird \textit{Three.js} eingesetzt,
@@ -224,8 +224,8 @@
 	Kernstück der gesamten Anwendung.
 
 	\subsubsection{shadcn}
-	\cite{shadcn} \textit{shadcn} ist eine Sammlung von vorgefertigten, wiederverwendbaren 
-	React-Komponenten, die mit dem CSS-Framework Tailwind CSS gestaltet wurden. Sie ermöglichen 
+	\textit{shadcn} ist eine Sammlung von vorgefertigten, wiederverwendbaren 
+	React-Komponenten, die mit dem CSS-Framework Tailwind CSS gestaltet wurden \cite{shadcn}. Sie ermöglichen 
 	eine schnelle und konsistente Entwicklung der Benutzeroberfläche, ohne sich um das Design 
 	und die manuelle Implementierung der einzelnen UI-Elemente kümmern zu müssen.
 	In \textit{PythonWithDrones} wurden shadcn-Komponenten für die professionelle Gestaltung 
@@ -233,11 +233,12 @@
 	intuitive Bedienoberfläche zu schaffen.
 
 	\subsubsection{GitHub Actions und Pages}
-	Der gesamte Build- und Deploymentprozess wird über \cite{githubactions} \textit{GitHub Actions}
-	vollautomatisiert und kontinuierlich verwaltet. Bei jedem Push auf den \texttt{main}-Branch 
+	Der gesamte Build- und Deploymentprozess wird über \textit{GitHub Actions}
+	vollautomatisiert und kontinuierlich verwaltet \cite{githubactions}. Bei jedem Push 
+	auf den \texttt{main}-Branch 
 	wird eine CI/CD-Pipeline ausgelöst, die den TypeScript-Code überprüft und kompiliert, 
-	den statischen Next.js-Export erzeugt und das Resultat auf \cite{githubpages} 
-	\textit{GitHub Pages} veröffentlicht. Diese moderne DevOps-Kombination ermöglicht uns 
+	den statischen Next.js-Export erzeugt und das Resultat auf \textit{GitHub Pages} 
+	veröffentlicht \cite{githubpages}. Diese moderne DevOps-Kombination ermöglicht uns 
 	ein vollständig serverfreies, wartungsarmes und kostenloses Deployment, das Qualität 
 	und Verfügbarkeit sichert.
 
@@ -245,28 +246,28 @@
 	\section{Implementierung}
 	\subsection{Systemarchitektur \& Komponentenübersicht}
 	In diesem Kapitel wird die Implementierung der vorgestellten Technologien 
-	beschrieben, welche im Projekt \textit{PythonWithDrones} verwendet wurde. Die 
+	beschrieben, welche im Projekt \textit{PythonWithDrones} verwendet wurden. Die 
 	Architektur folgt dabei einem klaren Schichtenmodell (siehe Abbildung~\ref{fig:architektur}), 
 	das sich in vier Ebenen untergliedert: Die Präsentationsschicht mit React-Komponenten, 
-	die Business-Logic-Schicht für Zustandsverwaltung und Level-Generierung, die Python-Runtime 
+	die Anwendungslogik für Zustandsverwaltung und Level-Erzeugung, die Python-Runtime 
 	in einem Web Worker für die Drohnenlogik, und schließlich die Datenzugriffsschicht für 
 	Speicherung und Level-Definitionen.
 
 	\begin{figure}[h!]
 		\centering
-		\includegraphics[width=0.95\textwidth]{Images/architektur.png}
+		\includegraphics[width=0.95\textwidth]{Images/systemarchitektur.pdf}
 		\caption{Schichtmodell der Systemarchitektur von \textit{PythonWithDrones}. Die 
-		Präsentationsschicht (oben) verwaltet die Benutzerinteraktion, während die 
-		Business-Logic-Schicht diese mit der Python-Runtime verbindet. Die Python-Ausführung 
+		Präsentationsschicht verwaltet die Benutzerinteraktion, während die 
+		Anwendungslogik diese mit der Python-Runtime verbindet. Die Python-Ausführung 
 		läuft isoliert in einem Web Worker ab, um die Bedienoberfläche responsiv zu halten. 
-		Die Datenzugriffsschicht (unten) verwaltet Level-Definitionen und Spielfortschritt.}
+		Die Datenzugriffsschicht verwaltet Level-Definitionen und Spielfortschritt.}
 		\label{fig:architektur}
 	\end{figure}
 
 	Der erste Bestandteil ist die React-Schicht, mit der die Nutzerinteraktionen 
 	verarbeitet und Code-Editor, Level-Auswahl, sowie Fortschrittsverwaltung 
-	bereitgestellt werden. Diese Präsentationsschicht ist mit der Business-Logic-Schicht 
-	über Custom Hooks wie \texttt{usePyodideWorker} verbunden. Der Spielfortschritt wird 
+	bereitgestellt werden. Diese Präsentationsschicht ist mit der Anwendungslogik 
+	über Custom Hooks wie \newline \texttt{usePyodideWorker} verbunden. Der Spielfortschritt wird 
 	ohne Backend ausschließlich im localStorage des Browsers gespeichert, um eine 
 	serverseitige Infrastruktur zu vermeiden. Dazu gehören zum Beispiel die Info, welche 
 	Level geschafft wurden, oder der zuletzt geschrieben Code in einem Level. Das 
@@ -350,7 +351,7 @@
 	die \texttt{game.py} und \texttt{model.py} direkt in das virtuelle Dateisystem von 
 	Pyodide, damit diese zur Laufzeit importiert werden können. Die Kommunikation zwischen 
 	dem Hook \texttt{usePyodideWorker} und dem Worker wird über ein Nachrichtenprotokoll 
-	via \texttt{postMessage} realisiert. Dabei nutzt der der Worker drei eingehende 
+	via \texttt{postMessage} realisiert. Dabei nutzt der Worker drei eingehende 
 	Nachrichtentypen. \texttt{LOAD\_LEVEL} wird zum Initialisieren eines neuen Levels benötigt. 
 	Zum Ausführen des Nutzercodes wird \texttt{RUN} genutzt. Außerdem gibt es den impliziten 
 	Initialisierungsschritt bei Start des Workers. Ausgehend werden die Nachrichtentypen 
@@ -398,7 +399,7 @@
 	ausgelöst wird und verbleibende Aktionen in der Warteschlange verworfen werden. 
 	Gleichzeitig wird im Hook \texttt{usePyodideWorker} der Zustand \texttt{hasCrashed} auf 
 	\texttt{true} gesetzt, wodurch der Run-Button für den Nutzer deaktiviert bleibt, bis die 
-	Drone manuell zurückgesetzt wird. Beim Erreichen des Ziels sendet Python eine 
+	Drohne manuell zurückgesetzt wird. Beim Erreichen des Ziels sendet Python eine 
 	\texttt{goal}-Action, wodurch das Level in der Szene als abgeschlossen markiert 
 	und der Fortschritt im \texttt{localStorage} gespeichert wird. 
 
@@ -416,13 +417,13 @@
 	aus. Die Geschwindigkeit der Drohne lässt sich über \texttt{gsap.globalTimeline.timeScale()} 
 	zur Laufzeit anpassen, damit Nutzer bei langen Programmabläufen die Animationen beschleunigen 
 	können, um so verschiedene Varianten zu testen, ohne zu lange warten zu müssen. Da es sich 
-	um eine dreidimensionale Spieltwelt handelt, ist die Kamera als frei drehbare Instanz 
+	um eine dreidimensionale Spielwelt handelt, ist die Kamera als frei drehbare Instanz 
 	konfiguriert, die Rotation, Translation und Zoom innerhalb der Levelgrenzen erlaubt. 
 
 	\section{Ergebnisse}
 	%\subsection{Funktionsumfang der fertigen Anwendung}
 	\textit{PythonWithDrones} liegt als funktionsfähiger Prototyp vor, welcher die Idee einer 
-	browserbasierten Lernplatform vollständig umsetzt. Die Anwendung umfasst bislang sechs 
+	browserbasierten Lernplattform vollständig umsetzt. Die Anwendung umfasst bislang sechs 
 	spielbare Level, von denen jedes ein neues Konzept einführt. Dabei wird in Level 1 \& 2 zunächst 
 	erklärt, wie man die Drohne in der Welt bewegen und drehen kann. 
 	In den folgenden Leveln werden dann grundlegende Programmierkonzepte wie Schleifen, 
@@ -432,7 +433,7 @@
 	Lernenden steht hierfür eine minimale Python-API zur Verfügung. Es sind bereits 
 	Drohnenbefehle, wie \texttt{drone.move()} oder \texttt{drone.turn\_left()}, sowie 
 	Zustandsabfragen, wie \texttt{is\_path\_blocked()} oder \texttt{at\_portal()} verfügbar.
-	Der Fortschritt und zuletzt geschrieben Code werden im Browser automatisch gespeichert, 
+	Der Fortschritt und zuletzt geschriebene Code werden im Browser automatisch gespeichert, 
 	sodass die Anwendung jederzeit verlassen werden kann, um zu einem späteren Zeitpunkt 
 	fortzufahren. Außerdem wird keinerlei Installation benötigt, da das Projekt direkt über 
 	\textit{GitHub Pages} unter \url{https://pottmeier.github.io/PythonWithDrones/} erreichbar 
@@ -442,8 +443,8 @@
 	Das Hauptziel der Anwendung ist die Vermittlung von Programmierkonzepten durch 
 	interaktive und spielerische Elemente. In \textit{PythonWithDrones} wird jeder 
 	Python-Befehl in sichtbare Bewegungen der Drohne umgesetzt, wobei auch ein Fehler, wie 
-	das Abstürzen der Drohne mit einer entsprechenden Animation dargestellt werden. Da 
-	es als Lernplatform konzipiert ist, wird die Schwierigkeit mit jedem Level gesteigert.   
+	das Abstürzen der Drohne mit einer entsprechenden Animation dargestellt wird. Da 
+	es als Lernplattform konzipiert ist, wird die Schwierigkeit mit jedem Level gesteigert.   
 
 	% MARK: Diskussion
 	\section{Auswertung \& Diskussion}
@@ -491,44 +492,45 @@
 	\end{itemize}
 	\newpage
 
-	\section{Literaturverzeichnis}
-		\begin{thebibliography}{9}
+	\addcontentsline{toc}{section}{Literatur}
+	\begin{thebibliography}{9}
 
-		\bibitem{python}
-		Python Documentation
-		\url{https://docs.python.org}
+	\bibitem{python}
+	Python Documentation
+	\url{https://docs.python.org}
 
-		\bibitem{pyodide}
-		Pyodide Documentation
-		\url{https://pyodide.org}
+	\bibitem{pyodide}
+	Pyodide Documentation
+	\url{https://pyodide.org}
 
-		\bibitem{nextjs}
-		Next.js Documentation
-		\url{https://nextjs.org}
+	\bibitem{nextjs}
+	Next.js Documentation
+	\url{https://nextjs.org}
 
-		\bibitem{typescript}
-		TypeScript Documentation
-		\url{https://www.typescriptlang.org}
+	\bibitem{typescript}
+	TypeScript Documentation
+	\url{https://www.typescriptlang.org}
 
-		\bibitem{threejs}
-		Three.js Documentation
-		\url{https://threejs.org}
+	\bibitem{threejs}
+	Three.js Documentation
+	\url{https://threejs.org}
 
-		\bibitem{css}
-		CSS Documentation
-		\url{https://developer.mozilla.org/en-US/docs/Web/CSS}
+	\bibitem{css}
+	CSS Documentation
+	\url{https://developer.mozilla.org/en-US/docs/Web/CSS}
 
-		\bibitem{shadcn}
-		shadcn Documentation
-		\url{https://ui.shadcn.com/docs}
+	\bibitem{shadcn}
+	shadcn Documentation
+	\url{https://ui.shadcn.com/docs}
 
-		\bibitem{githubactions}
-		GitHub Actions Documentation
-		\url{https://docs.github.com/en/actions}
+	\bibitem{githubactions}
+	GitHub Actions Documentation
+	\url{https://docs.github.com/en/actions}
 
-		\bibitem{githubpages}
-		GitHub Pages Documentation
-		\url{https://docs.github.com/en/pages}
+	\bibitem{githubpages}
+	GitHub Pages Documentation
+	\url{https://docs.github.com/en/pages}
 
-		\end{thebibliography}	
+	\end{thebibliography}	
+
 \end{document}
