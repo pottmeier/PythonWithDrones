@@ -1,20 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function DarkModeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDarkMode]);
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   return (
     <button
-      onClick={() => setIsDarkMode(!isDarkMode)}
+      onClick={toggleTheme}
       className="relative w-16 h-8 flex items-center bg-gray-200 dark:bg-gray-700 rounded-full p-1 cursor-pointer transition-colors"
     >
       <span className="absolute left-1 text-yellow-400 text-lg">🌞</span>
