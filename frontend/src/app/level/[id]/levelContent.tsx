@@ -46,7 +46,6 @@ export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
-  const [dark] = useState(true);
   const [isSceneBusy, setIsSceneBusy] = useState(false);
   const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
     usePyodideWorker();
@@ -96,11 +95,7 @@ export default function LevelContent({ level }: LevelContentProps) {
     };
   }, [handleDroneReset]);
 
-  // darkmode
-  useEffect(() => {
-    if (dark) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
-  }, [dark]);
+
 
   // execute user code
   useEffect(() => {

@@ -61,7 +61,6 @@ function LevelCardSkeleton() {
 }
 
 export default function Home() {
-  const [dark, setDark] = useState(true);
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [levelsState, setLevelsState] = useState<LevelsState>({
@@ -132,10 +131,7 @@ export default function Home() {
     return matchesSearch && matchesFilter;
   });
 
-  useEffect(() => {
-    if (dark) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
-  }, [dark]);
+
 
   useEffect(() => {
     setUsername(loadState().user.username || "");

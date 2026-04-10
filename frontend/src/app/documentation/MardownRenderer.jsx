@@ -4,10 +4,17 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { dracula, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function MarkdownRenderer({ children }) {
-  const codeBg = "#282a36";
+  const { theme } = useTheme();
+  
+  // Theme-based styling
+  const isDark = theme === 'dark';
+  const syntaxTheme = isDark ? dracula : oneLight;
+  const codeBg = isDark ? "#282a36" : "#f5f5f5";
+  const codeColor = isDark ? "#f8f8f2" : "#24292e";
 
   // --- TOC LOGIC ---
   const headings = typeof children === "string" 
@@ -111,7 +118,7 @@ export default function MarkdownRenderer({ children }) {
                 return (
                   <div className="my-6">
                     <SyntaxHighlighter
-                      style={dracula}
+                      style={syntaxTheme}
                       language={match[1]}
                       PreTag="div"
                       customStyle={{
@@ -131,7 +138,7 @@ export default function MarkdownRenderer({ children }) {
               return (
                 <code
                   className="px-1.5 py-0.5 rounded text-sm font-mono"
-                  style={{ background: codeBg, color: "#f8f8f2" }}
+                  style={{ background: codeBg, color: codeColor }}
                   {...props}
                 >
                   {codeChildren}
