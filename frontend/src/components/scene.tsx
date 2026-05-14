@@ -23,6 +23,7 @@ import {
 } from "@/lib/utils";
 import { loadState, saveLevelProgress } from "@/lib/app-state";
 import { useRouter } from "next/navigation";
+import type { LevelData } from "@/types/level";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
@@ -42,11 +43,13 @@ function formatTime(ms: number): string {
 
 function SceneComponent({
   levelId,
+  levelData,
   onBusyChange,
   onLevelComplete,
   completionTimeMs,
 }: {
-  levelId: string;
+  levelId?: string;
+  levelData?: LevelData;
   onBusyChange: (busy: boolean) => void;
   onLevelComplete?: () => void;
   completionTimeMs?: number | null;
@@ -286,6 +289,7 @@ function SceneComponent({
   // update status when finished
   useEffect(() => {
     if (!isLevelComplete) return;
+    if (!levelId) return; // editor test-play: don't persist progress
 
     saveLevelProgress(Number(levelId), {
       status: "completed",
@@ -305,6 +309,7 @@ function SceneComponent({
 
   const router = useRouter();
   const goToNextLevel = () => {
+    if (!levelId) return;
     if (Number(levelId) === NUM_LEVELS) {
       router.push(`/`);
     } else {
@@ -350,7 +355,11 @@ function SceneComponent({
           position={[-10, 10, -10]} // Gegenüberliegende Seite
           intensity={0.7}           // Schwächer als das Hauptlicht
         />
-        <Grid onLevelLoaded={handleLevelLoaded} levelId={levelId} />
+        <Grid
+          onLevelLoaded={handleLevelLoaded}
+          levelId={levelId}
+          levelData={levelData}
+        />
         <Drone
           key={droneKey}
           groupRef={droneRef}
