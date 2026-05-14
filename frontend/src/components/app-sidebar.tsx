@@ -1,4 +1,4 @@
-import { Home, FileSearchIcon, Award, Github } from "lucide-react";
+import { Home, FileSearchIcon, Award, Github, Hammer } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,11 @@ const items = [
     title: "Leaderboard",
     url: `${basePath}/leaderboard`,
     icon: Award,
+  },
+  {
+    title: "Level Editor",
+    url: `${basePath}/editor`,
+    icon: Hammer,
   },
 ];
 

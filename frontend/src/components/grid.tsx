@@ -3,73 +3,85 @@
 import { useState, useEffect } from "react";
 import yaml from "js-yaml";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
+import type { LevelData } from "@/types/level";
 //import { generateLevel } from "@/lib/level-generator";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-interface LevelData {
-  description?: string;
-  spawn: { x: number; y: number; z: number};
-  layers: { [key: string]: string[][] };
-}
-
 interface GridProps {
-  onLevelLoaded: (data: { 
-    size: { width: number; height: number; depth: number }; 
-    spawn: { x: number; y: number; z: number};
+  onLevelLoaded: (data: {
+    size: { width: number; height: number; depth: number };
+    spawn: { x: number; y: number; z: number };
     description?: string;
   }) => void;
-  levelId: string;
+  levelId?: string;
+  levelData?: LevelData;
 }
 
-export default function Grid({ onLevelLoaded, levelId }: GridProps) {
-  const [levelData, setLevelData] = useState<LevelData | null>(null);
+function publishLevel(
+  blueprint: LevelData,
+  onLevelLoaded: GridProps["onLevelLoaded"],
+) {
+  (window as any).getLevelData = () => blueprint;
+  (window as any).getBlockRegistry = () => BLOCK_REGISTRY;
+
+  const baseLayer = blueprint.layers["layer_0"];
+  if (!baseLayer || !blueprint.spawn) {
+    console.error("Invalid level data: Missing layer_0 or spawn point");
+    return;
+  }
+
+  const width = baseLayer[0]?.length || 0;
+  const height = Object.keys(blueprint.layers).length;
+  const depth = baseLayer.length;
+
+  onLevelLoaded({
+    size: { width, height, depth },
+    spawn: blueprint.spawn,
+    description: blueprint.description || "No description available.",
+  });
+}
+
+export default function Grid({ onLevelLoaded, levelId, levelData }: GridProps) {
+  const [resolvedLevel, setResolvedLevel] = useState<LevelData | null>(
+    levelData ?? null,
+  );
 
   useEffect(() => {
+    if (levelData) {
+      setResolvedLevel(levelData);
+      publishLevel(levelData, onLevelLoaded);
+      return;
+    }
+
+    if (!levelId) return;
+
     async function loadLevel() {
       try {
-        const response = await fetch(`${basePath}/levels/Level_${levelId}.yaml`);
+        const response = await fetch(
+          `${basePath}/levels/Level_${levelId}.yaml`,
+        );
         const yamlText = await response.text();
         const blueprint = yaml.load(yamlText) as LevelData;
 
-        (window as any).getLevelData = () => blueprint; 
-        (window as any).getBlockRegistry = () => BLOCK_REGISTRY;
-
-        const baseLayer = blueprint.layers['layer_0'];
-
-        if (baseLayer && blueprint.spawn) {
-          const width = baseLayer[0]?.length || 0;              // Columns (X)
-          const height = Object.keys(blueprint.layers).length;  // Layers (Y)
-          const depth = baseLayer.length;                       // Rows (Z)
-          
-          setLevelData(blueprint);
-
-          onLevelLoaded({
-            size: { width, height, depth },
-            spawn: blueprint.spawn,
-            description: blueprint.description || "No description available.",
-          });
-        } else {
-          console.error("Invalid level data: Missing layer_0 or spawn point");
-        }
-
+        setResolvedLevel(blueprint);
+        publishLevel(blueprint, onLevelLoaded);
       } catch (error) {
         console.error("Error loading level:", error);
       }
     }
     loadLevel();
-  }, [onLevelLoaded]);
+  }, [onLevelLoaded, levelId, levelData]);
 
-  if (!levelData) {
+  if (!resolvedLevel) {
     return null;
   }
 
-
   const allBlocks = [];
 
-  for (const layerName in levelData.layers) {
-    const layerMatrix = levelData.layers[layerName];
-    const layerIndex = parseInt(layerName.split('_')[1]) || 0;
+  for (const layerName in resolvedLevel.layers) {
+    const layerMatrix = resolvedLevel.layers[layerName];
+    const layerIndex = parseInt(layerName.split("_")[1]) || 0;
     const worldY = layerIndex;
 
     for (let row = 0; row < layerMatrix.length; row++) {
@@ -77,7 +89,7 @@ export default function Grid({ onLevelLoaded, levelId }: GridProps) {
         const blockId = layerMatrix[row][col];
         const blockDef = BLOCK_REGISTRY[blockId];
 
-        if (blockDef && blockDef.id !== 'empty') {
+        if (blockDef && blockDef.id !== "empty") {
           const Component = blockDef.component;
           const worldX = col;
           const worldZ = row;
@@ -86,8 +98,8 @@ export default function Grid({ onLevelLoaded, levelId }: GridProps) {
             <Component
               key={`${layerName}-${col}-${row}`}
               position={[worldX, worldY, worldZ]}
-              blockDef={blockDef} 
-            />
+              blockDef={blockDef}
+            />,
           );
         }
       }
