@@ -47,6 +47,25 @@ export function getLevelDimensions(level: LevelData): LevelDimensions {
   };
 }
 
+export function defaultFillForLayer(y: number): string {
+  return y === 0 ? "grass" : "air";
+}
+
+export function makeLayer(
+  width: number,
+  depth: number,
+  y: number,
+): string[][] {
+  const fill = defaultFillForLayer(y);
+  const layer: string[][] = [];
+  for (let z = 0; z < depth; z++) {
+    const row: string[] = [];
+    for (let x = 0; x < width; x++) row.push(fill);
+    layer.push(row);
+  }
+  return layer;
+}
+
 export function createEmptyLevel(
   width: number,
   depth: number,
@@ -54,15 +73,7 @@ export function createEmptyLevel(
 ): LevelData {
   const layers: LevelLayers = {};
   for (let y = 0; y < height; y++) {
-    const layer: string[][] = [];
-    for (let z = 0; z < depth; z++) {
-      const row: string[] = [];
-      for (let x = 0; x < width; x++) {
-        row.push(y === 0 ? "grass" : "empty");
-      }
-      layer.push(row);
-    }
-    layers[`layer_${y}`] = layer;
+    layers[`layer_${y}`] = makeLayer(width, depth, y);
   }
   return {
     title: "Untitled Level",
@@ -71,5 +82,38 @@ export function createEmptyLevel(
     spawn: { x: 0, y: 1, z: 0 },
     solve_conditions: { finish_block: true, collected_coins: 0 },
     layers,
+  };
+}
+
+export function resizeLevel(
+  level: LevelData,
+  newWidth: number,
+  newDepth: number,
+  newHeight: number,
+): LevelData {
+  const layers: LevelLayers = {};
+  for (let y = 0; y < newHeight; y++) {
+    const layerName = `layer_${y}`;
+    const oldLayer = level.layers[layerName];
+    const fill = defaultFillForLayer(y);
+    const layer: string[][] = [];
+    for (let z = 0; z < newDepth; z++) {
+      const oldRow = oldLayer?.[z];
+      const row: string[] = [];
+      for (let x = 0; x < newWidth; x++) {
+        row.push(oldRow?.[x] ?? fill);
+      }
+      layer.push(row);
+    }
+    layers[layerName] = layer;
+  }
+  return {
+    ...level,
+    layers,
+    spawn: {
+      x: Math.min(Math.max(level.spawn.x, 0), newWidth - 1),
+      y: Math.min(Math.max(level.spawn.y, 0), newHeight - 1),
+      z: Math.min(Math.max(level.spawn.z, 0), newDepth - 1),
+    },
   };
 }
