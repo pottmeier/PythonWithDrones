@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { LevelData } from "@/types/level";
 
@@ -8,9 +9,31 @@ interface MetadataFormProps {
   onChange: (next: LevelData) => void;
 }
 
+function parseTags(text: string): string[] {
+  return text
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
 export function MetadataForm({ level, onChange }: MetadataFormProps) {
   const patch = (update: Partial<LevelData>) =>
     onChange({ ...level, ...update });
+
+  // Local text state for tags so commas (and trailing spaces) survive typing.
+  // Sync from `level.tags` only when the external value differs from what
+  // the current text would parse to (e.g. undo, import).
+  const [tagsText, setTagsText] = useState(() =>
+    (level.tags ?? []).join(", "),
+  );
+  useEffect(() => {
+    const parsedFromText = parseTags(tagsText).join("|");
+    const externalSerialized = (level.tags ?? []).join("|");
+    if (parsedFromText !== externalSerialized) {
+      setTagsText((level.tags ?? []).join(", "));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level.tags]);
 
   return (
     <div className="space-y-3">
@@ -35,15 +58,11 @@ export function MetadataForm({ level, onChange }: MetadataFormProps) {
 
       <Field label="Tags (comma-separated)">
         <Input
-          value={(level.tags ?? []).join(", ")}
-          onChange={(e) =>
-            patch({
-              tags: e.target.value
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-            })
-          }
+          value={tagsText}
+          onChange={(e) => {
+            setTagsText(e.target.value);
+            patch({ tags: parseTags(e.target.value) });
+          }}
           placeholder="Easy, Loops, ..."
         />
       </Field>
