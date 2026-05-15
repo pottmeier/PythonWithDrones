@@ -5,15 +5,17 @@ import { Canvas, ThreeEvent } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
-import type { LevelData } from "@/types/level";
+import type { LevelData, LevelDimensions } from "@/types/level";
 import { getLevelDimensions } from "@/types/level";
-import type { EditorTool } from "./tool-panel";
+import type { EditorTool, EditorMode } from "./tool-panel";
 
 interface EditorSceneProps {
   level: LevelData;
   selectedBlockId: string;
   tool: EditorTool;
+  mode: EditorMode;
   activeLayer: number;
+  pendingResize?: LevelDimensions | null;
   onPaint: (x: number, y: number, z: number, blockId: string) => void;
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
@@ -23,7 +25,9 @@ export function EditorScene({
   level,
   selectedBlockId,
   tool,
+  mode,
   activeLayer,
+  pendingResize,
   onPaint,
   onErase,
   onSetSpawn,
@@ -33,6 +37,7 @@ export function EditorScene({
   const height = Math.max(dims.height, activeLayer + 1);
   const centerX = width / 2;
   const centerZ = depth / 2;
+  const isPlacement = mode === "placement";
 
   const handleBlockClick = (
     e: ThreeEvent<MouseEvent>,
@@ -40,12 +45,14 @@ export function EditorScene({
     y: number,
     z: number,
   ) => {
+    if (!isPlacement) return;
+    if (e.nativeEvent.button !== 0) return; // left-click only
     e.stopPropagation();
     if (tool === "spawn") {
       onSetSpawn(x, y + 1, z);
       return;
     }
-    if (tool === "erase" || e.shiftKey) {
+    if (tool === "erase") {
       onErase(x, y, z);
       return;
     }
@@ -63,6 +70,8 @@ export function EditorScene({
   };
 
   const handlePlaneClick = (e: ThreeEvent<MouseEvent>) => {
+    if (!isPlacement) return;
+    if (e.nativeEvent.button !== 0) return;
     if (tool === "erase") return;
     e.stopPropagation();
     const point = e.point;
@@ -91,18 +100,14 @@ export function EditorScene({
         return layer.flatMap((row, z) =>
           row.flatMap((blockId, x) => {
             const def = BLOCK_REGISTRY[blockId];
-            if (!def || def.id === "empty") return [];
+            if (!def || def.id === "empty" || def.id === "air") return [];
             const Component = def.component;
             const isActive = layerIndex === activeLayer;
             return (
               <group
                 key={`${layerName}-${x}-${z}`}
                 position={[x, layerIndex, z]}
-                onClick={(e) => handleBlockClick(e, x, layerIndex, z)}
-                onContextMenu={(e) => {
-                  e.stopPropagation();
-                  onErase(x, layerIndex, z);
-                }}
+                onPointerDown={(e) => handleBlockClick(e, x, layerIndex, z)}
               >
                 <Component position={[0, 0, 0]} blockDef={def} />
                 {!isActive && (
@@ -122,11 +127,33 @@ export function EditorScene({
         );
       })}
 
+      {/* "empty" wall markers on active layer (visible-while-editing only) */}
+      {level.layers[`layer_${activeLayer}`]?.flatMap((row, z) =>
+        row.flatMap((blockId, x) => {
+          if (blockId !== "empty") return [];
+          return (
+            <mesh
+              key={`emptywall-${x}-${z}`}
+              position={[x, activeLayer, z]}
+              onPointerDown={(e) => handleBlockClick(e, x, activeLayer, z)}
+            >
+              <boxGeometry args={[0.95, 0.95, 0.95]} />
+              <meshBasicMaterial
+                color="#71717a"
+                transparent
+                opacity={0.35}
+                wireframe
+              />
+            </mesh>
+          );
+        }),
+      )}
+
       {/* Build plane at active Y catches clicks on empty cells */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[centerX - 0.5, activeLayer - 0.5, centerZ - 0.5]}
-        onClick={handlePlaneClick}
+        onPointerDown={handlePlaneClick}
       >
         <planeGeometry args={[width, depth]} />
         <meshBasicMaterial
@@ -151,8 +178,18 @@ export function EditorScene({
 
       <BoundsBox width={width} height={height} depth={depth} />
 
+      {pendingResize && (
+        <ResizePreview
+          current={{ width, height: dims.height, depth }}
+          pending={pendingResize}
+        />
+      )}
+
       <OrbitControls
+        enabled={!isPlacement}
         enablePan
+        enableRotate
+        enableZoom
         panSpeed={1}
         screenSpacePanning={false}
         minDistance={2}
@@ -202,5 +239,89 @@ function BoundsBox({
       <edgesGeometry args={[new THREE.BoxGeometry(width, height, depth)]} />
       <lineBasicMaterial color="#94a3b8" />
     </lineSegments>
+  );
+}
+
+function ResizePreview({
+  current,
+  pending,
+}: {
+  current: LevelDimensions;
+  pending: LevelDimensions;
+}) {
+  const slabs: { center: [number, number, number]; size: [number, number, number] }[] = [];
+
+  // X slab: removed when pending.width < current.width
+  if (pending.width < current.width) {
+    const dx = current.width - pending.width;
+    slabs.push({
+      center: [
+        (pending.width + current.width) / 2 - 0.5,
+        current.height / 2 - 0.5,
+        current.depth / 2 - 0.5,
+      ],
+      size: [dx, current.height, current.depth],
+    });
+  }
+  // Y slab
+  if (pending.height < current.height) {
+    const dy = current.height - pending.height;
+    const w = Math.min(pending.width, current.width);
+    const d = Math.min(pending.depth, current.depth);
+    slabs.push({
+      center: [
+        w / 2 - 0.5,
+        (pending.height + current.height) / 2 - 0.5,
+        d / 2 - 0.5,
+      ],
+      size: [w, dy, d],
+    });
+  }
+  // Z slab
+  if (pending.depth < current.depth) {
+    const dz = current.depth - pending.depth;
+    const w = Math.min(pending.width, current.width);
+    const h = Math.min(pending.height, current.height);
+    slabs.push({
+      center: [
+        w / 2 - 0.5,
+        h / 2 - 0.5,
+        (pending.depth + current.depth) / 2 - 0.5,
+      ],
+      size: [w, h, dz],
+    });
+  }
+
+  // Outline for the new bounds
+  const newCx = pending.width / 2 - 0.5;
+  const newCy = pending.height / 2 - 0.5;
+  const newCz = pending.depth / 2 - 0.5;
+
+  return (
+    <group>
+      {slabs.map((slab, i) => (
+        <mesh key={i} position={slab.center}>
+          <boxGeometry args={slab.size} />
+          <meshBasicMaterial
+            color="#ef4444"
+            transparent
+            opacity={0.25}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+      <lineSegments position={[newCx, newCy, newCz]}>
+        <edgesGeometry
+          args={[
+            new THREE.BoxGeometry(
+              pending.width,
+              pending.height,
+              pending.depth,
+            ),
+          ]}
+        />
+        <lineBasicMaterial color="#22c55e" />
+      </lineSegments>
+    </group>
   );
 }
