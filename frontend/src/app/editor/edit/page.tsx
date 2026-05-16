@@ -19,6 +19,8 @@ import {
   Download,
   Undo2,
   Redo2,
+  ScanEye,
+  Grid3X3,
 } from "lucide-react";
 import {
   getLevelStorage,
@@ -125,6 +127,10 @@ function EditorContent() {
 
   const [altHeld, setAltHeld] = useState(false);
   const [xHeld, setXHeld] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const controlsRef = useRef<any>(null);
 
   const [past, setPast] = useState<LevelData[]>([]);
   const [future, setFuture] = useState<LevelData[]>([]);
@@ -269,6 +275,17 @@ function EditorContent() {
     if (!level) return;
     if (dirty) await handleSave();
     setShowTestPlay(true);
+  };
+
+  const handleResetCamera = () => {
+    if (!controlsRef.current || !level) return;
+    const dims = getLevelDimensions(level);
+    const cx = (dims.width - 1) / 2;
+    const cz = (dims.depth - 1) / 2;
+    const controls = controlsRef.current;
+    controls.object.position.set(cx - 8, 10, cz + 10);
+    controls.target.set(cx, 0.5, cz);
+    controls.update();
   };
 
   // Keyboard: Alt/X hold, Ctrl+Z/Y, layer arrows
@@ -485,11 +502,37 @@ function EditorContent() {
                 tool={effectiveTool}
                 mode={effectiveMode}
                 activeLayer={activeLayer}
+                showGrid={showGrid}
                 pendingResize={resizeDirty ? pendingResize : null}
+                controlsRef={controlsRef}
                 onPaint={handlePaint}
                 onErase={handleErase}
                 onSetSpawn={handleSetSpawn}
               />
+              <div className="absolute top-3 right-3 flex gap-2 z-10">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleResetCamera}
+                  title="Reset camera view"
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                >
+                  <ScanEye className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowGrid((s) => !s)}
+                  title={showGrid ? "Hide grid" : "Show grid"}
+                  className={
+                    showGrid
+                      ? "bg-blue-500/20 backdrop-blur border-blue-400"
+                      : "bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                  }
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+              </div>
               <div className="absolute bottom-3 left-3 text-xs bg-black/60 text-white rounded px-2 py-1 pointer-events-none">
                 {effectiveMode === "camera" ? (
                   <>Camera mode {altHeld && "(Alt held)"} · drag to orbit</>
