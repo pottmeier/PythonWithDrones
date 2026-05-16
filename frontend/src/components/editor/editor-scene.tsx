@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Canvas, ThreeEvent, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
@@ -15,7 +15,10 @@ interface EditorSceneProps {
   tool: EditorTool;
   mode: EditorMode;
   activeLayer: number;
+  showGrid: boolean;
   pendingResize?: LevelDimensions | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  controlsRef?: React.RefObject<any>;
   onPaint: (x: number, y: number, z: number, blockId: string) => void;
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
@@ -32,7 +35,9 @@ export function EditorScene({
   tool,
   mode,
   activeLayer,
+  showGrid,
   pendingResize,
+  controlsRef,
   onPaint,
   onErase,
   onSetSpawn,
@@ -44,47 +49,45 @@ export function EditorScene({
   const centerZ = (depth - 1) / 2;
   const isPlacement = mode === "placement";
 
+  // Stable target reference — avoids drei's effect re-running on every render
+  // and calling controls.update(), which causes the camera to jiggle on each
+  // mode toggle.
+  const target = useMemo<[number, number, number]>(
+    () => [centerX, 0.5, centerZ],
+    [centerX, centerZ],
+  );
+  const initialCameraPos = useMemo<[number, number, number]>(
+    () => [centerX - 8, 10, centerZ + 10],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // mount-only initial position
+  );
+
   const [hover, setHover] = useState<{ x: number; z: number } | null>(null);
 
-  // Clear hover when leaving placement mode (no stale ghost in camera mode)
   useEffect(() => {
     if (!isPlacement) setHover(null);
   }, [isPlacement]);
 
-  const updateHover = (e: ThreeEvent<PointerEvent>) => {
-    if (!isPlacement) return;
-    const x = Math.floor(e.point.x + 0.5);
-    const z = Math.floor(e.point.z + 0.5);
-    if (x < 0 || x >= width || z < 0 || z >= depth) {
-      setHover(null);
-      return;
-    }
-    setHover({ x, z });
-  };
-
-  const handleLeftClick = (e: ThreeEvent<MouseEvent>) => {
-    if (!isPlacement) return;
-    if (e.nativeEvent.button !== 0) return;
-    e.stopPropagation();
-    const x = Math.floor(e.point.x + 0.5);
-    const z = Math.floor(e.point.z + 0.5);
-    if (x < 0 || x >= width || z < 0 || z >= depth) return;
-    if (tool === "spawn") {
-      onSetSpawn(x, activeLayer, z);
-    } else if (tool === "paint") {
-      onPaint(x, activeLayer, z, selectedBlockId);
-    } else if (tool === "erase") {
-      onErase(x, activeLayer, z);
-    }
-  };
-
   return (
     <Canvas
       shadows
-      camera={{ position: [centerX - 8, 10, centerZ + 10], fov: 50 }}
+      camera={{ position: initialCameraPos, fov: 50 }}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <CanvasPointerLeave onLeave={() => setHover(null)} />
+      <CameraSetup target={target} />
+
+      <PlaneInteraction
+        width={width}
+        depth={depth}
+        activeLayer={activeLayer}
+        isPlacement={isPlacement}
+        tool={tool}
+        selectedBlockId={selectedBlockId}
+        onHoverChange={setHover}
+        onPaint={onPaint}
+        onErase={onErase}
+        onSetSpawn={onSetSpawn}
+      />
 
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 20, 10]} intensity={1.2} castShadow />
@@ -98,12 +101,7 @@ export function EditorScene({
             if (!def || def.id === "empty" || def.id === "air") return [];
             const Component = def.component;
             return (
-              <group
-                key={`${layerName}-${x}-${z}`}
-                position={[x, layerIndex, z]}
-                onPointerDown={handleLeftClick}
-                onPointerMove={updateHover}
-              >
+              <group key={`${layerName}-${x}-${z}`} position={[x, layerIndex, z]}>
                 <Component position={[0, 0, 0]} blockDef={def} />
               </group>
             );
@@ -111,46 +109,48 @@ export function EditorScene({
         );
       })}
 
-      {/* "empty" wall markers on active layer (so user sees what they placed) */}
-      {level.layers[`layer_${activeLayer}`]?.flatMap((row, z) =>
-        row.flatMap((blockId, x) => {
-          if (blockId !== "empty") return [];
-          return (
-            <mesh
-              key={`emptywall-${x}-${z}`}
-              position={[x, activeLayer, z]}
-              onPointerDown={handleLeftClick}
-              onPointerMove={updateHover}
-            >
-              <boxGeometry args={[0.95, 0.95, 0.95]} />
-              <meshBasicMaterial
-                color="#71717a"
-                transparent
-                opacity={0.35}
-                wireframe
-              />
-            </mesh>
-          );
-        }),
+      {/* "empty" wireframe markers on every layer */}
+      {Object.entries(level.layers).flatMap(([layerName, layer]) => {
+        const layerIndex = parseInt(layerName.split("_")[1]) || 0;
+        return layer.flatMap((row, z) =>
+          row.flatMap((blockId, x) => {
+            if (blockId !== "empty") return [];
+            return (
+              <mesh
+                key={`emptywall-${layerName}-${x}-${z}`}
+                position={[x, layerIndex, z]}
+              >
+                <boxGeometry args={[0.95, 0.95, 0.95]} />
+                <meshBasicMaterial
+                  color="#71717a"
+                  transparent
+                  opacity={0.35}
+                  wireframe
+                />
+              </mesh>
+            );
+          }),
+        );
+      })}
+
+      {showGrid && (
+        <>
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[centerX, activeLayer - 0.5, centerZ]}
+          >
+            <planeGeometry args={[width, depth]} />
+            <meshBasicMaterial
+              color="#3b82f6"
+              transparent
+              opacity={0.08}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+            />
+          </mesh>
+          <GridLines width={width} depth={depth} y={activeLayer - 0.5} />
+        </>
       )}
-
-      {/* Build plane at active Y catches clicks on empty cells */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[centerX, activeLayer - 0.5, centerZ]}
-        onPointerDown={handleLeftClick}
-        onPointerMove={updateHover}
-      >
-        <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial
-          color="#3b82f6"
-          transparent
-          opacity={0.08}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      <GridLines width={width} depth={depth} y={activeLayer - 0.5} />
 
       <SpawnMarker position={[level.spawn.x, level.spawn.y, level.spawn.z]} />
 
@@ -174,16 +174,16 @@ export function EditorScene({
       )}
 
       <OrbitControls
-        enabled={!isPlacement}
-        enablePan
-        enableRotate
-        enableZoom
+        ref={controlsRef}
+        enableRotate={!isPlacement}
+        enablePan={!isPlacement}
+        enableZoom={!isPlacement}
         panSpeed={1}
         screenSpacePanning={false}
         minDistance={2}
         maxDistance={30}
         zoomSpeed={3}
-        target={[centerX, 0.5, centerZ]}
+        target={target}
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 2 - 0.05}
       />
@@ -191,13 +191,124 @@ export function EditorScene({
   );
 }
 
-function CanvasPointerLeave({ onLeave }: { onLeave: () => void }) {
-  const gl = useThree((s) => s.gl);
+function CameraSetup({ target }: { target: [number, number, number] }) {
+  const camera = useThree((s) => s.camera);
   useEffect(() => {
-    const el = gl.domElement;
-    el.addEventListener("pointerleave", onLeave);
-    return () => el.removeEventListener("pointerleave", onLeave);
-  }, [gl, onLeave]);
+    camera.lookAt(target[0], target[1], target[2]);
+    camera.updateProjectionMatrix();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount-only — don't reorient when target updates via resize
+  return null;
+}
+
+// Manual raycaster targeting an imaginary plane at y = activeLayer - 0.5.
+// This gives a smooth, monotonic mapping from cursor position to grid cell,
+// regardless of what 3D geometry is between the camera and the active layer.
+function PlaneInteraction({
+  width,
+  depth,
+  activeLayer,
+  isPlacement,
+  tool,
+  selectedBlockId,
+  onHoverChange,
+  onPaint,
+  onErase,
+  onSetSpawn,
+}: {
+  width: number;
+  depth: number;
+  activeLayer: number;
+  isPlacement: boolean;
+  tool: EditorTool;
+  selectedBlockId: string;
+  onHoverChange: (cell: { x: number; z: number } | null) => void;
+  onPaint: (x: number, y: number, z: number, blockId: string) => void;
+  onErase: (x: number, y: number, z: number) => void;
+  onSetSpawn: (x: number, y: number, z: number) => void;
+}) {
+  const { camera, gl, raycaster } = useThree();
+
+  // Keep frequently-changing state in a ref so the DOM listeners stay attached
+  // and don't tear down on every render.
+  const stateRef = useRef({
+    isPlacement,
+    tool,
+    selectedBlockId,
+    onHoverChange,
+    onPaint,
+    onErase,
+    onSetSpawn,
+  });
+  stateRef.current = {
+    isPlacement,
+    tool,
+    selectedBlockId,
+    onHoverChange,
+    onPaint,
+    onErase,
+    onSetSpawn,
+  };
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const plane = new THREE.Plane(
+      new THREE.Vector3(0, 1, 0),
+      -(activeLayer - 0.5),
+    );
+    const intersection = new THREE.Vector3();
+    const ndc = new THREE.Vector2();
+
+    const cellFromEvent = (
+      e: PointerEvent,
+    ): { x: number; z: number } | null => {
+      const rect = canvas.getBoundingClientRect();
+      ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+      if (!raycaster.ray.intersectPlane(plane, intersection)) return null;
+      const x = Math.floor(intersection.x + 0.5);
+      const z = Math.floor(intersection.z + 0.5);
+      if (x < 0 || x >= width || z < 0 || z >= depth) return null;
+      return { x, z };
+    };
+
+    const handleMove = (e: PointerEvent) => {
+      const s = stateRef.current;
+      if (!s.isPlacement) {
+        s.onHoverChange(null);
+        return;
+      }
+      s.onHoverChange(cellFromEvent(e));
+    };
+
+    const handleDown = (e: PointerEvent) => {
+      const s = stateRef.current;
+      if (!s.isPlacement) return;
+      if (e.button !== 0) return;
+      const cell = cellFromEvent(e);
+      if (!cell) return;
+      if (s.tool === "paint") {
+        s.onPaint(cell.x, activeLayer, cell.z, s.selectedBlockId);
+      } else if (s.tool === "erase") {
+        s.onErase(cell.x, activeLayer, cell.z);
+      } else if (s.tool === "spawn") {
+        s.onSetSpawn(cell.x, activeLayer, cell.z);
+      }
+    };
+
+    const handleLeave = () => stateRef.current.onHoverChange(null);
+
+    canvas.addEventListener("pointermove", handleMove);
+    canvas.addEventListener("pointerdown", handleDown);
+    canvas.addEventListener("pointerleave", handleLeave);
+    return () => {
+      canvas.removeEventListener("pointermove", handleMove);
+      canvas.removeEventListener("pointerdown", handleDown);
+      canvas.removeEventListener("pointerleave", handleLeave);
+    };
+  }, [activeLayer, width, depth, gl, camera, raycaster]);
+
   return null;
 }
 
@@ -290,13 +401,11 @@ function GridLines({
 }) {
   const geometry = useMemo(() => {
     const pts: number[] = [];
-    // Lines parallel to Z axis (constant x) — at every block edge x ∈ [-0.5, width-0.5]
     for (let i = 0; i <= width; i++) {
       const xPos = i - 0.5;
       pts.push(xPos, y, -0.5);
       pts.push(xPos, y, depth - 0.5);
     }
-    // Lines parallel to X axis (constant z)
     for (let i = 0; i <= depth; i++) {
       const zPos = i - 0.5;
       pts.push(-0.5, y, zPos);
