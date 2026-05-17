@@ -16,7 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Plus, Upload, Trash2, Pencil } from "lucide-react";
+import { Plus, Upload, Trash2, Pencil, AlertTriangle } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {
   getLevelStorage,
@@ -105,6 +105,19 @@ export default function EditorLibraryPage() {
     refresh();
   };
 
+  const handleDeleteAll = async () => {
+    if (levels.length === 0) return;
+    if (
+      !window.confirm(
+        `Delete ALL ${levels.length} saved levels? This cannot be undone.`,
+      )
+    )
+      return;
+    await Promise.all(levels.map((l) => getLevelStorage().delete(l.id)));
+    refresh();
+    toast.success(`Deleted ${levels.length} levels`);
+  };
+
   return (
     <SidebarProvider>
       <div className="relative min-h-screen w-full bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -130,6 +143,15 @@ export default function EditorLibraryPage() {
               </div>
 
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleDeleteAll}
+                  disabled={levels.length === 0}
+                  className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Delete All
+                </Button>
                 <Button variant="outline" onClick={handleImportClick}>
                   <Upload className="w-4 h-4 mr-2" />
                   Import YAML
@@ -201,7 +223,7 @@ export default function EditorLibraryPage() {
           </main>
         </div>
       </div>
-      <Toaster position="top-left" richColors closeButton />
+      <Toaster position="top-center" richColors closeButton />
     </SidebarProvider>
   );
 }
