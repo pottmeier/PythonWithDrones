@@ -45,7 +45,11 @@ import {
 } from "@/components/editor/tool-panel";
 import { MetadataForm } from "@/components/editor/metadata-form";
 import { ResizePanel } from "@/components/editor/resize-panel";
-import { EditorScene } from "@/components/editor/editor-scene";
+import {
+  EditorScene,
+  type HoverCell,
+  type SceneAPI,
+} from "@/components/editor/editor-scene";
 import { TestPlayModal } from "@/components/editor/test-play-modal";
 import { downloadYaml } from "@/components/editor/yaml-io";
 
@@ -131,11 +135,15 @@ function EditorContent() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
+  const hoverRef = useRef<HoverCell | null>(null);
+  const sceneApiRef = useRef<SceneAPI | null>(null);
 
   const [past, setPast] = useState<LevelData[]>([]);
   const [future, setFuture] = useState<LevelData[]>([]);
 
-  const [pendingResize, setPendingResize] = useState<LevelDimensions | null>(
+  // Only the red-slab preview; null when no resize is staged (invalid or
+  // equal to current). ResizePanel emits this via onPreviewChange.
+  const [resizePreview, setResizePreview] = useState<LevelDimensions | null>(
     null,
   );
 
@@ -144,9 +152,32 @@ function EditorContent() {
 
   const sceneWrapRef = useRef<HTMLDivElement>(null);
 
-  // Effective mode/tool after holding modifier keys
   const effectiveMode: EditorMode = altHeld ? "camera" : mode;
   const effectiveTool: EditorTool = xHeld ? "erase" : tool;
+
+  // Kept in sync with the activeLayer state. Used so that changeActiveLayer
+  // can compute the delta synchronously without depending on a stale closure.
+  const activeLayerRef = useRef(activeLayer);
+  useEffect(() => {
+    activeLayerRef.current = activeLayer;
+  }, [activeLayer]);
+
+  // Layer change: delegate the visual updates (camera + grid + hover) to
+  // SceneController's imperative API so they all land in one synchronous
+  // block, fully bypassing React's render scheduling. setActiveLayer is
+  // only for the sidebar UI — its render can defer harmlessly.
+  const changeActiveLayer = useCallback(
+    (arg: number | ((prev: number) => number)) => {
+      const prev = activeLayerRef.current;
+      const next = typeof arg === "function" ? arg(prev) : arg;
+      if (next === prev) return;
+      const delta = next - prev;
+      activeLayerRef.current = next;
+      sceneApiRef.current?.applyLayerShift(delta);
+      setActiveLayer(next);
+    },
+    [],
+  );
 
   // Load level
   useEffect(() => {
@@ -158,6 +189,8 @@ function EditorContent() {
         if (cancelled) return;
         setStoredId(fresh.id);
         setLevel(fresh.yaml);
+        setActiveLayer(1);
+        activeLayerRef.current = 1;
         setLoading(false);
         router.replace(`${basePath}/editor/edit?id=${fresh.id}`);
         return;
@@ -171,6 +204,8 @@ function EditorContent() {
       }
       setStoredId(found.id);
       setLevel(found.yaml);
+      setActiveLayer(1);
+      activeLayerRef.current = 1;
       setLoading(false);
     }
     load();
@@ -179,7 +214,6 @@ function EditorContent() {
     };
   }, [idFromUrl, router]);
 
-  // Push to history before each structural edit
   const applyEdit = useCallback(
     (transform: (prev: LevelData) => LevelData) => {
       setLevel((prev) => {
@@ -200,21 +234,29 @@ function EditorContent() {
     [],
   );
 
-  // Metadata edits: no history push (avoid stack spam while typing)
   const updateLevelMeta = useCallback((next: LevelData) => {
     setLevel(next);
     setDirty(true);
   }, []);
 
-  const handlePaint = (x: number, y: number, z: number, blockId: string) => {
-    applyEdit((prev) => setBlockAt(prev, x, y, z, blockId));
-  };
-  const handleErase = (x: number, y: number, z: number) => {
-    applyEdit((prev) => setBlockAt(prev, x, y, z, "air"));
-  };
-  const handleSetSpawn = (x: number, y: number, z: number) => {
-    applyEdit((prev) => ({ ...prev, spawn: { x, y, z } }));
-  };
+  const handlePaint = useCallback(
+    (x: number, y: number, z: number, blockId: string) => {
+      applyEdit((prev) => setBlockAt(prev, x, y, z, blockId));
+    },
+    [applyEdit],
+  );
+  const handleErase = useCallback(
+    (x: number, y: number, z: number) => {
+      applyEdit((prev) => setBlockAt(prev, x, y, z, "air"));
+    },
+    [applyEdit],
+  );
+  const handleSetSpawn = useCallback(
+    (x: number, y: number, z: number) => {
+      applyEdit((prev) => ({ ...prev, spawn: { x, y, z } }));
+    },
+    [applyEdit],
+  );
 
   const handleAddLayer = () => {
     applyEdit((prev) => {
@@ -227,7 +269,7 @@ function EditorContent() {
         layers: { ...prev.layers, [`layer_${newY}`]: newLayer },
       };
     });
-    setActiveLayer((y) =>
+    changeActiveLayer((y) =>
       Math.max(y, level ? Object.keys(level.layers).length : 0),
     );
   };
@@ -282,16 +324,39 @@ function EditorContent() {
     const dims = getLevelDimensions(level);
     const cx = (dims.width - 1) / 2;
     const cz = (dims.depth - 1) / 2;
+    const ty = activeLayer - 0.5;
     const controls = controlsRef.current;
-    controls.object.position.set(cx - 8, 10, cz + 10);
-    controls.target.set(cx, 0.5, cz);
+    controls.object.position.set(cx - 8, ty + 9.5, cz + 10);
+    controls.target.set(cx, ty, cz);
     controls.update();
   };
 
-  // Keyboard: Alt/X hold, Ctrl+Z/Y, layer arrows
+  const handleApplyResize = (dims: LevelDimensions) => {
+    applyEdit((prev) => resizeLevel(prev, dims.width, dims.depth, dims.height));
+    changeActiveLayer((y) => Math.min(y, dims.height - 1));
+  };
+
+  // Stable refs for key handler access to "current" tool/mode/selection/hover.
+  const placementRef = useRef({
+    effectiveMode,
+    effectiveTool,
+    selectedBlockId,
+    handlePaint,
+    handleErase,
+    handleSetSpawn,
+  });
+  placementRef.current = {
+    effectiveMode,
+    effectiveTool,
+    selectedBlockId,
+    handlePaint,
+    handleErase,
+    handleSetSpawn,
+  };
+
+  // Keyboard handler: Alt/X hold, Ctrl+Z/Y/S, Space-to-place
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      // Avoid hijacking typing in form fields
       const tag = (e.target as HTMLElement)?.tagName;
       const isFormField =
         tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
@@ -321,6 +386,22 @@ function EditorContent() {
         handleSave();
         return;
       }
+
+      if (e.code === "Space" && !isFormField) {
+        if (e.repeat) return;
+        e.preventDefault();
+        const s = placementRef.current;
+        if (s.effectiveMode !== "placement") return;
+        const h = hoverRef.current;
+        if (!h) return;
+        if (s.effectiveTool === "paint") {
+          s.handlePaint(h.x, h.y, h.z, s.selectedBlockId);
+        } else if (s.effectiveTool === "erase") {
+          s.handleErase(h.x, h.y, h.z);
+        } else if (s.effectiveTool === "spawn") {
+          s.handleSetSpawn(h.x, h.y, h.z);
+        }
+      }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key === "Alt") setAltHeld(false);
@@ -340,66 +421,79 @@ function EditorContent() {
     };
   }, [undo, redo, handleSave]);
 
-  // Wheel: change Y layer in placement mode (camera mode lets OrbitControls zoom)
+  // Wheel-input state for layer scrolling. Naive "1 event = 1 layer" is wrong
+  // because trackpads fire many small events per swipe (and inertia keeps
+  // firing after the finger lifts). Accumulate deltaY, step once per
+  // threshold, cap the rate, and reset the accumulator after a quiet gap so
+  // inertia stragglers don't keep stepping layers.
+  const wheelAccumRef = useRef(0);
+  const lastWheelEventTimeRef = useRef(0);
+  const lastWheelLayerChangeRef = useRef(0);
+
   useEffect(() => {
     const el = sceneWrapRef.current;
     if (!el) return;
+
+    const STEP_SIZE = 50; // cumulative |deltaY| per one layer step
+    const RESET_AFTER = 200; // ms of silence wipes the accumulator
+    const MIN_INTERVAL = 60; // ms cap between layer changes
+
     const onWheel = (e: WheelEvent) => {
-      if (effectiveMode !== "placement") return;
       e.preventDefault();
-      if (!level) return;
-      const dir = e.deltaY > 0 ? -1 : 1;
-      const maxLayer = Math.max(Object.keys(level.layers).length - 1, 0);
-      setActiveLayer((y) => Math.min(Math.max(y + dir, 0), maxLayer));
+      if (effectiveMode === "placement") {
+        if (!level) return;
+        const now = performance.now();
+
+        if (now - lastWheelEventTimeRef.current > RESET_AFTER) {
+          wheelAccumRef.current = 0;
+        }
+        lastWheelEventTimeRef.current = now;
+
+        wheelAccumRef.current += e.deltaY;
+
+        if (now - lastWheelLayerChangeRef.current < MIN_INTERVAL) return;
+        if (Math.abs(wheelAccumRef.current) < STEP_SIZE) return;
+
+        lastWheelLayerChangeRef.current = now;
+        const dir = wheelAccumRef.current > 0 ? -1 : 1;
+        wheelAccumRef.current = 0;
+        const maxLayer = Math.max(Object.keys(level.layers).length - 1, 0);
+        changeActiveLayer((y) =>
+          Math.min(Math.max(y + dir, 0), maxLayer),
+        );
+      } else {
+        const ctrl = controlsRef.current;
+        if (!ctrl) return;
+        const factor = e.deltaY > 0 ? 1.1 : 1 / 1.1;
+        const dx = ctrl.object.position.x - ctrl.target.x;
+        const dy = ctrl.object.position.y - ctrl.target.y;
+        const dz = ctrl.object.position.z - ctrl.target.z;
+        const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (len === 0) return;
+        const newLen = Math.min(Math.max(len * factor, 2), 30);
+        const scale = newLen / len;
+        ctrl.object.position.set(
+          ctrl.target.x + dx * scale,
+          ctrl.target.y + dy * scale,
+          ctrl.target.z + dz * scale,
+        );
+        ctrl.update();
+      }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [effectiveMode, level]);
+  }, [effectiveMode, level, changeActiveLayer]);
+
 
   const currentDims = level ? getLevelDimensions(level) : null;
-  useEffect(() => {
-    if (currentDims) {
-      setPendingResize((prev) =>
-        prev &&
-        prev.width === currentDims.width &&
-        prev.height === currentDims.height &&
-        prev.depth === currentDims.depth
-          ? prev
-          : currentDims,
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDims?.width, currentDims?.height, currentDims?.depth]);
 
-  const handleApplyResize = () => {
-    if (!level || !pendingResize) return;
-    applyEdit((prev) =>
-      resizeLevel(
-        prev,
-        pendingResize.width,
-        pendingResize.depth,
-        pendingResize.height,
-      ),
-    );
-    setActiveLayer((y) => Math.min(y, pendingResize.height - 1));
-  };
-
-  const handleResetResize = () => {
-    if (currentDims) setPendingResize(currentDims);
-  };
-
-  if (loading || !level || !currentDims || !pendingResize) {
+  if (loading || !level || !currentDims) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner />
       </div>
     );
   }
-
-  const resizeDirty =
-    pendingResize.width !== currentDims.width ||
-    pendingResize.height !== currentDims.height ||
-    pendingResize.depth !== currentDims.depth;
 
   return (
     <SidebarProvider>
@@ -478,7 +572,7 @@ function EditorContent() {
                   Object.keys(level.layers).length,
                   activeLayer + 1,
                 )}
-                onActiveLayerChange={setActiveLayer}
+                onActiveLayerChange={changeActiveLayer}
                 onAddLayer={handleAddLayer}
               />
               <BlockPalette
@@ -487,24 +581,25 @@ function EditorContent() {
               />
               <ResizePanel
                 current={currentDims}
-                pending={pendingResize}
-                onPendingChange={setPendingResize}
+                onPreviewChange={setResizePreview}
                 onApply={handleApplyResize}
-                onReset={handleResetResize}
               />
               <MetadataForm level={level} onChange={updateLevelMeta} />
             </aside>
 
             <div ref={sceneWrapRef} className="flex-1 relative">
               <EditorScene
+                key={storedId ?? "no-id"}
                 level={level}
                 selectedBlockId={selectedBlockId}
                 tool={effectiveTool}
                 mode={effectiveMode}
                 activeLayer={activeLayer}
                 showGrid={showGrid}
-                pendingResize={resizeDirty ? pendingResize : null}
+                pendingResize={resizePreview}
                 controlsRef={controlsRef}
+                hoverRef={hoverRef}
+                sceneApiRef={sceneApiRef}
                 onPaint={handlePaint}
                 onErase={handleErase}
                 onSetSpawn={handleSetSpawn}
@@ -539,11 +634,11 @@ function EditorContent() {
                 ) : (
                   <>
                     {effectiveTool === "paint" &&
-                      `Click to place ${selectedBlockId}`}
+                      `Click or Space to place ${selectedBlockId}`}
                     {effectiveTool === "erase" &&
-                      `Click to erase ${xHeld ? "(X held)" : ""}`}
+                      `Click or Space to erase ${xHeld ? "(X held)" : ""}`}
                     {effectiveTool === "spawn" &&
-                      "Click to set spawn position"}
+                      "Click or Space to set spawn position"}
                     {" · Layer Y="}
                     {activeLayer}
                   </>
@@ -558,7 +653,7 @@ function EditorContent() {
         onOpenChange={setShowTestPlay}
         level={level}
       />
-      <Toaster position="top-left" richColors closeButton />
+      <Toaster position="top-center" richColors closeButton />
     </SidebarProvider>
   );
 }
