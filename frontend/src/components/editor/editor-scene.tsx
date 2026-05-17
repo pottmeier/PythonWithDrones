@@ -17,11 +17,13 @@ import type { EditorTool, EditorMode } from "./tool-panel";
 export type HoverCell = { x: number; y: number; z: number };
 
 export type SceneAPI = {
-  // Imperative layer change: shifts camera, layer group, plane constant,
-  // and re-raycasts the hover preview — all in one synchronous block,
-  // bypassing React for the visual updates so there's no chance the
-  // grid/hover preview lag the camera shift by a frame.
-  applyLayerShift: (delta: number) => void;
+  // Step current layer by `dir` units. Clamps internally to [0, layerCount-1]
+  // and returns the actual new layer after clamping.
+  applyLayerStep: (dir: number) => number;
+  // Set current layer to absolute value. `layerCountOverride` lets callers
+  // pass the new layer count when the React state level hasn't propagated
+  // yet (e.g. immediately after add-layer or resize).
+  applyLayerSet: (target: number, layerCountOverride?: number) => number;
 };
 
 interface EditorSceneProps {
@@ -39,6 +41,7 @@ interface EditorSceneProps {
   onPaint: (x: number, y: number, z: number, blockId: string) => void;
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
+  onLayerChange?: (newLayer: number) => void;
 }
 
 const HINT_COLORS: Record<string, string> = {
@@ -78,6 +81,7 @@ export function EditorScene({
   onPaint,
   onErase,
   onSetSpawn,
+  onLayerChange,
 }: EditorSceneProps) {
   const dims = useMemo(() => getLevelDimensions(level), [level]);
   const { width, depth } = dims;
@@ -143,6 +147,7 @@ export function EditorScene({
       <CameraSetup target={initialTarget} />
 
       <SceneController
+        initialActiveLayer={activeLayer}
         sceneApiRef={sceneApiRef}
         controlsRef={controlsRef}
         layerGroupRef={layerGroupRef}
@@ -158,6 +163,7 @@ export function EditorScene({
         onErase={onErase}
         onSetSpawn={onSetSpawn}
         onHoverChange={handleHoverChange}
+        onLayerChange={onLayerChange}
       />
 
       <ambientLight intensity={0.5} />
@@ -278,6 +284,7 @@ function CameraSetup({ target }: { target: [number, number, number] }) {
 // the imperative API for layer shifts. Lives inside <Canvas> so it can
 // use useThree.
 function SceneController({
+  initialActiveLayer,
   sceneApiRef,
   controlsRef,
   layerGroupRef,
@@ -293,7 +300,9 @@ function SceneController({
   onErase,
   onSetSpawn,
   onHoverChange,
+  onLayerChange,
 }: {
+  initialActiveLayer: number;
   sceneApiRef?: React.RefObject<SceneAPI | null>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   controlsRef?: React.RefObject<any>;
@@ -310,11 +319,17 @@ function SceneController({
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
   onHoverChange: (cell: HoverCell | null) => void;
+  onLayerChange?: (newLayer: number) => void;
 }) {
   const { camera, gl, raycaster } = useThree();
 
   const lastCursorRef = useRef<{ x: number; y: number } | null>(null);
   const blocks = useMemo(() => buildBlockList(level), [level]);
+
+  // Source of truth for which layer the scene is on. Editor page must
+  // route ALL layer changes through applyLayerStep/applyLayerSet so
+  // camera + group + plane + state can't drift apart.
+  const currentLayerRef = useRef(initialActiveLayer);
 
   const stateRef = useRef({
     tool,
@@ -323,10 +338,12 @@ function SceneController({
     width,
     depth,
     blocks,
+    level,
     onPaint,
     onErase,
     onSetSpawn,
     onHoverChange,
+    onLayerChange,
   });
   stateRef.current = {
     tool,
@@ -335,10 +352,12 @@ function SceneController({
     width,
     depth,
     blocks,
+    level,
     onPaint,
     onErase,
     onSetSpawn,
     onHoverChange,
+    onLayerChange,
   };
 
   // Reused temp objects — avoid per-frame allocation.
@@ -455,31 +474,53 @@ function SceneController({
     updateHover();
   }, [tool, mode, updateHover]);
 
+  // Single internal mutator. All public APIs route through this so bounds
+  // checking lives in exactly one place and the visual state can never
+  // disagree with currentLayerRef.
+  const shiftToLayer = useCallback(
+    (target: number, layerCountOverride?: number): number => {
+      const s = stateRef.current;
+      const layerCount =
+        layerCountOverride ?? Object.keys(s.level.layers).length;
+      const maxLayer = Math.max(layerCount - 1, 0);
+      const clamped = Math.min(Math.max(target, 0), maxLayer);
+      const current = currentLayerRef.current;
+      if (clamped === current) return current;
+      const delta = clamped - current;
+      currentLayerRef.current = clamped;
+
+      if (controlsRef?.current) {
+        controlsRef.current.target.y += delta;
+        controlsRef.current.object.position.y += delta;
+        controlsRef.current.update();
+      }
+      if (layerGroupRef.current) {
+        layerGroupRef.current.position.y += delta;
+      }
+      // Plane: ax+by+cz+d=0 with normal (0,1,0) → y = -d. Shifting up by
+      // delta means y_new = y_old + delta → d_new = d_old - delta.
+      planeRef.current.constant -= delta;
+      updateHover();
+      s.onLayerChange?.(clamped);
+      return clamped;
+    },
+    [controlsRef, layerGroupRef, planeRef, updateHover],
+  );
+
   // Expose imperative scene API.
   useEffect(() => {
     if (!sceneApiRef) return;
     const api: SceneAPI = {
-      applyLayerShift: (delta: number) => {
-        if (delta === 0) return;
-        if (controlsRef?.current) {
-          controlsRef.current.target.y += delta;
-          controlsRef.current.object.position.y += delta;
-          controlsRef.current.update();
-        }
-        if (layerGroupRef.current) {
-          layerGroupRef.current.position.y += delta;
-        }
-        // Plane: ax+by+cz+d=0 with normal (0,1,0) → y = -d. Shifting plane
-        // up by delta means y_new = y_old + delta → d_new = d_old - delta.
-        planeRef.current.constant -= delta;
-        updateHover();
-      },
+      applyLayerStep: (dir: number) =>
+        shiftToLayer(currentLayerRef.current + dir),
+      applyLayerSet: (target: number, layerCountOverride?: number) =>
+        shiftToLayer(target, layerCountOverride),
     };
     sceneApiRef.current = api;
     return () => {
       if (sceneApiRef.current === api) sceneApiRef.current = null;
     };
-  }, [sceneApiRef, controlsRef, layerGroupRef, planeRef, updateHover]);
+  }, [sceneApiRef, shiftToLayer]);
 
   return null;
 }

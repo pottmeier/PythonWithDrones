@@ -155,29 +155,20 @@ function EditorContent() {
   const effectiveMode: EditorMode = altHeld ? "camera" : mode;
   const effectiveTool: EditorTool = xHeld ? "erase" : tool;
 
-  // Kept in sync with the activeLayer state. Used so that changeActiveLayer
-  // can compute the delta synchronously without depending on a stale closure.
+  // Kept in sync with activeLayer state — read by handlers that need the
+  // current layer synchronously (e.g. handleApplyResize) without depending
+  // on stale closures.
   const activeLayerRef = useRef(activeLayer);
   useEffect(() => {
     activeLayerRef.current = activeLayer;
   }, [activeLayer]);
 
-  // Layer change: delegate the visual updates (camera + grid + hover) to
-  // SceneController's imperative API so they all land in one synchronous
-  // block, fully bypassing React's render scheduling. setActiveLayer is
-  // only for the sidebar UI — its render can defer harmlessly.
-  const changeActiveLayer = useCallback(
-    (arg: number | ((prev: number) => number)) => {
-      const prev = activeLayerRef.current;
-      const next = typeof arg === "function" ? arg(prev) : arg;
-      if (next === prev) return;
-      const delta = next - prev;
-      activeLayerRef.current = next;
-      sceneApiRef.current?.applyLayerShift(delta);
-      setActiveLayer(next);
-    },
-    [],
-  );
+  // Callback for SceneController to sync React state whenever the scene's
+  // truth (currentLayerRef) changes — keeps the sidebar UI consistent.
+  const handleLayerChange = useCallback((newLayer: number) => {
+    activeLayerRef.current = newLayer;
+    setActiveLayer(newLayer);
+  }, []);
 
   // Load level
   useEffect(() => {
@@ -259,6 +250,7 @@ function EditorContent() {
   );
 
   const handleAddLayer = () => {
+    const oldCount = level ? Object.keys(level.layers).length : 0;
     applyEdit((prev) => {
       const base = prev.layers["layer_0"];
       if (!base) return prev;
@@ -269,9 +261,10 @@ function EditorContent() {
         layers: { ...prev.layers, [`layer_${newY}`]: newLayer },
       };
     });
-    changeActiveLayer((y) =>
-      Math.max(y, level ? Object.keys(level.layers).length : 0),
-    );
+    // Jump to the new layer (its index = oldCount). React state level
+    // hasn't propagated yet, so pass the new layer count as override so
+    // SceneController's clamp sees the post-add count.
+    sceneApiRef.current?.applyLayerSet(oldCount, oldCount + 1);
   };
 
   const undo = useCallback(() => {
@@ -333,7 +326,12 @@ function EditorContent() {
 
   const handleApplyResize = (dims: LevelDimensions) => {
     applyEdit((prev) => resizeLevel(prev, dims.width, dims.depth, dims.height));
-    changeActiveLayer((y) => Math.min(y, dims.height - 1));
+    // Clamp to new height — pass override so SceneController uses the
+    // post-resize layer count (React state level not yet propagated).
+    sceneApiRef.current?.applyLayerSet(
+      activeLayerRef.current,
+      dims.height,
+    );
   };
 
   // Stable refs for key handler access to "current" tool/mode/selection/hover.
@@ -421,46 +419,18 @@ function EditorContent() {
     };
   }, [undo, redo, handleSave]);
 
-  // Wheel-input state for layer scrolling. Naive "1 event = 1 layer" is wrong
-  // because trackpads fire many small events per swipe (and inertia keeps
-  // firing after the finger lifts). Accumulate deltaY, step once per
-  // threshold, cap the rate, and reset the accumulator after a quiet gap so
-  // inertia stragglers don't keep stepping layers.
-  const wheelAccumRef = useRef(0);
-  const lastWheelEventTimeRef = useRef(0);
-  const lastWheelLayerChangeRef = useRef(0);
-
+  // Wheel handler: one event = one layer step in placement, manual zoom in
+  // camera mode. The imperative scene API absorbs rapid bursts cleanly, so
+  // there's no need for an accumulator or rate cap.
   useEffect(() => {
     const el = sceneWrapRef.current;
     if (!el) return;
 
-    const STEP_SIZE = 50; // cumulative |deltaY| per one layer step
-    const RESET_AFTER = 200; // ms of silence wipes the accumulator
-    const MIN_INTERVAL = 60; // ms cap between layer changes
-
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (effectiveMode === "placement") {
-        if (!level) return;
-        const now = performance.now();
-
-        if (now - lastWheelEventTimeRef.current > RESET_AFTER) {
-          wheelAccumRef.current = 0;
-        }
-        lastWheelEventTimeRef.current = now;
-
-        wheelAccumRef.current += e.deltaY;
-
-        if (now - lastWheelLayerChangeRef.current < MIN_INTERVAL) return;
-        if (Math.abs(wheelAccumRef.current) < STEP_SIZE) return;
-
-        lastWheelLayerChangeRef.current = now;
-        const dir = wheelAccumRef.current > 0 ? -1 : 1;
-        wheelAccumRef.current = 0;
-        const maxLayer = Math.max(Object.keys(level.layers).length - 1, 0);
-        changeActiveLayer((y) =>
-          Math.min(Math.max(y + dir, 0), maxLayer),
-        );
+        const dir = e.deltaY > 0 ? -1 : 1;
+        sceneApiRef.current?.applyLayerStep(dir);
       } else {
         const ctrl = controlsRef.current;
         if (!ctrl) return;
@@ -482,7 +452,7 @@ function EditorContent() {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [effectiveMode, level, changeActiveLayer]);
+  }, [effectiveMode]);
 
 
   const currentDims = level ? getLevelDimensions(level) : null;
@@ -572,7 +542,9 @@ function EditorContent() {
                   Object.keys(level.layers).length,
                   activeLayer + 1,
                 )}
-                onActiveLayerChange={changeActiveLayer}
+                onActiveLayerChange={(y) =>
+                  sceneApiRef.current?.applyLayerSet(y)
+                }
                 onAddLayer={handleAddLayer}
               />
               <BlockPalette
@@ -603,6 +575,7 @@ function EditorContent() {
                 onPaint={handlePaint}
                 onErase={handleErase}
                 onSetSpawn={handleSetSpawn}
+                onLayerChange={handleLayerChange}
               />
               <div className="absolute top-3 right-3 flex gap-2 z-10">
                 <Button
