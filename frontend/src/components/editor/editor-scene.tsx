@@ -24,6 +24,10 @@ export type SceneAPI = {
   // pass the new layer count when the React state level hasn't propagated
   // yet (e.g. immediately after add-layer or resize).
   applyLayerSet: (target: number, layerCountOverride?: number) => number;
+  // Perform the current tool's action at the current hover cell. Used by
+  // the editor's space-key handler to paint the initial cell on press;
+  // hold-to-paint on subsequent hover changes is handled internally.
+  performActionAtHover: () => void;
 };
 
 interface EditorSceneProps {
@@ -38,6 +42,9 @@ interface EditorSceneProps {
   controlsRef?: React.RefObject<any>;
   hoverRef?: React.RefObject<HoverCell | null>;
   sceneApiRef?: React.RefObject<SceneAPI | null>;
+  // When .current is true, moving the hover to a new cell (mouse move or
+  // scroll-wheel layer change) re-fires the current tool action.
+  spaceHeldRef?: React.RefObject<boolean>;
   onPaint: (x: number, y: number, z: number, blockId: string) => void;
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
@@ -78,6 +85,7 @@ export function EditorScene({
   controlsRef,
   hoverRef,
   sceneApiRef,
+  spaceHeldRef,
   onPaint,
   onErase,
   onSetSpawn,
@@ -159,6 +167,7 @@ export function EditorScene({
         level={level}
         width={width}
         depth={depth}
+        spaceHeldRef={spaceHeldRef}
         onPaint={onPaint}
         onErase={onErase}
         onSetSpawn={onSetSpawn}
@@ -241,7 +250,10 @@ export function EditorScene({
         <HoverPreviewContent tool={tool} blockId={selectedBlockId} />
       </group>
 
-      <SpawnMarker position={[level.spawn.x, level.spawn.y, level.spawn.z]} />
+      <SpawnMarker
+        position={[level.spawn.x, level.spawn.y, level.spawn.z]}
+        orientation={level.orientation ?? 0}
+      />
 
       <BoundsBox width={width} height={height} depth={depth} />
 
@@ -296,6 +308,7 @@ function SceneController({
   level,
   width,
   depth,
+  spaceHeldRef,
   onPaint,
   onErase,
   onSetSpawn,
@@ -315,6 +328,7 @@ function SceneController({
   level: LevelData;
   width: number;
   depth: number;
+  spaceHeldRef?: React.RefObject<boolean>;
   onPaint: (x: number, y: number, z: number, blockId: string) => void;
   onErase: (x: number, y: number, z: number) => void;
   onSetSpawn: (x: number, y: number, z: number) => void;
@@ -331,6 +345,10 @@ function SceneController({
   // camera + group + plane + state can't drift apart.
   const currentLayerRef = useRef(initialActiveLayer);
 
+  // Throttles hold-space-to-paint so repeated pointermove events within
+  // the same cell don't spam the undo history.
+  const lastActionCellRef = useRef<HoverCell | null>(null);
+
   const stateRef = useRef({
     tool,
     selectedBlockId,
@@ -339,6 +357,7 @@ function SceneController({
     depth,
     blocks,
     level,
+    spaceHeldRef,
     onPaint,
     onErase,
     onSetSpawn,
@@ -353,6 +372,7 @@ function SceneController({
     depth,
     blocks,
     level,
+    spaceHeldRef,
     onPaint,
     onErase,
     onSetSpawn,
@@ -414,6 +434,18 @@ function SceneController({
     [gl, camera, raycaster, planeRef, tmps],
   );
 
+  const performActionAtCell = useCallback((cell: HoverCell) => {
+    const s = stateRef.current;
+    if (s.tool === "paint") {
+      s.onPaint(cell.x, cell.y, cell.z, s.selectedBlockId);
+    } else if (s.tool === "erase") {
+      s.onErase(cell.x, cell.y, cell.z);
+    } else if (s.tool === "spawn") {
+      s.onSetSpawn(cell.x, cell.y, cell.z);
+    }
+    lastActionCellRef.current = cell;
+  }, []);
+
   const updateHover = useCallback(() => {
     const last = lastCursorRef.current;
     const s = stateRef.current;
@@ -430,7 +462,21 @@ function SceneController({
       hoverGroupRef.current.visible = false;
     }
     s.onHoverChange(cell);
-  }, [computeHover, hoverGroupRef]);
+
+    // Hold-space-to-paint: re-fire the tool action whenever the hover
+    // moves to a different cell while space is held.
+    if (cell && s.spaceHeldRef?.current) {
+      const last = lastActionCellRef.current;
+      if (
+        !last ||
+        last.x !== cell.x ||
+        last.y !== cell.y ||
+        last.z !== cell.z
+      ) {
+        performActionAtCell(cell);
+      }
+    }
+  }, [computeHover, hoverGroupRef, performActionAtCell]);
 
   // DOM pointer listeners — attached once.
   useEffect(() => {
@@ -445,13 +491,7 @@ function SceneController({
       if (s.mode !== "placement") return;
       const cell = computeHover(e.clientX, e.clientY);
       if (!cell) return;
-      if (s.tool === "paint") {
-        s.onPaint(cell.x, cell.y, cell.z, s.selectedBlockId);
-      } else if (s.tool === "erase") {
-        s.onErase(cell.x, cell.y, cell.z);
-      } else if (s.tool === "spawn") {
-        s.onSetSpawn(cell.x, cell.y, cell.z);
-      }
+      performActionAtCell(cell);
     };
     const handleLeave = () => {
       lastCursorRef.current = null;
@@ -466,7 +506,7 @@ function SceneController({
       canvas.removeEventListener("pointerdown", handleDown);
       canvas.removeEventListener("pointerleave", handleLeave);
     };
-  }, [gl, computeHover, updateHover, hoverGroupRef]);
+  }, [gl, computeHover, updateHover, performActionAtCell, hoverGroupRef]);
 
   // Re-raycast on tool/mode change so the preview reflects the new state
   // without requiring a cursor move.
@@ -515,12 +555,21 @@ function SceneController({
         shiftToLayer(currentLayerRef.current + dir),
       applyLayerSet: (target: number, layerCountOverride?: number) =>
         shiftToLayer(target, layerCountOverride),
+      performActionAtHover: () => {
+        const s = stateRef.current;
+        if (s.mode !== "placement") return;
+        const last = lastCursorRef.current;
+        if (!last) return;
+        const cell = computeHover(last.x, last.y);
+        if (!cell) return;
+        performActionAtCell(cell);
+      },
     };
     sceneApiRef.current = api;
     return () => {
       if (sceneApiRef.current === api) sceneApiRef.current = null;
     };
-  }, [sceneApiRef, shiftToLayer]);
+  }, [sceneApiRef, shiftToLayer, computeHover, performActionAtCell]);
 
   return null;
 }
@@ -614,7 +663,29 @@ function GridLines({ width, depth }: { width: number; depth: number }) {
   );
 }
 
-function SpawnMarker({ position }: { position: [number, number, number] }) {
+// Orientation 0=N(-Z), 1=E(+X), 2=S(+Z), 3=W(-X). The arrow geometry below
+// is built pointing toward -Z, so rotate around Y by (orientation * -π/2).
+const ARROW_GEOMETRY = (() => {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(
+      [0, 0, -0.5, -0.3, 0, 0.3, 0.3, 0, 0.3],
+      3,
+    ),
+  );
+  g.computeVertexNormals();
+  return g;
+})();
+
+function SpawnMarker({
+  position,
+  orientation,
+}: {
+  position: [number, number, number];
+  orientation: number;
+}) {
+  const yaw = -(orientation * Math.PI) / 2;
   return (
     <group position={position}>
       <mesh position={[0, 0.5, 0]}>
@@ -625,9 +696,12 @@ function SpawnMarker({ position }: { position: [number, number, number] }) {
           emissiveIntensity={0.3}
         />
       </mesh>
-      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.4, 0.5, 16]} />
-        <meshBasicMaterial color="#22c55e" />
+      <mesh
+        position={[0, 0.05, 0]}
+        rotation={[0, yaw, 0]}
+        geometry={ARROW_GEOMETRY}
+      >
+        <meshBasicMaterial color="#22c55e" side={THREE.DoubleSide} />
       </mesh>
     </group>
   );

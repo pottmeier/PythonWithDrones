@@ -137,6 +137,7 @@ function EditorContent() {
   const controlsRef = useRef<any>(null);
   const hoverRef = useRef<HoverCell | null>(null);
   const sceneApiRef = useRef<SceneAPI | null>(null);
+  const spaceHeldRef = useRef(false);
 
   const [past, setPast] = useState<LevelData[]>([]);
   const [future, setFuture] = useState<LevelData[]>([]);
@@ -249,24 +250,6 @@ function EditorContent() {
     [applyEdit],
   );
 
-  const handleAddLayer = () => {
-    const oldCount = level ? Object.keys(level.layers).length : 0;
-    applyEdit((prev) => {
-      const base = prev.layers["layer_0"];
-      if (!base) return prev;
-      const newY = Object.keys(prev.layers).length;
-      const newLayer = makeLayer(base[0].length, base.length, newY);
-      return {
-        ...prev,
-        layers: { ...prev.layers, [`layer_${newY}`]: newLayer },
-      };
-    });
-    // Jump to the new layer (its index = oldCount). React state level
-    // hasn't propagated yet, so pass the new layer count as override so
-    // SceneController's clamp sees the post-add count.
-    sceneApiRef.current?.applyLayerSet(oldCount, oldCount + 1);
-  };
-
   const undo = useCallback(() => {
     if (past.length === 0 || !level) return;
     const prev = past[past.length - 1];
@@ -334,23 +317,10 @@ function EditorContent() {
     );
   };
 
-  // Stable refs for key handler access to "current" tool/mode/selection/hover.
-  const placementRef = useRef({
-    effectiveMode,
-    effectiveTool,
-    selectedBlockId,
-    handlePaint,
-    handleErase,
-    handleSetSpawn,
-  });
-  placementRef.current = {
-    effectiveMode,
-    effectiveTool,
-    selectedBlockId,
-    handlePaint,
-    handleErase,
-    handleSetSpawn,
-  };
+  // Stable ref so the keyboard handler can read the current effective mode
+  // without re-binding the listener on every change.
+  const placementRef = useRef({ effectiveMode });
+  placementRef.current = { effectiveMode };
 
   // Keyboard handler: Alt/X hold, Ctrl+Z/Y/S, Space-to-place
   useEffect(() => {
@@ -388,26 +358,22 @@ function EditorContent() {
       if (e.code === "Space" && !isFormField) {
         if (e.repeat) return;
         e.preventDefault();
-        const s = placementRef.current;
-        if (s.effectiveMode !== "placement") return;
-        const h = hoverRef.current;
-        if (!h) return;
-        if (s.effectiveTool === "paint") {
-          s.handlePaint(h.x, h.y, h.z, s.selectedBlockId);
-        } else if (s.effectiveTool === "erase") {
-          s.handleErase(h.x, h.y, h.z);
-        } else if (s.effectiveTool === "spawn") {
-          s.handleSetSpawn(h.x, h.y, h.z);
-        }
+        if (placementRef.current.effectiveMode !== "placement") return;
+        // Mark held first so the action handler can re-fire as the hover
+        // moves to new cells; then paint the initial cell.
+        spaceHeldRef.current = true;
+        sceneApiRef.current?.performActionAtHover();
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key === "Alt") setAltHeld(false);
       if (e.key === "x" || e.key === "X") setXHeld(false);
+      if (e.code === "Space") spaceHeldRef.current = false;
     };
     const onBlur = () => {
       setAltHeld(false);
       setXHeld(false);
+      spaceHeldRef.current = false;
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -537,15 +503,6 @@ function EditorContent() {
                 xHeld={xHeld}
                 tool={tool}
                 onToolChange={setTool}
-                activeLayer={activeLayer}
-                layerCount={Math.max(
-                  Object.keys(level.layers).length,
-                  activeLayer + 1,
-                )}
-                onActiveLayerChange={(y) =>
-                  sceneApiRef.current?.applyLayerSet(y)
-                }
-                onAddLayer={handleAddLayer}
               />
               <BlockPalette
                 selectedBlockId={selectedBlockId}
@@ -572,6 +529,7 @@ function EditorContent() {
                 controlsRef={controlsRef}
                 hoverRef={hoverRef}
                 sceneApiRef={sceneApiRef}
+                spaceHeldRef={spaceHeldRef}
                 onPaint={handlePaint}
                 onErase={handleErase}
                 onSetSpawn={handleSetSpawn}
