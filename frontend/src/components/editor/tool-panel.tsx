@@ -13,10 +13,6 @@ interface ToolPanelProps {
   xHeld: boolean;
   tool: EditorTool;
   onToolChange: (tool: EditorTool) => void;
-  activeLayer: number;
-  layerCount: number;
-  onActiveLayerChange: (layer: number) => void;
-  onAddLayer: () => void;
 }
 
 export function ToolPanel({
@@ -26,10 +22,6 @@ export function ToolPanel({
   xHeld,
   tool,
   onToolChange,
-  activeLayer,
-  layerCount,
-  onActiveLayerChange,
-  onAddLayer,
 }: ToolPanelProps) {
   const effectiveMode: EditorMode = altHeld ? "camera" : mode;
   const effectiveTool: EditorTool = xHeld ? "erase" : tool;
@@ -94,39 +86,6 @@ export function ToolPanel({
         </p>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-            Layer (Y)
-          </h3>
-          <button
-            onClick={onAddLayer}
-            className="text-xs text-blue-500 hover:underline"
-            title="Add a layer above"
-          >
-            + Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {Array.from({ length: layerCount }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => onActiveLayerChange(i)}
-              className={cn(
-                "w-9 h-9 rounded text-sm font-mono border-2 transition-all",
-                i === activeLayer
-                  ? "bg-blue-500 text-white border-blue-600"
-                  : "bg-muted hover:bg-muted/70 border-transparent",
-              )}
-            >
-              {i}
-            </button>
-          ))}
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
-          Scroll wheel changes layer (placement mode).
-        </p>
-      </div>
     </div>
   );
 }

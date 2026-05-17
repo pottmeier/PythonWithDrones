@@ -80,6 +80,7 @@ export function createEmptyLevel(
     tags: [],
     description: "",
     spawn: { x: 0, y: 1, z: 0 },
+    orientation: 0,
     solve_conditions: { finish_block: true, collected_coins: 0 },
     layers,
   };
