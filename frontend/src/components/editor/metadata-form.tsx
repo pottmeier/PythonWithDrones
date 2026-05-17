@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import type { LevelData } from "@/types/level";
+
+const ORIENTATIONS = [
+  { value: 0, label: "N" },
+  { value: 1, label: "E" },
+  { value: 2, label: "S" },
+  { value: 3, label: "W" },
+] as const;
 
 interface MetadataFormProps {
   level: LevelData;
@@ -132,6 +140,29 @@ export function MetadataForm({ level, onChange }: MetadataFormProps) {
               />
             </label>
           ))}
+        </div>
+      </Field>
+
+      <Field label="Spawn orientation">
+        <div className="grid grid-cols-4 gap-1">
+          {ORIENTATIONS.map((o) => {
+            const active = (level.orientation ?? 0) === o.value;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => patch({ orientation: o.value })}
+                className={cn(
+                  "py-2 rounded-md border-2 text-xs font-mono transition-all",
+                  active
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                    : "border-transparent bg-muted hover:bg-muted/70",
+                )}
+              >
+                {o.label}
+              </button>
+            );
+          })}
         </div>
       </Field>
     </div>
