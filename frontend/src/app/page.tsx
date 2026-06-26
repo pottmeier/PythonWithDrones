@@ -21,7 +21,6 @@ import {
 import { Search } from "lucide-react";
 import { UserMenu } from "@/components/user-menu";
 import { loadState } from "@/lib/app-state";
-import { UsernameDialog } from "@/components/user-dialog";
 import yaml from "js-yaml";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -63,6 +62,7 @@ function LevelCardSkeleton() {
 export default function Home() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
   const [levelsState, setLevelsState] = useState<LevelsState>({
     levels: {},
   });
@@ -134,8 +134,10 @@ export default function Home() {
 
 
   useEffect(() => {
-    setUsername(loadState().user.username || "");
-    setLevelsState(loadState().progress || "");
+    const state = loadState();
+    setUsername(state.user.username || "");
+    setToken(state.user.token || "");
+    setLevelsState(state.progress || "");
   }, []);
 
   return (
@@ -150,14 +152,12 @@ export default function Home() {
             <div className="ml-auto flex items-center gap-4">
               <UserMenu
                 username={username}
-                setUsername={setUsername}
-                onRequireUsername={() => {}}
+                token={token}
+                onAuthChange={(u, t) => { setUsername(u); setToken(t); }}
               />
               <DarkModeToggle />
             </div>
           </header>
-
-          <UsernameDialog onSaved={(name) => setUsername(name)} />
 
           <main className="flex-1 p-4 flex flex-col gap-4">
             <div className="flex justify-end items-center gap-2 mb-0 mt-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,71 +10,106 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { loadState, updateState } from "@/lib/app-state";
+import { login, register } from "@/lib/leaderboard-api";
+import { updateState } from "@/lib/app-state";
 
 type Props = {
-  onSaved?: (username: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAuthChange: (username: string, token: string) => void;
 };
 
-export function UsernameDialog({ onSaved }: Props) {
-  const [open, setOpen] = useState(false);
-  const [usernameInput, setUsernameInput] = useState("");
+export function AuthDialog({ open, onOpenChange, onAuthChange }: Props) {
+  const [tab, setTab] = useState<"login" | "register">("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const state = loadState();
-    if (state.user.username?.trim()) {
-      setOpen(false);
-    } else {
-      setOpen(true);
+  const submit = async () => {
+    setError("");
+    setLoading(true);
+    const result =
+      tab === "login"
+        ? await login(username.trim(), password)
+        : await register(username.trim(), password);
+    setLoading(false);
+
+    if (result === null) {
+      setError("Server unavailable — try again later");
+      return;
     }
-  }, []);
-
-  const save = () => {
-    const trimmed = usernameInput.trim();
-    if (!trimmed) return;
-
+    if (typeof result === "string") {
+      setError(result);
+      return;
+    }
     updateState((prev) => ({
       ...prev,
-      user: { ...prev.user, username: trimmed },
+      user: { ...prev.user, username: result.username, token: result.token },
     }));
-
-    onSaved?.(trimmed);
-    setOpen(false);
+    onAuthChange(result.username, result.token);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        const current = loadState().user.username?.trim();
-        if (!current) setOpen(true);
-        else setOpen(nextOpen);
-      }}
-    >
-      <DialogContent
-        className="sm:max-w-md [&>button]:hidden"
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Let’s get started 🚀</DialogTitle>
+          <DialogTitle>Sign in to save your scores</DialogTitle>
           <DialogDescription>
-            Enter a username to save your progress.
+            Your times appear on the leaderboard only when signed in.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-2">
+        <div className="flex gap-0 border-b mb-4">
+          {(["login", "register"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t);
+                setError("");
+              }}
+              className={[
+                "pb-2 px-3 text-sm font-medium border-b-2 -mb-px transition-colors",
+                tab === t
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              {t === "login" ? "Log in" : "Register"}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-3">
           <Input
-            autoFocus
             placeholder="Username"
-            value={usernameInput}
-            onChange={(e) => setUsernameInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") save();
-            }}
+            value={username}
+            autoComplete="username"
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
           />
-          <Button onClick={save} disabled={!usernameInput.trim()}>
-            Save
+          <Input
+            type="password"
+            placeholder="Password (min 6 characters)"
+            value={password}
+            autoComplete={tab === "login" ? "current-password" : "new-password"}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+          />
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <Button
+            onClick={submit}
+            disabled={loading || !username.trim() || password.length < 6}
+          >
+            {loading ? "…" : tab === "login" ? "Log in" : "Create account"}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            className="text-muted-foreground"
+          >
+            Play as guest
           </Button>
         </div>
       </DialogContent>

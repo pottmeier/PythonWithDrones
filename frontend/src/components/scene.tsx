@@ -30,12 +30,26 @@ interface LevelLoadData {
   description?: string;
 }
 
+function formatTime(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const tenths = Math.floor((ms % 1000) / 100);
+  return minutes > 0
+    ? `${minutes}:${String(seconds).padStart(2, "0")}.${tenths}s`
+    : `${seconds}.${tenths}s`;
+}
+
 function SceneComponent({
   levelId,
   onBusyChange,
+  onLevelComplete,
+  completionTimeMs,
 }: {
   levelId: string;
   onBusyChange: (busy: boolean) => void;
+  onLevelComplete?: () => void;
+  completionTimeMs?: number | null;
 }) {
   // refs
   const droneRef = useRef<THREE.Group>(new THREE.Group());
@@ -285,7 +299,9 @@ function SceneComponent({
       saveLevelProgress(Number(levelId) + 1, {
         status: "unlocked",
       });
-  }, [isLevelComplete, levelId]);
+
+    onLevelComplete?.();
+  }, [isLevelComplete, levelId, onLevelComplete]);
 
   const router = useRouter();
   const goToNextLevel = () => {
@@ -443,11 +459,16 @@ function SceneComponent({
                 Level Complete!
               </h1>
 
-              <p className="text-center text-white/90 mb-4">
+              <p className="text-center text-white/90 mb-1">
                 {Number(levelId) === NUM_LEVELS
                   ? "Awesome! You completed all levels 🎉"
                   : "Good job! Now check out the next level!"}
               </p>
+              {completionTimeMs != null && completionTimeMs > 0 && (
+                <p className="text-center text-white/80 text-sm mb-4">
+                  Completed in <span className="font-bold text-white">{formatTime(completionTimeMs)}</span>
+                </p>
+              )}
 
               <div className="flex justify-center">
                 <button

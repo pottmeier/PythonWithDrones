@@ -1,0 +1,32 @@
+services:
+  api:
+    build: ./leaderboard-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://pguser:pgpass@db:5432/leaderboard}
+      JWT_SECRET: ${JWT_SECRET:-changeme-set-in-prod}
+      ADMIN_SECRET: ${ADMIN_SECRET:-changeme-set-in-prod}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: leaderboard
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./leaderboard-api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pguser -d leaderboard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:

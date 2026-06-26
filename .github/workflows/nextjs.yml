@@ -76,6 +76,8 @@ jobs:
 
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        env:
+          NEXT_PUBLIC_LEADERBOARD_URL: ${{ secrets.NEXT_PUBLIC_LEADERBOARD_URL }}
 
       # If you rely on next export (static), configure-pages@v5 will handle it.
       # Otherwise, uncomment the next line to force export explicitly:
