@@ -23,6 +23,11 @@ const items = [
     url: `${basePath}/documentation`,
     icon: FileSearchIcon,
   },
+  {
+    title: "Leaderboard",
+    url: `${basePath}/leaderboard`,
+    icon: Award,
+  },
 ];
 
 export function AppSidebar() {
