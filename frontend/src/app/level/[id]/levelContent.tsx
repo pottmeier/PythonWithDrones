@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -15,6 +15,7 @@ import { Toaster } from "sonner";
 import { loadState, saveLevelProgress } from "@/lib/app-state";
 import { usePyodideWorker } from "@/hooks/usePyodideWorker";
 import { UserMenu } from "@/components/user-menu";
+import { submitScore } from "@/lib/leaderboard-api";
 
 type Level = { id: string };
 interface LevelContentProps {
@@ -46,7 +47,10 @@ export default function LevelContent({ level }: LevelContentProps) {
   const levelId = level.id;
   const [code, setCode] = useState("");
   const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
   const [isSceneBusy, setIsSceneBusy] = useState(false);
+  const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
+  const levelOpenedAtRef = useRef<number>(Date.now());
   const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
     usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
@@ -64,6 +68,7 @@ export default function LevelContent({ level }: LevelContentProps) {
     const state = loadState();
     const idNum = Number(levelId);
     setUsername(state.user.username || "");
+    setToken(state.user.token || "");
     if (Number.isFinite(idNum)) {
       const savedCode =
         state.progress.levels[idNum]?.code ?? "# Start coding here...";
@@ -97,10 +102,25 @@ export default function LevelContent({ level }: LevelContentProps) {
 
 
 
-  // execute user code
+  // expose runPython to the CodeCard run button
   useEffect(() => {
-    (window as any).runPython = runCode;
+    (window as any).runPython = (...args: Parameters<typeof runCode>) => {
+      setCompletionTimeMs(null);
+      return runCode(...args);
+    };
   }, [runCode]);
+
+  // called by Scene when the drone reaches the finish block.
+  // elapsed = time from opening the level to first successful completion,
+  // capturing how long the user took to read, think, and write their solution.
+  const handleLevelComplete = useCallback(() => {
+    const elapsed = Date.now() - levelOpenedAtRef.current;
+    setCompletionTimeMs(elapsed);
+    const currentToken = loadState().user.token;
+    if (currentToken && elapsed > 0) {
+      submitScore(currentToken, Number(levelId), elapsed);
+    }
+  }, [levelId]);
 
   // submit user code
   const submitCode = (submittedCode: string) => {
@@ -128,13 +148,11 @@ export default function LevelContent({ level }: LevelContentProps) {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4 cursor-default">
-              <div className="pointer-events-none">
-                <UserMenu
-                  username={username}
-                  setUsername={setUsername}
-                  onRequireUsername={() => {}}
-                />
-              </div>
+              <UserMenu
+                username={username}
+                token={token}
+                onAuthChange={(u, t) => { setUsername(u); setToken(t); }}
+              />
               <DarkModeToggle />
             </div>
           </header>
@@ -176,7 +194,12 @@ export default function LevelContent({ level }: LevelContentProps) {
                   <div
                     className={`absolute inset-0 transition-opacity duration-500 ${isReady ? "opacity-100" : "opacity-0"}`}
                   >
-                    <Scene levelId={levelId} onBusyChange={setIsSceneBusy} />
+                    <Scene
+                      levelId={levelId}
+                      onBusyChange={setIsSceneBusy}
+                      onLevelComplete={handleLevelComplete}
+                      completionTimeMs={completionTimeMs}
+                    />
                   </div>
                   {!isReady && (
                     <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">

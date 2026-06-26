@@ -35,14 +35,14 @@ export type LevelProgress = {
 };
 
 export type AppState = {
-  user: { username: string };
+  user: { username: string; token: string };
   progress: {
     levels: Record<number, LevelProgress>;
   };
 };
 
 export const defaultState: AppState = {
-  user: { username: "" },
+  user: { username: "", token: "" },
   progress: { levels: {} },
 };
 

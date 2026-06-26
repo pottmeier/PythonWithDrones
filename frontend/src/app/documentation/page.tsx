@@ -37,10 +37,13 @@ function SidebarBackdrop() {
 
 export default function DocumentationPage() {
   const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    setUsername(loadState().user.username || "");
+    const state = loadState();
+    setUsername(state.user.username || "");
+    setToken(state.user.token || "");
 
     fetch(`${basePath}/content/docu.md`)
       .then((res) => {
@@ -61,13 +64,11 @@ export default function DocumentationPage() {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
-              <div className="pointer-events-none">
-                <UserMenu
-                  username={username}
-                  setUsername={setUsername}
-                  onRequireUsername={() => {}}
-                />
-              </div>
+              <UserMenu
+                username={username}
+                token={token}
+                onAuthChange={(u, t) => { setUsername(u); setToken(t); }}
+              />
 
               <DarkModeToggle />
             </div>
