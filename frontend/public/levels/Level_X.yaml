@@ -18,7 +18,7 @@ description: |
 
   ### Instructions:
   - Use a for loop or while True to iterate your solution.
-  - Use the command `drone.is_path_blocked()` to retrieve a boolean either `True` or `False`.
+  - Use the command `drone.scan()` to see what block is directly ahead of the drone. It returns a list like `['tree_trunk']`; compare `drone.scan()[0]` to `'air'` to check whether the path is clear.
   - Use if block in combination with the other instructions to create a working script!
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
   - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
@@ -27,7 +27,7 @@ spawn: { x: 0, y: 1, z: 8}
 
 solve_conditions:
   finish_block: true
-  collected_coins: 3
+  collected_coins: 0
 
 layers:
   layer_0: 

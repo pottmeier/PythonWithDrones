@@ -6,6 +6,8 @@ import TrunkBlock from "@/components/animation/trunk-block";
 import LeavesBlock from "@/components/animation/leaves-block";
 import FinishPortalBlock from "@/components/animation/finish-portal-block";
 import StonePillar from "@/components/animation/stone-pillar";
+import CoinBlock from "@/components/animation/coin-block";
+import MovableBlock from "@/components/animation/movable-block";
 
 // 1. Define the capabilities of a block
 export interface BlockDefinition {
@@ -14,6 +16,7 @@ export interface BlockDefinition {
   isDestructible: boolean;    // Can it be destroyed?
   isPickable: boolean;        // Can it be picked up?
   isFinish?: boolean;         // Is the block a finish
+  isPushable?: boolean;       // Can the drone push it with push()?
   placementValidOn: string[]; // List of block IDs this can sit on top of
   component: React.ComponentType<any>; // The React component to render
 }
@@ -83,6 +86,25 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     isPickable: false,
     placementValidOn: ["grass", "dirt", "empty"],
     component: FinishPortalBlock,
+  },
+
+  // --- INTERACTIVE ---
+  coin: {
+    id: "coin",
+    isCollidable: false,
+    isDestructible: false,
+    isPickable: true,
+    placementValidOn: ["grass", "dirt", "stone", "air"],
+    component: CoinBlock,
+  },
+  movable_block: {
+    id: "movable_block",
+    isCollidable: true,
+    isDestructible: false,
+    isPickable: false,
+    isPushable: true,
+    placementValidOn: ["grass", "dirt", "stone"],
+    component: MovableBlock,
   },
 
   // --- SPECIAL ---

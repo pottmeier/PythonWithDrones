@@ -38,7 +38,7 @@ orientation: 3
 
 solve_conditions:
   finish_block: true
-  collected_coins: 4
+  collected_coins: 0
 
 layers:
   layer_0:

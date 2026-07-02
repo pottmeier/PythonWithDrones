@@ -33,9 +33,14 @@ class LevelModel(BaseModel):
 
 
     def get_block_id(self, x:int,y:int, z:int) -> Optional[str]:
-        layer_name = f"layer_{int(y)}"
+        x, y, z = int(x), int(y), int(z)
+        # negative indices are out of bounds too -- Python list indexing would
+        # otherwise silently wrap around and return a block from the opposite edge
+        if x < 0 or y < 0 or z < 0:
+            return "empty"
+        layer_name = f"layer_{y}"
         try:
-            return self.layers[layer_name][int(z)][int(x)]
+            return self.layers[layer_name][z][x]
         except (KeyError, IndexError):
             return "empty"
     
@@ -71,6 +76,21 @@ class LevelModel(BaseModel):
             block_id = self.get_block_id(x, y, z)
             if block_id in registry and registry[block_id].get("isCollidable", False):
                 return float(y + 0.62)
-            
+
         # if no collidable blocks found
         return 0.0
+
+    def set_block_id(self, x: int, y: int, z: int, block_id: str) -> None:
+        x, y, z = int(x), int(y), int(z)
+        if x < 0 or y < 0 or z < 0:
+            return
+        layer_name = f"layer_{y}"
+        try:
+            self.layers[layer_name][z][x] = block_id
+        except (KeyError, IndexError):
+            pass
+
+    def move_block(self, fx: int, fy: int, fz: int, tx: int, ty: int, tz: int) -> None:
+        block_id = self.get_block_id(fx, fy, fz)
+        self.set_block_id(fx, fy, fz, "air")
+        self.set_block_id(tx, ty, tz, block_id)

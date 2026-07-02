@@ -1,0 +1,46 @@
+id: 10
+
+title: Feature Test
+
+homepage_intro: "Dev sandbox"
+
+tags:
+  - Dev
+
+description: |
+  Internal dev/test level for the coin, push, and scan mechanics.
+  Not linked from the level list -- reachable only via /level/10 after
+  temporarily adding { id: "10" } to the levels array in
+  src/app/level/[id]/page.tsx.
+
+  ### Suggested script
+  ```code
+  drone.move()
+  drone.push()
+  drone.turn_right()
+  drone.move()
+  drone.turn_left()
+  drone.move()
+  drone.move()
+  ```
+
+spawn: { x: 0, y: 1, z: 4 }
+
+solve_conditions:
+  finish_block: true
+  collected_coins: 1
+
+layers:
+  layer_0:
+    - [grass, grass, grass]
+    - [grass, grass, grass]
+    - [grass, grass, grass]
+    - [grass, grass, grass]
+    - [grass, grass, grass]
+
+  layer_1:
+    - [air, finish_portal, air]
+    - [air, air, air]
+    - [movable_block, air, air]
+    - [coin, air, air]
+    - [air, air, air]
