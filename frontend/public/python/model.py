@@ -10,7 +10,27 @@ class Spawn(BaseModel):
 
 class SolveConditions(BaseModel):
     finish_block: bool
-    collected_coins: int
+    collected_coins: int = 0
+    requires_delivery: bool = False
+    push_target: Optional[List[int]] = None  # [x, y, z]
+
+    def unmet_reasons(
+        self,
+        *,
+        coins_collected: int,
+        delivered: bool,
+        push_target_reached: bool,
+    ) -> List[str]:
+        """Human-readable reasons the level isn't solved yet (empty = solved)."""
+        reasons: List[str] = []
+        missing_coins = self.collected_coins - coins_collected
+        if missing_coins > 0:
+            reasons.append(f"Need {missing_coins} more coin(s)")
+        if self.requires_delivery and not delivered:
+            reasons.append("The package hasn't been delivered yet")
+        if self.push_target is not None and not push_target_reached:
+            reasons.append("The crate hasn't been pushed onto the target yet")
+        return reasons
 
 class ProceduralItem(BaseModel):
     id: str

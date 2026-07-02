@@ -133,3 +133,64 @@ class TestMoveBlock:
         level = make_level({"layer_0": [["air", "grass"]]})
         level.move_block(0, 0, 0, 1, 0, 0)
         assert level.get_block_id(1, 0, 0) == "air"
+
+
+# ---------------------------------------------------------------------------
+# SolveConditions.unmet_reasons
+# ---------------------------------------------------------------------------
+
+class TestSolveConditionsUnmetReasons:
+    def _satisfied_kwargs(self):
+        return dict(coins_collected=0, delivered=True, push_target_reached=True)
+
+    def test_no_conditions_configured_is_solved(self):
+        conditions = model.SolveConditions(finish_block=True)
+        assert conditions.unmet_reasons(**self._satisfied_kwargs()) == []
+
+    def test_missing_coins_reported(self):
+        conditions = model.SolveConditions(finish_block=True, collected_coins=2)
+        kwargs = self._satisfied_kwargs()
+        reasons = conditions.unmet_reasons(**{**kwargs, "coins_collected": 0})
+        assert "Need 2 more coin(s)" in reasons
+
+    def test_missing_delivery_reported(self):
+        conditions = model.SolveConditions(finish_block=True, requires_delivery=True)
+        kwargs = self._satisfied_kwargs()
+        reasons = conditions.unmet_reasons(**{**kwargs, "delivered": False})
+        assert any("delivered" in r for r in reasons)
+
+    def test_missing_push_target_reported(self):
+        conditions = model.SolveConditions(finish_block=True, push_target=[1, 1, 1])
+        kwargs = self._satisfied_kwargs()
+        reasons = conditions.unmet_reasons(**{**kwargs, "push_target_reached": False})
+        assert any("target" in r for r in reasons)
+
+    def test_push_target_not_configured_is_never_unmet(self):
+        conditions = model.SolveConditions(finish_block=True, push_target=None)
+        kwargs = self._satisfied_kwargs()
+        reasons = conditions.unmet_reasons(**{**kwargs, "push_target_reached": False})
+        assert reasons == []
+
+    def test_multiple_unmet_conditions_all_reported(self):
+        conditions = model.SolveConditions(
+            finish_block=True,
+            collected_coins=1,
+            requires_delivery=True,
+            push_target=[1, 1, 1],
+        )
+        reasons = conditions.unmet_reasons(
+            coins_collected=0, delivered=False, push_target_reached=False
+        )
+        assert len(reasons) == 3
+
+    def test_all_conditions_satisfied_is_solved(self):
+        conditions = model.SolveConditions(
+            finish_block=True,
+            collected_coins=1,
+            requires_delivery=True,
+            push_target=[1, 1, 1],
+        )
+        reasons = conditions.unmet_reasons(
+            coins_collected=1, delivered=True, push_target_reached=True
+        )
+        assert reasons == []

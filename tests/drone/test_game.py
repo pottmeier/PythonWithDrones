@@ -160,6 +160,176 @@ class TestGoal:
         assert "1 more coin" in hint["message"]
         assert drone.at_portal() is True  # standing on it, just not allowed to finish
 
+    def test_goal_withheld_when_delivery_missing(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["finish_portal"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+            requires_delivery=True,
+        )
+        drone.move()
+        assert not any(a["type"] == "goal" for a in actions)
+        hint = [a for a in actions if a["type"] == "hint"][0]
+        assert "delivered" in hint["message"]
+
+    def test_goal_withheld_when_push_target_missing(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["finish_portal"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+            push_target=[9, 9, 9],
+        )
+        drone.move()
+        assert not any(a["type"] == "goal" for a in actions)
+        hint = [a for a in actions if a["type"] == "hint"][0]
+        assert "target" in hint["message"]
+
+    def test_goal_fires_once_all_conditions_met(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["finish_portal"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+            requires_delivery=True,
+            push_target=[9, 9, 9],
+        )
+        drone.package_delivered = True
+        drone.push_target_reached = True
+        drone.move()
+        assert any(a["type"] == "goal" for a in actions)
+
+    def test_hint_combines_multiple_unmet_reasons(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["finish_portal"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+            collected_coins=1,
+            requires_delivery=True,
+        )
+        drone.move()
+        hint = [a for a in actions if a["type"] == "hint"][0]
+        assert "1 more coin" in hint["message"]
+        assert "delivered" in hint["message"]
+
+
+class TestPackagePickupAndDelivery:
+    def test_flying_over_package_does_not_auto_pickup(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["package"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+        )
+        drone.move()
+        assert drone.carrying_package is False
+        assert drone.level_data.get_block_id(0, 1, 0) == "package"
+        assert not any(a["type"] == "pickup_package" for a in actions)
+
+    def test_pickup_sets_carrying_and_clears_cell(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["package"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        drone.pickup()
+        assert drone.carrying_package is True
+        assert drone.level_data.get_block_id(0, 1, 0) == "air"
+        pickup = [a for a in actions if a["type"] == "pickup_package"][0]
+        assert pickup == {"type": "pickup_package", "pos": [0, 1, 0]}
+
+    def test_pickup_is_noop_off_the_package_tile(self, make_drone, actions, capsys):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["air"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        actions.clear()
+        drone.pickup()
+        assert drone.carrying_package is False
+        assert actions == []
+        assert "Nothing to pick up" in capsys.readouterr().out
+
+    def test_pickup_is_noop_when_already_carrying(self, make_drone, actions, capsys):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["package"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        drone.carrying_package = True
+        actions.clear()
+        drone.pickup()
+        assert drone.level_data.get_block_id(0, 1, 0) == "package"  # untouched
+        assert actions == []
+        assert "Already carrying" in capsys.readouterr().out
+
+    def test_flying_over_delivery_pad_does_not_auto_deliver(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["delivery_pad"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+        )
+        drone.carrying_package = True
+        drone.move()
+        assert drone.package_delivered is False
+        assert drone.carrying_package is True
+        assert not any(a["type"] == "deliver_package" for a in actions)
+
+    def test_deliver_succeeds_when_carrying_on_the_pad(self, make_drone, actions):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["delivery_pad"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        drone.carrying_package = True
+        drone.deliver()
+        assert drone.carrying_package is False
+        assert drone.package_delivered is True
+        # the pad itself is a persistent tile, never cleared
+        assert drone.level_data.get_block_id(0, 1, 0) == "delivery_pad"
+        deliver = [a for a in actions if a["type"] == "deliver_package"][0]
+        assert deliver == {"type": "deliver_package", "pos": [0, 1, 0]}
+
+    def test_deliver_is_noop_without_carrying(self, make_drone, actions, capsys):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["delivery_pad"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        actions.clear()
+        drone.deliver()
+        assert drone.package_delivered is False
+        assert actions == []
+        assert "Not carrying anything" in capsys.readouterr().out
+
+    def test_deliver_is_noop_off_the_delivery_pad(self, make_drone, actions, capsys):
+        drone = make_drone(
+            {"layer_0": [["grass"]], "layer_1": [["air"]]},
+            spawn={"x": 0, "y": 1, "z": 0},
+        )
+        drone.carrying_package = True
+        actions.clear()
+        drone.deliver()
+        assert drone.package_delivered is False
+        assert drone.carrying_package is True  # still holding it
+        assert actions == []
+        assert "isn't the delivery pad" in capsys.readouterr().out
+
+
+class TestPushTarget:
+    def test_push_onto_target_sets_flag_and_sends_action(self, make_drone, actions):
+        drone = make_drone(
+            {
+                "layer_0": [["grass"], ["grass"], ["grass"]],
+                "layer_1": [["push_target"], ["movable_block"], ["air"]],
+            },
+            spawn={"x": 0, "y": 1, "z": 2},
+            push_target=[0, 1, 0],
+        )
+        drone.push()
+        assert drone.push_target_reached is True
+        reached = [a for a in actions if a["type"] == "push_target_reached"][0]
+        assert reached == {"type": "push_target_reached", "pos": [0, 1, 0]}
+
+    def test_push_elsewhere_does_not_set_flag(self, make_drone, actions):
+        drone = make_drone(
+            {
+                "layer_0": [["grass"], ["grass"], ["grass"]],
+                "layer_1": [["air"], ["movable_block"], ["air"]],
+            },
+            spawn={"x": 0, "y": 1, "z": 2},
+            push_target=[5, 5, 5],
+        )
+        drone.push()
+        assert drone.push_target_reached is False
+        assert not any(a["type"] == "push_target_reached" for a in actions)
+
 
 class TestPush:
     def test_push_moves_block_and_advances_drone(self, make_drone, actions):

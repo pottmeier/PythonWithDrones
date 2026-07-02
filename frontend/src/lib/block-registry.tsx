@@ -8,6 +8,9 @@ import FinishPortalBlock from "@/components/animation/finish-portal-block";
 import StonePillar from "@/components/animation/stone-pillar";
 import CoinBlock from "@/components/animation/coin-block";
 import MovableBlock from "@/components/animation/movable-block";
+import PackageBlock from "@/components/animation/package-block";
+import PushTargetBlock from "@/components/animation/push-target-block";
+import DeliveryPadBlock from "@/components/animation/delivery-pad-block";
 
 // 1. Define the capabilities of a block
 export interface BlockDefinition {
@@ -105,6 +108,30 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     isPushable: true,
     placementValidOn: ["grass", "dirt", "stone"],
     component: MovableBlock,
+  },
+  package: {
+    id: "package",
+    isCollidable: false,
+    isDestructible: false,
+    isPickable: true,
+    placementValidOn: ["grass", "dirt", "stone", "air"],
+    component: PackageBlock,
+  },
+  push_target: {
+    id: "push_target",
+    isCollidable: false,
+    isDestructible: false,
+    isPickable: false,
+    placementValidOn: ["grass", "dirt", "stone"],
+    component: PushTargetBlock,
+  },
+  delivery_pad: {
+    id: "delivery_pad",
+    isCollidable: false,
+    isDestructible: false,
+    isPickable: false,
+    placementValidOn: ["grass", "dirt", "stone"],
+    component: DeliveryPadBlock,
   },
 
   // --- SPECIAL ---

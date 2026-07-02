@@ -41,6 +41,9 @@ BLOCK_REGISTRY = {
     "finish_portal": {"isCollidable": False, "isFinish": True, "isDestructible": False, "isPickable": False},
     "coin": {"isCollidable": False, "isDestructible": False, "isPickable": True},
     "movable_block": {"isCollidable": True, "isDestructible": False, "isPickable": False, "isPushable": True},
+    "package": {"isCollidable": False, "isDestructible": False, "isPickable": True},
+    "push_target": {"isCollidable": False, "isDestructible": False, "isPickable": False},
+    "delivery_pad": {"isCollidable": False, "isDestructible": False, "isPickable": False},
     "empty": {"isCollidable": True, "isDestructible": False, "isPickable": False},
     "air": {"isCollidable": False, "isDestructible": False, "isPickable": False},
 }
@@ -72,11 +75,22 @@ def make_level(registry):
     game.block_registry at the fixture registry for the duration of the
     test (Drone methods read the module-level game.block_registry)."""
 
-    def _make(layers, spawn=None, collected_coins=0):
+    def _make(
+        layers,
+        spawn=None,
+        collected_coins=0,
+        requires_delivery=False,
+        push_target=None,
+    ):
         level = model.LevelModel(
             description="test level",
             spawn=model.Spawn(**(spawn or {"x": 0, "y": 0, "z": 0})),
-            solve_conditions=model.SolveConditions(finish_block=True, collected_coins=collected_coins),
+            solve_conditions=model.SolveConditions(
+                finish_block=True,
+                collected_coins=collected_coins,
+                requires_delivery=requires_delivery,
+                push_target=push_target,
+            ),
             layers=layers,
         )
         game.block_registry = registry
@@ -90,8 +104,21 @@ def make_drone(make_level):
     """Build a Drone wired up to a fresh LevelModel and spawned at the
     given position (defaults to the level's own spawn)."""
 
-    def _make(layers, spawn=None, collected_coins=0, dir_=0):
-        level = make_level(layers, spawn=spawn, collected_coins=collected_coins)
+    def _make(
+        layers,
+        spawn=None,
+        collected_coins=0,
+        requires_delivery=False,
+        push_target=None,
+        dir_=0,
+    ):
+        level = make_level(
+            layers,
+            spawn=spawn,
+            collected_coins=collected_coins,
+            requires_delivery=requires_delivery,
+            push_target=push_target,
+        )
         drone = game.Drone(level.spawn)
         drone.level_data = level
         drone.reset_to_spawn()

@@ -66,7 +66,7 @@ function SceneComponent({
   const controlsRef = useRef<any>(null);
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const compassRef = useRef<HTMLDivElement>(null);
-  const NUM_LEVELS = 7;
+  const NUM_LEVELS = 8;
 
   // ui states and config
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
@@ -83,6 +83,7 @@ function SceneComponent({
   const [isCrashed, setIsCrashed] = useState(false);
   const [coinsCollected, setCoinsCollected] = useState(0);
   const [coinsRequired, setCoinsRequired] = useState(0);
+  const [isCarryingPackage, setIsCarryingPackage] = useState(false);
   // bumped on every reset so Grid (and every coin/movable block instance) remounts fresh
   const [gridKey, setGridKey] = useState(0);
 
@@ -179,6 +180,32 @@ function SceneComponent({
       processNextMoveInQueue();
     }
 
+    // package pickup: notify the package block at this position, then continue
+    if (command.type === "pickup_package") {
+      const [px, py, pz] = command.pos;
+      blockEvents.emit(positionKey(px, py, pz), command);
+      setIsCarryingPackage(true);
+      toast.success("Package picked up!");
+      processNextMoveInQueue();
+    }
+
+    // package delivery: notify the delivery pad at this position, then continue
+    if (command.type === "deliver_package") {
+      const [dpx, dpy, dpz] = command.pos;
+      blockEvents.emit(positionKey(dpx, dpy, dpz), command);
+      setIsCarryingPackage(false);
+      toast.success("Package delivered!");
+      processNextMoveInQueue();
+    }
+
+    // crate pushed onto its target: notify the pad at this position, then continue
+    if (command.type === "push_target_reached") {
+      const [tx, ty, tz] = command.pos;
+      blockEvents.emit(positionKey(tx, ty, tz), command);
+      toast.success("Crate is in place!");
+      processNextMoveInQueue();
+    }
+
     // player-facing hint from python (e.g. reached the goal without enough coins)
     if (command.type === "hint") {
       toast.warning(command.message);
@@ -252,6 +279,7 @@ function SceneComponent({
     setIsLevelComplete(false);
     setIsCrashed(false);
     setCoinsCollected(0);
+    setIsCarryingPackage(false);
     setGridKey((k) => k + 1);
 
     const [sx, sy, sz] = spawnRef.current;
@@ -403,6 +431,7 @@ function SceneComponent({
           key={droneKey}
           groupRef={droneRef}
           initialPosition={spawnPosition}
+          isCarryingPackage={isCarryingPackage}
         />
         <OrbitControls
           ref={controlsRef}
