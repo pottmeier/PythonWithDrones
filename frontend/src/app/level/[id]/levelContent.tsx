@@ -52,7 +52,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
   const [coins, setCoins] = useState({ collected: 0, required: 0 });
   const levelOpenedAtRef = useRef<number>(Date.now());
-  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
+  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error, getRunStats } =
     usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
@@ -119,9 +119,13 @@ export default function LevelContent({ level }: LevelContentProps) {
     setCompletionTimeMs(elapsed);
     const currentToken = loadState().user.token;
     if (currentToken && elapsed > 0) {
-      submitScore(currentToken, Number(levelId), elapsed);
+      const { steps, code: ranCode } = getRunStats();
+      const linesOfCode = ranCode
+        .split("\n")
+        .filter((line) => line.trim().length > 0).length;
+      submitScore(currentToken, Number(levelId), elapsed, steps, linesOfCode);
     }
-  }, [levelId]);
+  }, [levelId, getRunStats]);
 
   // track coin progress reported by the Scene
   const handleCoinsChange = useCallback((collected: number, required: number) => {

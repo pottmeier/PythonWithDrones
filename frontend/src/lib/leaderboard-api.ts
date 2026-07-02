@@ -2,6 +2,16 @@ export type ScoreEntry = {
   username: string;
   levelId: number;
   firstTimeMs: number;
+  steps: number | null;
+  linesOfCode: number | null;
+  createdAt: string;
+};
+
+export type AttemptEntry = {
+  timeMs: number;
+  steps: number;
+  linesOfCode: number;
+  createdAt: string;
 };
 
 export type AuthResult = {
@@ -60,6 +70,8 @@ export async function submitScore(
   token: string,
   levelId: number,
   timeMs: number,
+  steps: number,
+  linesOfCode: number,
 ): Promise<void> {
   await apiFetch("/leaderboard/submit", {
     method: "POST",
@@ -67,17 +79,58 @@ export async function submitScore(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ level_id: levelId, time_ms: timeMs }),
+    body: JSON.stringify({
+      level_id: levelId,
+      time_ms: timeMs,
+      steps,
+      lines_of_code: linesOfCode,
+    }),
   });
 }
+
+type ScoreEntryResponse = {
+  username: string;
+  level_id: number;
+  first_time_ms: number;
+  steps: number | null;
+  lines_of_code: number | null;
+  created_at: string;
+};
+
+type AttemptEntryResponse = {
+  time_ms: number;
+  steps: number;
+  lines_of_code: number;
+  created_at: string;
+};
 
 export async function getLeaderboard(levelId: number): Promise<ScoreEntry[]> {
   const res = await apiFetch(`/leaderboard?level_id=${levelId}`);
   if (!res || !res.ok) return [];
-  const rows = await res.json();
-  return rows.map((r: any) => ({
+  const rows: ScoreEntryResponse[] = await res.json();
+  return rows.map((r) => ({
     username: r.username,
     levelId: r.level_id,
     firstTimeMs: r.first_time_ms,
+    steps: r.steps ?? null,
+    linesOfCode: r.lines_of_code ?? null,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function getHistory(
+  token: string,
+  levelId: number,
+): Promise<AttemptEntry[]> {
+  const res = await apiFetch(`/leaderboard/history?level_id=${levelId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res || !res.ok) return [];
+  const rows: AttemptEntryResponse[] = await res.json();
+  return rows.map((r) => ({
+    timeMs: r.time_ms,
+    steps: r.steps,
+    linesOfCode: r.lines_of_code,
+    createdAt: r.created_at,
   }));
 }
