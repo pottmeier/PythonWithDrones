@@ -13,6 +13,7 @@ interface GridProps {
     size: { width: number; height: number; depth: number };
     spawn: { x: number; y: number; z: number };
     description?: string;
+    solveConditions?: { finish_block: boolean; collected_coins: number };
   }) => void;
   levelId?: string;
   levelData?: LevelData;
@@ -39,6 +40,7 @@ function publishLevel(
     size: { width, height, depth },
     spawn: blueprint.spawn,
     description: blueprint.description || "No description available.",
+    solveConditions: blueprint.solve_conditions,
   });
 }
 

@@ -31,8 +31,9 @@ class Drone:
         self.y = 0.0
         self.z = 0.0
         self.dir = 0  # 0: North, 1: East, 2: South, 3: West
-        self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),solve_conditions=SolveConditions(finish_block=True, collected_coins=False),layers={"layer_0":[["empty"]]})
+        self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),solve_conditions=SolveConditions(finish_block=True, collected_coins=0),layers={"layer_0":[["empty"]]})
         self.is_dead = False
+        self.coins_collected = 0
 
     def reset_to_spawn(self):
         """reset the drone to spawn and uppdate variables without deleting the drone"""
@@ -102,10 +103,52 @@ class Drone:
                 "x": self.x, "y": self.y, "z": self.z, # current position before fall
                 "landingY": landing_y
             })
+        # coin pickup when flying over a coin
+        if self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) == "coin":
+            self.coins_collected += 1
+            self.level_data.set_block_id(int(self.x), int(self.y), int(self.z), "air")
+            self.__send_action__({
+                "type": "collect_coin",
+                "pos": [self.x, self.y, self.z],
+                "total": self.coins_collected,
+            })
+
         # finish logic when goal is reached, post to main
         if self.level_data.get_block_id(int(self.x),int(self.y),int(self.z)) == "finish_portal":
-            self.__send_action__({"type":"goal"})
+            if self.coins_collected >= self.level_data.solve_conditions.collected_coins:
+                self.__send_action__({"type":"goal"})
+            else:
+                missing = self.level_data.solve_conditions.collected_coins - self.coins_collected
+                message = f"Need {missing} more coin(s) before finishing."
+                print(message)
+                self.__send_action__({"type": "hint", "message": message})
             return
+
+    # =====================
+    # push logic
+    # =====================
+    def push(self):
+        """Push the movable block directly in front of the drone forward by one cell,
+        then advance into the space it vacated."""
+        if self.is_dead:
+            return
+        dx, dy, dz = self.VECTORS[self.dir]
+        block_x, block_y, block_z = int(self.x + dx), int(self.y + dy), int(self.z + dz)
+        block_id = self.level_data.get_block_id(block_x, block_y, block_z)
+        if block_id not in block_registry or not block_registry[block_id].get("isPushable", False):
+            print("Nothing pushable ahead")
+            return
+        target_x, target_y, target_z = block_x + dx, block_y + dy, block_z + dz
+        if self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
+            print("Can't push -- the space beyond is blocked")
+            return
+        self.level_data.move_block(block_x, block_y, block_z, target_x, target_y, target_z)
+        self.__send_action__({
+            "type": "push_block",
+            "from": [block_x, block_y, block_z],
+            "to": [target_x, target_y, target_z],
+        })
+        self.__attempt_move__(dx, dy, dz)
 
     # =====================
     # turn logic
@@ -135,12 +178,21 @@ class Drone:
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
     
-    def is_path_blocked(self):
+    def scan(self, distance: int = 1):
+        """Look ahead in the direction the drone is facing.
+        Returns a list of block ids, one per cell, stopping at (and including)
+        the first cell that blocks the path."""
+        results = []
         dx, dy, dz = self.VECTORS[self.dir]
-        target_x = int(self.x + dx)
-        target_y = int(self.y + dy)
-        target_z = int(self.z + dz)
-        return self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry)
+        for step in range(1, distance + 1):
+            target_x = int(self.x + dx * step)
+            target_y = int(self.y + dy * step)
+            target_z = int(self.z + dz * step)
+            block_id = self.level_data.get_block_id(target_x, target_y, target_z)
+            results.append(block_id)
+            if self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
+                break
+        return results
 
     def at_portal(self):
         return self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) == "finish_portal"        

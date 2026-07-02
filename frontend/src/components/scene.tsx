@@ -24,11 +24,14 @@ import {
 import { loadState, saveLevelProgress } from "@/lib/app-state";
 import { useRouter } from "next/navigation";
 import type { LevelData } from "@/types/level";
+import { blockEvents, positionKey } from "@/lib/block-events";
+import { toast } from "sonner";
 
 interface LevelLoadData {
   size: { width: number; height: number; depth: number };
   spawn: { x: number; y: number; z: number };
   description?: string;
+  solveConditions?: { finish_block: boolean; collected_coins: number };
 }
 
 function formatTime(ms: number): string {
@@ -47,12 +50,14 @@ function SceneComponent({
   onBusyChange,
   onLevelComplete,
   completionTimeMs,
+  onCoinsChange,
 }: {
   levelId?: string;
   levelData?: LevelData;
   onBusyChange: (busy: boolean) => void;
   onLevelComplete?: () => void;
   completionTimeMs?: number | null;
+  onCoinsChange?: (collected: number, required: number) => void;
 }) {
   // refs
   const droneRef = useRef<THREE.Group>(new THREE.Group());
@@ -61,7 +66,7 @@ function SceneComponent({
   const controlsRef = useRef<any>(null);
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const compassRef = useRef<HTMLDivElement>(null);
-  const NUM_LEVELS = 6;
+  const NUM_LEVELS = 7;
 
   // ui states and config
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
@@ -76,6 +81,10 @@ function SceneComponent({
   const [droneKey, setDroneKey] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isCrashed, setIsCrashed] = useState(false);
+  const [coinsCollected, setCoinsCollected] = useState(0);
+  const [coinsRequired, setCoinsRequired] = useState(0);
+  // bumped on every reset so Grid (and every coin/movable block instance) remounts fresh
+  const [gridKey, setGridKey] = useState(0);
 
   // camera settings
   const { width = 1, depth = 1 } = levelSize || {};
@@ -156,6 +165,26 @@ function SceneComponent({
       setIsLevelComplete(true);
     }
 
+    // coin pickup: notify the coin block at this position, then continue
+    if (command.type === "collect_coin") {
+      const [cx, cy, cz] = command.pos;
+      blockEvents.emit(positionKey(cx, cy, cz), command);
+      setCoinsCollected(command.total);
+      processNextMoveInQueue();
+    }
+
+    // pushed block: notify the block instance so it can slide itself, then continue
+    if (command.type === "push_block") {
+      blockEvents.emit(positionKey(command.from[0], command.from[1], command.from[2]), command);
+      processNextMoveInQueue();
+    }
+
+    // player-facing hint from python (e.g. reached the goal without enough coins)
+    if (command.type === "hint") {
+      toast.warning(command.message);
+      processNextMoveInQueue();
+    }
+
     // crash animation
     if (command.type === "crash") {
       const tl = gsap.timeline();
@@ -212,6 +241,8 @@ function SceneComponent({
     ];
     spawnRef.current = startPos;
     setSpawnPosition(startPos);
+    setCoinsRequired(data.solveConditions?.collected_coins || 0);
+    setCoinsCollected(0);
   }, []);
 
   // reset the level status
@@ -220,6 +251,8 @@ function SceneComponent({
     moveQueueRef.current = [];
     setIsLevelComplete(false);
     setIsCrashed(false);
+    setCoinsCollected(0);
+    setGridKey((k) => k + 1);
 
     const [sx, sy, sz] = spawnRef.current;
     if (droneRef.current) {
@@ -285,6 +318,11 @@ function SceneComponent({
   useEffect(() => {
     gsap.globalTimeline.timeScale(playbackSpeed);
   }, [playbackSpeed]);
+
+  // surface coin progress to the parent (HUD)
+  useEffect(() => {
+    onCoinsChange?.(coinsCollected, coinsRequired);
+  }, [coinsCollected, coinsRequired, onCoinsChange]);
 
   // update status when finished
   useEffect(() => {
@@ -356,6 +394,7 @@ function SceneComponent({
           intensity={0.7}           // Schwächer als das Hauptlicht
         />
         <Grid
+          key={`grid-${gridKey}`}
           onLevelLoaded={handleLevelLoaded}
           levelId={levelId}
           levelData={levelData}
