@@ -4,6 +4,8 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
+  const stepCountRef = useRef(0);
+  const lastRunCodeRef = useRef("");
 
   const [isReady, setIsReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -30,6 +32,9 @@ export function usePyodideWorker() {
         console.log("Pyodide Worker Ready");
       } else if (type === "ACTION") {
         (window as any).droneAction?.(action);
+        if (action?.type === "move") {
+          stepCountRef.current += 1;
+        }
         if (action?.type === "crash") {
           setHasCrashed(true);
         }
@@ -83,11 +88,19 @@ export function usePyodideWorker() {
     setError(undefined);
     setHasCrashed(false);
     setIsRunning(true);
+    stepCountRef.current = 0;
+    lastRunCodeRef.current = userCode;
     workerRef.current.postMessage({
       type: "RUN",
       code: userCode,
     });
   };
+
+  // read the step count and code of the most recently started run
+  const getRunStats = useCallback(
+    () => ({ steps: stepCountRef.current, code: lastRunCodeRef.current }),
+    [],
+  );
 
   // reset function to reset the virtual drone inside python after the visual drone has been reset
   const hardReset = useCallback(() => {
@@ -97,5 +110,5 @@ export function usePyodideWorker() {
     initWorker();
   }, [initWorker]);
 
-  return { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error };
+  return { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error, getRunStats };
 }

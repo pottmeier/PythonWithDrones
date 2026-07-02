@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Boolean, BigInteger,
-    DateTime, ForeignKey, UniqueConstraint,
+    DateTime, ForeignKey, UniqueConstraint, Index,
 )
 from sqlalchemy.sql import func
 from .database import Base
@@ -23,6 +23,22 @@ class Score(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     level_id = Column(Integer, nullable=False)
     first_time_ms = Column(BigInteger, nullable=False)
+    steps = Column(Integer, nullable=True)
+    lines_of_code = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (UniqueConstraint("user_id", "level_id", name="uq_user_level"),)
+
+
+class Attempt(Base):
+    __tablename__ = "attempts"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    level_id = Column(Integer, nullable=False)
+    time_ms = Column(BigInteger, nullable=False)
+    steps = Column(Integer, nullable=False)
+    lines_of_code = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (Index("ix_attempts_user_level", "user_id", "level_id"),)

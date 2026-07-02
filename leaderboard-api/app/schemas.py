@@ -1,4 +1,5 @@
-from pydantic import BaseModel, SecretStr, field_validator
+from datetime import datetime
+from pydantic import BaseModel, Field, SecretStr, field_validator
 
 
 class TokenResponse(BaseModel):
@@ -9,12 +10,24 @@ class TokenResponse(BaseModel):
 class SubmitScoreRequest(BaseModel):
     level_id: int
     time_ms: int
+    steps: int = Field(ge=0)
+    lines_of_code: int = Field(ge=0)
 
 
 class ScoreEntry(BaseModel):
     username: str
     level_id: int
     first_time_ms: int
+    steps: int | None = None
+    lines_of_code: int | None = None
+    created_at: datetime
+
+
+class AttemptEntry(BaseModel):
+    time_ms: int
+    steps: int
+    lines_of_code: int
+    created_at: datetime
 
 
 class AdminResetRequest(BaseModel):

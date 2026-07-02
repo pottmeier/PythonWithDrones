@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, RefreshCw } from "lucide-react";
-import { getLeaderboard, ScoreEntry } from "@/lib/leaderboard-api";
+import { Trophy, RefreshCw, TrendingUp } from "lucide-react";
+import { getLeaderboard, getHistory, ScoreEntry, AttemptEntry } from "@/lib/leaderboard-api";
 import { Spinner } from "@/components/ui/spinner";
 import {
   SidebarProvider,
@@ -25,6 +25,13 @@ function formatTime(ms: number): string {
     : `${seconds}.${tenths}s`;
 }
 
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 function medalColor(rank: number): string {
   if (rank === 1) return "text-yellow-500";
   if (rank === 2) return "text-gray-400";
@@ -38,6 +45,8 @@ export default function LeaderboardContent() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
+  const [history, setHistory] = useState<AttemptEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     const state = loadState();
@@ -52,6 +61,18 @@ export default function LeaderboardContent() {
       setLoading(false);
     });
   }, [selectedLevel]);
+
+  useEffect(() => {
+    if (!token) {
+      setHistory([]);
+      return;
+    }
+    setHistoryLoading(true);
+    getHistory(token, selectedLevel).then((data) => {
+      setHistory(data);
+      setHistoryLoading(false);
+    });
+  }, [selectedLevel, token]);
 
   const refresh = () => {
     setLoading(true);
@@ -80,10 +101,15 @@ export default function LeaderboardContent() {
           </header>
 
           <main className="flex-1 p-6 max-w-3xl mx-auto w-full">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-2">
               <Trophy className="w-7 h-7 text-yellow-500" />
               <h1 className="text-2xl font-bold">Leaderboard</h1>
             </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Ranked by fewest steps, then fastest time, then fewest lines of code. Only your
+              first completion of a level counts here — see all your attempts under{" "}
+              <span className="font-medium">Your Progress</span> below.
+            </p>
 
             {/* Level tabs */}
             <div className="flex gap-2 mb-6 flex-wrap">
@@ -128,7 +154,10 @@ export default function LeaderboardContent() {
                     <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                       <th className="px-5 py-3 text-left w-12">Rank</th>
                       <th className="px-5 py-3 text-left">Player</th>
-                      <th className="px-5 py-3 text-right">First Time</th>
+                      <th className="px-5 py-3 text-right">Steps</th>
+                      <th className="px-5 py-3 text-right">Time</th>
+                      <th className="px-5 py-3 text-right">Lines of Code</th>
+                      <th className="px-5 py-3 text-right">When</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -153,7 +182,16 @@ export default function LeaderboardContent() {
                             )}
                           </td>
                           <td className="px-5 py-3 text-right font-mono">
+                            {entry.steps ?? "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right font-mono">
                             {formatTime(entry.firstTimeMs)}
+                          </td>
+                          <td className="px-5 py-3 text-right font-mono">
+                            {entry.linesOfCode ?? "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right text-gray-500 dark:text-gray-400">
+                            {formatDate(entry.createdAt)}
                           </td>
                         </tr>
                       );
@@ -162,6 +200,58 @@ export default function LeaderboardContent() {
                 </table>
               )}
             </div>
+
+            {token && (
+              <div className="mt-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                  <h2 className="text-lg font-bold">Your Progress</h2>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+                  {historyLoading ? (
+                    <div className="flex justify-center items-center py-10">
+                      <Spinner />
+                    </div>
+                  ) : history.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 dark:text-gray-500">
+                      <p>No attempts yet for Level {selectedLevel}.</p>
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                          <th className="px-5 py-3 text-left w-16">Attempt</th>
+                          <th className="px-5 py-3 text-right">Steps</th>
+                          <th className="px-5 py-3 text-right">Time</th>
+                          <th className="px-5 py-3 text-right">Lines of Code</th>
+                          <th className="px-5 py-3 text-right">When</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {history.map((attempt, idx) => (
+                          <tr
+                            key={idx}
+                            className="border-b border-gray-100 dark:border-gray-700/50 last:border-0"
+                          >
+                            <td className="px-5 py-3 font-medium">#{idx + 1}</td>
+                            <td className="px-5 py-3 text-right font-mono">{attempt.steps}</td>
+                            <td className="px-5 py-3 text-right font-mono">
+                              {formatTime(attempt.timeMs)}
+                            </td>
+                            <td className="px-5 py-3 text-right font-mono">
+                              {attempt.linesOfCode}
+                            </td>
+                            <td className="px-5 py-3 text-right text-gray-500 dark:text-gray-400">
+                              {formatDate(attempt.createdAt)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </div>

@@ -7,6 +7,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://pguser:pgpass@db:5432/leaderboard}
       JWT_SECRET: ${JWT_SECRET:-changeme-set-in-prod}
       ADMIN_SECRET: ${ADMIN_SECRET:-changeme-set-in-prod}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,https://pottmeier.github.io}
     depends_on:
       db:
         condition: service_healthy

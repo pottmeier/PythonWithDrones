@@ -26,7 +26,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.database import Base, get_db
-from app.main import app
+from app.main import app, limiter
 
 
 @pytest_asyncio.fixture
@@ -47,6 +47,7 @@ async def client(db_session_factory):
         async with db_session_factory() as session:
             yield session
 
+    limiter.reset()
     app.dependency_overrides[get_db] = override_get_db
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -66,3 +67,10 @@ async def registered_user(client):
 @pytest_asyncio.fixture
 async def auth_headers(registered_user):
     return {"Authorization": f"Bearer {registered_user['token']}"}
+
+
+@pytest_asyncio.fixture
+async def db_session(db_session_factory):
+    """Direct access to the same throwaway database the client fixture uses."""
+    async with db_session_factory() as session:
+        yield session
