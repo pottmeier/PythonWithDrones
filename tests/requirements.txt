@@ -1,0 +1,12 @@
+# Install once, then `pytest` from the repo root runs everything.
+#   pip install -r tests/requirements.txt -r leaderboard-api/requirements.txt
+
+pytest
+pytest-asyncio
+pydantic
+pyyaml
+
+# leaderboard-api tests hit the real FastAPI app through an in-process
+# ASGI client, against a throwaway sqlite database instead of Postgres.
+httpx
+aiosqlite
