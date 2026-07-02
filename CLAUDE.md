@@ -4,17 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All commands run from `frontend/`:
+Frontend commands run from `frontend/`:
 
 ```bash
 cd frontend
 npm run dev      # Start dev server (localhost:3000)
 npm run build    # Static export → frontend/out/
 npm run lint     # ESLint
-python3 -m pytest  # Test the game.py/model.py drone logic (tests/python/, requires pytest+pydantic+pyyaml)
 ```
 
-There are no frontend automated tests. `public/python/game.py` and `public/python/model.py` (the pure Python drone/level logic) are covered by `frontend/tests/python/`, run with `pytest` outside the browser via a fake `js` module in `conftest.py`. The project is a static Next.js export deployed to GitHub Pages at `https://pottmeier.github.io/PythonWithDrones/`.
+There are no frontend (TS/React) automated tests. The project is a static Next.js export deployed to GitHub Pages at `https://pottmeier.github.io/PythonWithDrones/`.
+
+Python tests run from the repo root:
+
+```bash
+pip install -r tests/requirements.txt -r leaderboard-api/requirements.txt
+python3 -m pytest
+```
+
+- `tests/drone/` covers `frontend/public/python/game.py` and `model.py` (the drone/level logic that runs in the browser's Pyodide worker) by faking the `js` bridge module in `conftest.py`, so the game code imports and runs unmodified under plain CPython.
+- `tests/leaderboard_api/` covers `leaderboard-api/app/` (the FastAPI auth + leaderboard backend) through an in-process ASGI client, against a throwaway sqlite database per test (production uses Postgres) via a `get_db` dependency override in `conftest.py`.
 
 ## Architecture
 

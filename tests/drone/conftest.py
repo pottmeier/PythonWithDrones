@@ -1,11 +1,11 @@
 """
-Test harness for public/python/game.py and public/python/model.py.
+Test harness for frontend/public/python/game.py and model.py.
 
 Those modules run inside a Pyodide WebWorker in production, where a `js`
-module is injected by the runtime (see public/py-worker.js). Outside the
-browser there is no such module, so we install a fake one before anything
-imports game.py, and make its Drone.__send_action__ calls observable via
-the `actions` fixture below.
+module is injected by the runtime (see frontend/public/py-worker.js).
+Outside the browser there is no such module, so we install a fake one
+before anything imports game.py, and make its Drone.__send_action__
+calls observable via the `actions` fixture below.
 """
 
 import sys
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-PYTHON_DIR = Path(__file__).resolve().parents[2] / "public" / "python"
+PYTHON_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public" / "python"
 if str(PYTHON_DIR) not in sys.path:
     sys.path.insert(0, str(PYTHON_DIR))
 
@@ -44,17 +44,6 @@ BLOCK_REGISTRY = {
     "empty": {"isCollidable": True, "isDestructible": False, "isPickable": False},
     "air": {"isCollidable": False, "isDestructible": False, "isPickable": False},
 }
-
-
-class ToPy:
-    """Stands in for a Pyodide JsProxy: real code calls `.to_py()` on the
-    registry/level payloads it receives from JS."""
-
-    def __init__(self, data):
-        self._data = data
-
-    def to_py(self):
-        return self._data
 
 
 @pytest.fixture(autouse=True)
