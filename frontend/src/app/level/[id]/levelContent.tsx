@@ -50,6 +50,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [token, setToken] = useState("");
   const [isSceneBusy, setIsSceneBusy] = useState(false);
   const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
+  const [coins, setCoins] = useState({ collected: 0, required: 0 });
   const levelOpenedAtRef = useRef<number>(Date.now());
   const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
     usePyodideWorker();
@@ -122,6 +123,11 @@ export default function LevelContent({ level }: LevelContentProps) {
     }
   }, [levelId]);
 
+  // track coin progress reported by the Scene
+  const handleCoinsChange = useCallback((collected: number, required: number) => {
+    setCoins({ collected, required });
+  }, []);
+
   // submit user code
   const submitCode = (submittedCode: string) => {
     const id = Number(levelId);
@@ -148,6 +154,11 @@ export default function LevelContent({ level }: LevelContentProps) {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4 cursor-default">
+              {coins.required > 0 && (
+                <span className="flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 text-sm font-medium px-3 py-1">
+                  🪙 {coins.collected}/{coins.required}
+                </span>
+              )}
               <UserMenu
                 username={username}
                 token={token}
@@ -199,6 +210,7 @@ export default function LevelContent({ level }: LevelContentProps) {
                       onBusyChange={setIsSceneBusy}
                       onLevelComplete={handleLevelComplete}
                       completionTimeMs={completionTimeMs}
+                      onCoinsChange={handleCoinsChange}
                     />
                   </div>
                   {!isReady && (

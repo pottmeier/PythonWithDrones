@@ -1,131 +1,59 @@
 id: 7
-title: Level 4
-homepage_intro: Build Your Own Commands
-tags:
-  - Medium
-  - Functions
-  - Reusability
-description: |
-  Welcome to **Level 4** - Functions!
 
-  You have learned loops and variables. Now let's take it further with **functions**!
-  A function is a **reusable block of code** you give a name to. You can also use functions with parameters like variables see the example.<br>
-  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
+title: Level 7
+
+homepage_intro: "Push & Collect"
+
+tags:
+  - Hard
+  - Push
+  - Coins
+
+description: |
+  Welcome to **Level 7** - Obstacles & Coins!
+
+  Two new tools for your toolbox:<br>
+  - `drone.scan(distance)` looks ahead and tells you what blocks are there, as a list.<br>
+  - `drone.push()` shoves a movable crate one cell forward, then flies the drone into the space it left behind.<br>
+
+  This level blocks the direct path with a crate, and hides a coin down a side path.
+  You must collect the coin before you're allowed to finish!
+
   ### Instructions:
-  - Define a def function for the repeating path pattern.
-  - Call your function multiple times.
+  - There is a crate blocking the way forward. Use `drone.push()` to clear it.
+  - After pushing, the crate is still right in front of you - fly around it using the open lane to its side.
+  - A coin is hidden down a branch off the main path. Collect it before reaching the portal, or the level won't complete.
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
   ### Example:
-
   ```code
-  def move(steps):
-    for i in range(steps)
-      drone.move()
-
-  move(1)
-  move(2)
+  ahead = drone.scan()
+  if "movable_block" in ahead:
+      drone.push()
   ```
-  <br>
-  The path ahead repeats a pattern, define a function to handle it cleanly!  
-spawn:
-  x: 0
-  'y': 1
-  z: 8
-orientation: 3
+
+spawn: { x: 1, y: 1, z: 6 }
+
 solve_conditions:
   finish_block: true
-  collected_coins: 4
+  collected_coins: 1
+
 layers:
   layer_0:
-    - - grass
-      - grass
-      - grass
-      - grass
-      - grass
-    - - grass
-      - empty
-      - empty
-      - empty
-      - grass
-    - - grass
-      - empty
-      - grass
-      - empty
-      - grass
-    - - grass
-      - empty
-      - grass
-      - empty
-      - grass
-    - - grass
-      - empty
-      - grass
-      - empty
-      - grass
-    - - grass
-      - empty
-      - grass
-      - empty
-      - grass
-    - - grass
-      - grass
-      - grass
-      - empty
-      - grass
-    - - empty
-      - empty
-      - empty
-      - empty
-      - grass
-    - - dirt
-      - grass
-      - grass
-      - grass
-      - grass
+    - [empty, grass, empty]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [grass, grass, empty]
+    - [empty, grass, empty]
+    - [empty, grass, empty]
+
   layer_1:
-    - - air
-      - air
-      - air
-      - air
-      - air
-    - - air
-      - empty
-      - empty
-      - empty
-      - air
-    - - air
-      - empty
-      - finish_portal
-      - empty
-      - air
-    - - air
-      - empty
-      - air
-      - empty
-      - air
-    - - air
-      - empty
-      - air
-      - empty
-      - air
-    - - air
-      - empty
-      - air
-      - empty
-      - air
-    - - air
-      - air
-      - air
-      - empty
-      - air
-    - - empty
-      - empty
-      - empty
-      - empty
-      - air
-    - - air
-      - air
-      - air
-      - air
-      - air
+    - [empty, finish_portal, empty]
+    - [empty, air, air]
+    - [empty, air, air]
+    - [empty, movable_block, air]
+    - [coin, air, empty]
+    - [empty, air, empty]
+    - [empty, air, empty]
