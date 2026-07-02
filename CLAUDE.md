@@ -11,9 +11,10 @@ cd frontend
 npm run dev      # Start dev server (localhost:3000)
 npm run build    # Static export → frontend/out/
 npm run lint     # ESLint
+python3 -m pytest  # Test the game.py/model.py drone logic (tests/python/, requires pytest+pydantic+pyyaml)
 ```
 
-There are no automated tests. The project is a static Next.js export deployed to GitHub Pages at `https://pottmeier.github.io/PythonWithDrones/`.
+There are no frontend automated tests. `public/python/game.py` and `public/python/model.py` (the pure Python drone/level logic) are covered by `frontend/tests/python/`, run with `pytest` outside the browser via a fake `js` module in `conftest.py`. The project is a static Next.js export deployed to GitHub Pages at `https://pottmeier.github.io/PythonWithDrones/`.
 
 ## Architecture
 
