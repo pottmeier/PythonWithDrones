@@ -34,6 +34,9 @@ class Drone:
         self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),solve_conditions=SolveConditions(finish_block=True, collected_coins=0),layers={"layer_0":[["empty"]]})
         self.is_dead = False
         self.coins_collected = 0
+        self.carrying_package = False
+        self.package_delivered = False
+        self.push_target_reached = False
 
     def reset_to_spawn(self):
         """reset the drone to spawn and uppdate variables without deleting the drone"""
@@ -115,11 +118,15 @@ class Drone:
 
         # finish logic when goal is reached, post to main
         if self.level_data.get_block_id(int(self.x),int(self.y),int(self.z)) == "finish_portal":
-            if self.coins_collected >= self.level_data.solve_conditions.collected_coins:
-                self.__send_action__({"type":"goal"})
+            reasons = self.level_data.solve_conditions.unmet_reasons(
+                coins_collected=self.coins_collected,
+                delivered=self.package_delivered,
+                push_target_reached=self.push_target_reached,
+            )
+            if not reasons:
+                self.__send_action__({"type": "goal"})
             else:
-                missing = self.level_data.solve_conditions.collected_coins - self.coins_collected
-                message = f"Need {missing} more coin(s) before finishing."
+                message = " ".join(f"{reason}." for reason in reasons)
                 print(message)
                 self.__send_action__({"type": "hint", "message": message})
             return
@@ -148,7 +155,44 @@ class Drone:
             "from": [block_x, block_y, block_z],
             "to": [target_x, target_y, target_z],
         })
+        if self.level_data.solve_conditions.push_target == [target_x, target_y, target_z]:
+            self.push_target_reached = True
+            self.__send_action__({
+                "type": "push_target_reached",
+                "pos": [target_x, target_y, target_z],
+            })
         self.__attempt_move__(dx, dy, dz)
+
+    # =====================
+    # pickup / delivery logic
+    # =====================
+    def pickup(self):
+        """Pick up a package at the drone's current position."""
+        if self.is_dead:
+            return
+        if self.carrying_package:
+            print("Already carrying something")
+            return
+        if self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) != "package":
+            print("Nothing to pick up here")
+            return
+        self.carrying_package = True
+        self.level_data.set_block_id(int(self.x), int(self.y), int(self.z), "air")
+        self.__send_action__({"type": "pickup_package", "pos": [self.x, self.y, self.z]})
+
+    def deliver(self):
+        """Deliver the carried package at the drone's current position."""
+        if self.is_dead:
+            return
+        if not self.carrying_package:
+            print("Not carrying anything to deliver")
+            return
+        if self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) != "delivery_pad":
+            print("This isn't the delivery pad")
+            return
+        self.carrying_package = False
+        self.package_delivered = True
+        self.__send_action__({"type": "deliver_package", "pos": [self.x, self.y, self.z]})
 
     # =====================
     # turn logic
