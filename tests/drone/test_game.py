@@ -1,7 +1,17 @@
 """Tests for public/python/game.py -- Drone and initialize_level."""
 
 import game
-from conftest import ToPy
+
+
+class ToPy:
+    """Stands in for a Pyodide JsProxy: real code calls `.to_py()` on the
+    registry/level payloads it receives from JS."""
+
+    def __init__(self, data):
+        self._data = data
+
+    def to_py(self):
+        return self._data
 
 
 class TestDroneInit:
