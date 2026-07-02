@@ -7,6 +7,9 @@
 
 # testing
 /coverage
+__pycache__/
+*.pyc
+.pytest_cache/
 
 # next.js
 /.next/
