@@ -48,8 +48,6 @@ function SidebarBackdrop() {
   );
 }
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 export default function EditorLibraryPage() {
   const router = useRouter();
   const [levels, setLevels] = useState<StoredLevel[]>([]);
@@ -69,7 +67,7 @@ export default function EditorLibraryPage() {
   const handleNewLevel = async () => {
     const stored = createStoredLevel(createEmptyLevel(9, 9, 4));
     await getLevelStorage().save(stored);
-    router.push(`${basePath}/editor/edit?id=${stored.id}`);
+    router.push(`/editor/edit?id=${stored.id}`);
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
@@ -91,7 +89,7 @@ export default function EditorLibraryPage() {
       };
       await getLevelStorage().save(stored);
       toast.success(`Imported "${data.title ?? "Untitled"}"`);
-      router.push(`${basePath}/editor/edit?id=${stored.id}`);
+      router.push(`/editor/edit?id=${stored.id}`);
     } catch (err) {
       toast.error(
         `Import failed: ${err instanceof Error ? err.message : String(err)}`,
@@ -186,7 +184,7 @@ export default function EditorLibraryPage() {
                   key={lvl.id}
                   className="relative cursor-pointer hover:shadow-lg hover:bg-muted/50 transition-all"
                   onClick={() =>
-                    router.push(`${basePath}/editor/edit?id=${lvl.id}`)
+                    router.push(`/editor/edit?id=${lvl.id}`)
                   }
                 >
                   <CardHeader>

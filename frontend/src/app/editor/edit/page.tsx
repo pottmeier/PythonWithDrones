@@ -53,8 +53,6 @@ import {
 import { TestPlayModal } from "@/components/editor/test-play-modal";
 import { downloadYaml } from "@/components/editor/yaml-io";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
   const isOpen = isMobile ? openMobile : open;
@@ -184,14 +182,14 @@ function EditorContent() {
         setActiveLayer(1);
         activeLayerRef.current = 1;
         setLoading(false);
-        router.replace(`${basePath}/editor/edit?id=${fresh.id}`);
+        router.replace(`/editor/edit?id=${fresh.id}`);
         return;
       }
       const found = await getLevelStorage().get(idFromUrl);
       if (cancelled) return;
       if (!found) {
         toast.error("Level not found");
-        router.replace(`${basePath}/editor`);
+        router.replace(`/editor`);
         return;
       }
       setStoredId(found.id);
@@ -443,7 +441,7 @@ function EditorContent() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`${basePath}/editor`)}
+              onClick={() => router.push(`/editor`)}
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Library
