@@ -10,10 +10,11 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 interface DroneProps {
   groupRef: React.RefObject<THREE.Group>
   initialPosition: [number, number, number];
+  initialRotationY?: number;
   isCarryingPackage?: boolean;
 }
 
-export default function Drone({ groupRef, initialPosition, isCarryingPackage }: DroneProps) {
+export default function Drone({ groupRef, initialPosition, initialRotationY, isCarryingPackage }: DroneProps) {
   const { scene, nodes } = useGLTF(`${basePath}/models/drone_body.glb`);
 
   useEffect(() => {
@@ -29,7 +30,11 @@ export default function Drone({ groupRef, initialPosition, isCarryingPackage }: 
   const rotor_mount_4 = nodes.rotor_mount_4 as THREE.Object3D;
 
   return (
-    <group ref={groupRef} position={initialPosition}>
+    <group
+      ref={groupRef}
+      position={initialPosition}
+      rotation={[0, initialRotationY ?? 0, 0]}
+    >
       <primitive object={scene} />
       <Rotor position={rotor_mount_1.position} />
       <Rotor position={rotor_mount_2.position} />
