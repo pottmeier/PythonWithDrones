@@ -21,7 +21,7 @@ description: |
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
 
   ### Example:
-  
+
   ```code
   def move(steps):
     for i in range(steps)
@@ -33,8 +33,8 @@ description: |
   <br>
   The path ahead repeats a pattern, define a function to handle it cleanly!  
 
-spawn: { x: 0, y: 1, z: 8 }
-orientation: 3
+spawn: { x: 0, y: 1, z: 8}
+orientation: 1
 
 solve_conditions:
   finish_block: true

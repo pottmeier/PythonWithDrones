@@ -32,6 +32,12 @@ interface LevelLoadData {
   spawn: { x: number; y: number; z: number };
   description?: string;
   solveConditions?: { finish_block: boolean; collected_coins: number };
+  orientation?: number;
+}
+
+// drone model faces -Z at dir 0; each dir step is a 90° clockwise turn (matches game.py's VECTORS order)
+function yawForDir(dir: number): number {
+  return -(dir * Math.PI) / 2;
 }
 
 function formatTime(ms: number): string {
@@ -65,6 +71,7 @@ function SceneComponent({
   const isAnimatingRef = useRef(false);
   const controlsRef = useRef<any>(null);
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
+  const spawnOrientationRef = useRef(0);
   const compassRef = useRef<HTMLDivElement>(null);
   const NUM_LEVELS = 8;
 
@@ -76,6 +83,7 @@ function SceneComponent({
   const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([
     0, 10, 0,
   ]);
+  const [spawnOrientation, setSpawnOrientation] = useState(0);
   const [isLevelComplete, setIsLevelComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
   const [droneKey, setDroneKey] = useState(0);
@@ -130,7 +138,7 @@ function SceneComponent({
         command.pos[1],
         command.pos[2],
       );
-      droneRef.current.rotation.set(0, 0, 0);
+      droneRef.current.rotation.set(0, yawForDir(command.dir ?? 0), 0);
       setIsCrashed(false);
       moveQueueRef.current = [];
       isAnimatingRef.current = false;
@@ -267,7 +275,9 @@ function SceneComponent({
       data.spawn.z,
     ];
     spawnRef.current = startPos;
+    spawnOrientationRef.current = data.orientation ?? 0;
     setSpawnPosition(startPos);
+    setSpawnOrientation(data.orientation ?? 0);
     setCoinsRequired(data.solveConditions?.collected_coins || 0);
     setCoinsCollected(0);
   }, []);
@@ -287,7 +297,7 @@ function SceneComponent({
       gsap.killTweensOf(droneRef.current.position);
       gsap.killTweensOf(droneRef.current.rotation);
       droneRef.current.position.set(sx, sy, sz);
-      droneRef.current.rotation.set(0, 0, 0);
+      droneRef.current.rotation.set(0, yawForDir(spawnOrientationRef.current), 0);
     }
 
     onBusyChange(false);
@@ -431,6 +441,7 @@ function SceneComponent({
           key={droneKey}
           groupRef={droneRef}
           initialPosition={spawnPosition}
+          initialRotationY={yawForDir(spawnOrientation)}
           isCarryingPackage={isCarryingPackage}
         />
         <OrbitControls

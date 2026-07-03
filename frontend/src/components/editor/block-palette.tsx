@@ -16,6 +16,11 @@ const ORDER = [
   "tree_trunk",
   "tree_leaves",
   "finish_portal",
+  "coin",
+  "movable_block",
+  "push_target",
+  "package",
+  "delivery_pad",
   "air",
   "empty",
 ];
@@ -31,6 +36,24 @@ const BLOCK_STYLES: Record<
   tree_trunk: { bg: "bg-amber-900" },
   tree_leaves: { bg: "bg-green-700" },
   finish_portal: { bg: "bg-red-500" },
+  // matches coin-block.tsx's gold material
+  coin: { bg: "bg-[#ffd700]" },
+  // matches movable-block.tsx's crate material
+  movable_block: { bg: "bg-[#c98a4b]", label: "crate" },
+  // colored to match the crate it targets (see push-target-block.tsx)
+  push_target: {
+    bg: "bg-[#c98a4b] border-dashed",
+    label: "push target",
+    hint: "pad",
+  },
+  // matches package-block.tsx's box material
+  package: { bg: "bg-[#f5f5f4]" },
+  // colored to match the package it accepts (see delivery-pad-block.tsx)
+  delivery_pad: {
+    bg: "bg-[#f5f5f4] border-dashed",
+    label: "delivery pad",
+    hint: "pad",
+  },
   air: {
     bg: "bg-sky-200 dark:bg-sky-900/40 border-dashed",
     label: "air",
@@ -71,9 +94,11 @@ export function BlockPalette({
               className={cn(
                 "aspect-square rounded-md border-2 flex flex-col items-center justify-center text-[10px] font-semibold p-1 text-center leading-tight transition-all",
                 style.bg,
-                id === "air" || id === "empty"
+                ["air", "empty", "coin"].includes(id)
                   ? "text-foreground"
-                  : "text-white",
+                  : ["package", "delivery_pad"].includes(id)
+                    ? "text-zinc-900"
+                    : "text-white",
                 isActive
                   ? "border-blue-500 ring-2 ring-blue-300 scale-105"
                   : "border-transparent hover:border-blue-300",
