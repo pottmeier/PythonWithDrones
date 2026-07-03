@@ -12,8 +12,8 @@ export default function DeliveryPadBlock(props: DeliveryPadBlockProps) {
   return (
     <GoalSquareOutline
       position={props.position}
-      unmetColor="#6b7280"
-      satisfiedColor="#f5f5f4" // matches the package's own color (package-block.tsx)
+      unmetColor="#c98a4b" // matches the package's own color (package-block.tsx)
+      satisfiedColor="#4ade80" // universal success green
     />
   );
 }

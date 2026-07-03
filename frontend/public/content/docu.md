@@ -20,10 +20,11 @@ This documentation describes all public methods available in the `Drone` class. 
 - **Example**: Python code showing how to use the method
 
 ### Method Categories
-Methods are organized into three categories:
+Methods are organized into four categories:
 1. **Movement Methods**: Control the drone's position in 3D space
 2. **Rotation Methods**: Change the drone's facing direction
-3. **Information Methods**: Query the drone's current state
+3. **Interaction Methods**: Push, pick up, and deliver objects in the level
+4. **Information Methods**: Query the drone's current state
 
 ### Data Types Reference
 
@@ -130,6 +131,57 @@ drone.turn_right()  # Turn right once
 drone.turn_right()  # Turn right twice
 ```
 
+### Interaction Methods
+
+#### `push()`
+Pushes the movable block directly in front of the drone forward by one cell,
+then flies the drone into the space it left behind.
+
+**Returns:** None
+
+**Note:** Prints `"Nothing pushable ahead"` if there's no pushable block in
+front of the drone, or `"Can't push -- the space beyond is blocked"` if the
+cell beyond it isn't free.
+
+**Example:**
+```python
+if drone.scan() == "movable_block":
+    drone.push()
+```
+
+#### `pickup()`
+Picks up a package, but only while the drone is sitting right on top of it.
+Flying over a package does nothing on its own - you have to call `pickup()`.
+
+**Returns:** None
+
+**Note:** Prints `"Nothing to pick up here"` if the drone isn't standing on a
+package, or `"Already carrying something"` if it's already carrying one.
+
+**Example:**
+```python
+drone.move()     # fly to the package's position
+drone.pickup()   # pick it up now that you're standing on it
+```
+
+#### `deliver()`
+Drops off the package the drone is carrying, but only while the drone is
+sitting right on top of the delivery pad. Flying over the pad does nothing on
+its own - you have to call `deliver()`.
+
+**Returns:** None
+
+**Note:** Prints `"Not carrying anything to deliver"` if the drone isn't
+carrying a package, or `"This isn't the delivery pad"` if it isn't standing
+on the delivery pad.
+
+**Example:**
+```python
+drone.pickup()
+# ... fly to the delivery pad ...
+drone.deliver()
+```
+
 ### Information Methods
 
 #### `get_direction()` → `str`
@@ -162,28 +214,35 @@ z = position['z']
 print(f"Drone is at ({x}, {y}, {z})")
 ```
 
-#### `is_path_blocked()` → `bool`
-Checks whether the path in the current viewing direction is blocked.
+#### `scan(distance=1)` → `str` or `list[str]`
+Looks ahead in the direction the drone is facing, without moving.
+
+**Parameters:**
+- `distance` (`int`, optional): How many cells ahead to look. Defaults to `1`.
 
 **Returns:**
-- `True`: Path is blocked or leads to a collidable block
-- `False`: Path is clear
+- With the default `distance` of `1`: a single block id (`str`) for the cell
+  directly ahead, e.g. `"air"` or `"movable_block"`.
+- With a larger `distance`: a `list` of block ids, one per cell, stopping at
+  (and including) the first cell that blocks the path.
 
 **Example:**
 ```python
-if drone.is_path_blocked():
-    print("Cannot move forward")
-    drone.turn_right()
-else:
-    print("Path is clear")
+if drone.scan() == "air":
     drone.move()
-
-# Loop until path is clear
-while drone.is_path_blocked():
+else:
     drone.turn_right()
+
+# Loop until the path ahead is clear
+while drone.scan() != "air":
+    drone.turn_right()
+
+# Look further ahead, e.g. to plan around obstacles
+ahead = drone.scan(3)
+print(ahead)  # Output: ["air", "air", "movable_block"]
 ```
 
-#### `at_portal()` → `bool`
+#### `at_goal()` → `bool`
 Checks whether the drone is standing on the goal portal.
 
 **Returns:**
@@ -192,14 +251,14 @@ Checks whether the drone is standing on the goal portal.
 
 **Example:**
 ```python
-if drone.at_portal():
+if drone.at_goal():
     print("You reached the goal!")
 else:
     print("Keep moving to reach the portal")
 
 # Navigate until reaching the portal
-while not drone.at_portal():
-    if not drone.is_path_blocked():
+while not drone.at_goal():
+    if drone.scan() == "air":
         drone.move()
     else:
         drone.turn_right()

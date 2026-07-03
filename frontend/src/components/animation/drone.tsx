@@ -44,7 +44,7 @@ export default function Drone({ groupRef, initialPosition, initialRotationY, isC
         <group position={[0, -0.35, 0]}>
           <mesh castShadow>
             <boxGeometry args={[0.35, 0.35, 0.35]} />
-            <meshStandardMaterial color="#f5f5f4" roughness={0.7} metalness={0.1} />
+            <meshStandardMaterial color="#c98a4b" roughness={0.7} metalness={0.1} />
           </mesh>
           <mesh castShadow>
             <boxGeometry args={[0.37, 0.08, 0.37]} />

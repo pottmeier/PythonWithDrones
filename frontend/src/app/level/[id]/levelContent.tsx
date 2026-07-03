@@ -12,7 +12,7 @@ import { CodeCard } from "@/components/code-card";
 import Scene from "@/components/scene";
 import { Spinner } from "@/components/ui/spinner";
 import { Toaster } from "sonner";
-import { loadState, saveLevelProgress } from "@/lib/app-state";
+import { loadState, saveLevelProgress, getLevelStartTime, clearLevelStartTime } from "@/lib/app-state";
 import { usePyodideWorker } from "@/hooks/usePyodideWorker";
 import { UserMenu } from "@/components/user-menu";
 import { submitScore } from "@/lib/leaderboard-api";
@@ -52,6 +52,13 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
   const [coins, setCoins] = useState({ collected: 0, required: 0 });
   const levelOpenedAtRef = useRef<number>(Date.now());
+
+  // reuse the persisted start time on refresh instead of resetting the clock
+  useEffect(() => {
+    const idNum = Number(levelId);
+    if (!Number.isFinite(idNum)) return;
+    levelOpenedAtRef.current = getLevelStartTime(idNum);
+  }, [levelId]);
   const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error, getRunStats } =
     usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
@@ -125,6 +132,8 @@ export default function LevelContent({ level }: LevelContentProps) {
         .filter((line) => line.trim().length > 0).length;
       submitScore(currentToken, Number(levelId), elapsed, steps, linesOfCode);
     }
+    const idNum = Number(levelId);
+    if (Number.isFinite(idNum)) clearLevelStartTime(idNum);
   }, [levelId, getRunStats]);
 
   // track coin progress reported by the Scene

@@ -29,22 +29,31 @@ export default function PackageBlock(props: PackageBlockProps) {
     });
   }, [props.position]);
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    if (bobRef.current && !collected) {
-      bobRef.current.position.y = 0.28 + Math.sin(time * 2) * 0.06;
-      bobRef.current.rotation.y = time * 0.8;
-    }
-  });
+  // Spinning animation
+  // useFrame((state) => {
+  //   const time = state.clock.getElapsedTime();
+  //   if (bobRef.current && !collected) {
+  //     bobRef.current.position.y = 0.28 + Math.sin(time * 2) * 0.06;
+  //     bobRef.current.rotation.y = time * 0.8;
+  //   }
+  // });
 
   if (collected) return null;
 
+  // The package's grid position sits in the object layer (drone height), but
+  // it should visually rest on the floor tile beneath it -- 0.5 is that
+  // tile's surface height (matches instanced-grass.tsx's blade root height),
+  // plus half the box's own height so it sits on top of the surface instead
+  // of clipping into it.
+  const [gx, gy, gz] = props.position;
+  const floorPosition: [number, number, number] = [gx, gy - 1 + 0.5 + 0.2, gz];
+
   return (
-    <group ref={groupRef} {...props}>
+    <group ref={groupRef} position={floorPosition}>
       <group ref={bobRef}>
         <mesh castShadow>
           <boxGeometry args={[0.4, 0.4, 0.4]} />
-          <meshStandardMaterial color="#f5f5f4" roughness={0.7} metalness={0.1} />
+          <meshStandardMaterial color="#c98a4b" roughness={0.7} metalness={0.1} />
         </mesh>
         {/* tape/strap */}
         <mesh castShadow>
@@ -52,7 +61,7 @@ export default function PackageBlock(props: PackageBlockProps) {
           <meshStandardMaterial color="#e5d5b8" roughness={0.6} />
         </mesh>
       </group>
-      <pointLight color="#f5f5f4" intensity={0.3} distance={1.5} decay={2} />
+      <pointLight color="#c98a4b" intensity={0.3} distance={1.5} decay={2} />
     </group>
   );
 }

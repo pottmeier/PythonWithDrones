@@ -9,7 +9,16 @@ async function loadPyodideAndPackages() {
     self.pyodide = await loadPyodide();
     await self.pyodide.loadPackage(['pyyaml','pydantic'])
 
-    // convert python objects to JS objects 
+    // forward user/game print() output to the main thread so it can be
+    // shown as a toast, in addition to the normal devtools console log
+    self.pyodide.setStdout({
+      batched: (msg) => {
+        console.log(msg);
+        self.postMessage({ type: "PRINT", message: msg });
+      },
+    });
+
+    // convert python objects to JS objects
     self.post_action_to_main = (action) => {
       self.postMessage({ 
         type: "ACTION", 
