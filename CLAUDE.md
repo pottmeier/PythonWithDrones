@@ -74,7 +74,7 @@ Three places must be updated in sync:
 
 ### Python Game Logic
 
-`public/python/game.py` — `Drone` class with `move()`, `up()`, `down()`, `turn_left()`, `turn_right()`, `is_path_blocked()`, `at_portal()`. User code runs with `exec(user_code, game.__dict__)` so the `drone` instance is directly accessible in user scripts.
+`public/python/game.py` — `Drone` class with `move()`, `up()`, `down()`, `turn_left()`, `turn_right()`, `push()`, `pickup()`, `deliver()`, `scan()`, `get_direction()`, `get_position()`, `at_goal()`, `reset_to_spawn()`. User code runs with `exec(user_code, game.__dict__)` so the `drone` instance is directly accessible in user scripts.
 
 `public/python/model.py` — Pydantic `LevelModel` with collision detection and floor-finding logic.
 

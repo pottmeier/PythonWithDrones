@@ -53,6 +53,7 @@ class LevelModel(BaseModel):
 
 
     def get_block_id(self, x:int,y:int, z:int) -> Optional[str]:
+        """Return the block id at the given grid coordinate, or "empty" if out of bounds."""
         x, y, z = int(x), int(y), int(z)
         # negative indices are out of bounds too -- Python list indexing would
         # otherwise silently wrap around and return a block from the opposite edge
@@ -66,6 +67,9 @@ class LevelModel(BaseModel):
     
 
     def is_block_collidable(self, x: int, y: int, z: int, registry: dict) -> bool:
+        """Check whether the block at this coordinate blocks movement, per the
+        block registry's "isCollidable" flag. Out-of-bounds coordinates and
+        unknown block ids are treated as collidable (fail safe)."""
         # get dimensions from base layer
         base_layer = self.layers.get("layer_0", [])
         if not base_layer:
@@ -78,7 +82,7 @@ class LevelModel(BaseModel):
         # check if block is inside the level
         for val, limit, axis in ((x, width, "X"), (y, height, "Y"), (z, depth, "Z")):
             if not (0 <= val < limit):
-                print(f"Boundary Error: {axis} {val} is outside level {axis} {limit}")
+                # print(f"Boundary Error: {axis} {val} is outside level {axis} {limit}")
                 return True
 
         # check registry, if the block is collidable
@@ -92,6 +96,8 @@ class LevelModel(BaseModel):
     
 
     def get_floor(self, x: int, start_y: int, z: int, registry: dict) -> float:
+        """Scan downward from start_y for the first collidable block and
+        return the world-space Y height to land on top of it (0.0 if none found)."""
         for y in range(int(start_y) - 1, -1, -1):
             block_id = self.get_block_id(x, y, z)
             if block_id in registry and registry[block_id].get("isCollidable", False):
@@ -101,6 +107,7 @@ class LevelModel(BaseModel):
         return 0.0
 
     def set_block_id(self, x: int, y: int, z: int, block_id: str) -> None:
+        """Set the block id at the given grid coordinate (silent no-op if out of bounds)."""
         x, y, z = int(x), int(y), int(z)
         if x < 0 or y < 0 or z < 0:
             return
@@ -111,6 +118,7 @@ class LevelModel(BaseModel):
             pass
 
     def move_block(self, fx: int, fy: int, fz: int, tx: int, ty: int, tz: int) -> None:
+        """Move the block at (fx, fy, fz) to (tx, ty, tz), clearing the source cell to "air"."""
         block_id = self.get_block_id(fx, fy, fz)
         self.set_block_id(fx, fy, fz, "air")
         self.set_block_id(tx, ty, tz, block_id)

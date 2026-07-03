@@ -59,8 +59,16 @@ export default function GoalSquareOutline({
     if (mat) materialsRef.current[index] = mat;
   };
 
+  // The goal itself sits one grid layer up (at drone height, so the crate/
+  // package can actually arrive there), but the outline should read as a
+  // marking flat on the floor tile directly beneath it -- sitting right at
+  // that tile's surface (0.5 above its grid position, matching where
+  // instanced-grass.tsx roots its blades) so it renders under the grass
+  // blades but above the solid ground block itself.
+  const floorPosition: [number, number, number] = [position[0], position[1] - 1 + 0.5, position[2]];
+
   return (
-    <group position={position}>
+    <group position={floorPosition}>
       <group ref={groupRef} position={[0, 0.02, 0]}>
         {/* north/south bars */}
         <mesh position={[0, 0, EDGE_OFFSET]} receiveShadow>
