@@ -42,12 +42,12 @@ class Drone:
         """reset the drone to spawn and uppdate variables without deleting the drone"""
         if hasattr(self.spawn_data, 'x'):
             self.x, self.y, self.z = float(self.spawn_data.x), float(self.spawn_data.y), float(self.spawn_data.z)
+            self.dir = int(getattr(self.spawn_data, 'orientation', 0))
         else:
             self.x = float(self.spawn_data.get('x', 0))
             self.y = float(self.spawn_data.get('y', 0))
             self.z = float(self.spawn_data.get('z', 0))
-        
-        self.dir = 0 # Reset to North
+            self.dir = int(self.spawn_data.get('orientation', 0))
         self.is_dead = False
         
         # Tell JS to move the visual model

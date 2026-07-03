@@ -65,7 +65,10 @@ export function usePyodideWorker() {
         console.error("No level data found in window.getLevelData");
         return;
       }
-      const spawn = levelData.spawn || { x: 0, y: 0, z: 0 };
+      const spawn = {
+        ...(levelData.spawn || { x: 0, y: 0, z: 0 }),
+        orientation: levelData.orientation ?? 0,
+      };
       const blockRegistry = JSON.parse(
         JSON.stringify((window as any).getBlockRegistry?.() || {}, (k, v) =>
           k === "component" ? undefined : v,
