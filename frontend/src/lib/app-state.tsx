@@ -40,6 +40,7 @@ const INITIAL_LEVELS: Record<number, LevelProgress> = {
 export type LevelProgress = {
   status: LevelStatus;
   code: string;
+  startedAt?: number;
 };
 
 export type AppState = {
@@ -133,4 +134,22 @@ export function saveLevelProgress(
       },
     };
   });
+}
+
+// Persists the timestamp a level attempt started, so refreshing the page
+// mid-attempt doesn't give the player a free reset of their completion time.
+export function getLevelStartTime(levelId: number): number {
+  const state = loadState();
+  const existing = state.progress.levels[levelId]?.startedAt;
+  if (existing) return existing;
+
+  const now = Date.now();
+  saveLevelProgress(levelId, { startedAt: now });
+  return now;
+}
+
+// Clears the persisted start time so the next attempt at this level gets its
+// own fresh timer instead of reusing a stale one.
+export function clearLevelStartTime(levelId: number): void {
+  saveLevelProgress(levelId, { startedAt: undefined });
 }

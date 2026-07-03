@@ -17,7 +17,7 @@ description: |
   That's where the **while loop** comes in!<br>
 
   ### Instructions:
-  - Use `drone.at_portal()` to check wether the drone is at the finish portal or not.
+  - Use `drone.at_goal()` to check wether the drone is at the finish portal or not.
   - Use a while loop to keep moving until a condition is met.
   - Use everything you learned up until this point!
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!

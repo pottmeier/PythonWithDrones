@@ -29,7 +29,7 @@ export default function MovableBlock(props: any) {
     <group ref={groupRef} position={props.position}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.9, 1, 0.9]} />
-        <meshStandardMaterial color="#c98a4b" roughness={0.65} metalness={0.1} />
+        <meshStandardMaterial color="#f5f5f4" roughness={0.65} metalness={0.1} />
       </mesh>
     </group>
   );

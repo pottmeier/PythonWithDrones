@@ -127,7 +127,6 @@ class Drone:
                 self.__send_action__({"type": "goal"})
             else:
                 message = " ".join(f"{reason}." for reason in reasons)
-                print(message)
                 self.__send_action__({"type": "hint", "message": message})
             return
 
@@ -224,8 +223,11 @@ class Drone:
     
     def scan(self, distance: int = 1):
         """Look ahead in the direction the drone is facing.
-        Returns a list of block ids, one per cell, stopping at (and including)
-        the first cell that blocks the path."""
+        With the default distance of 1, returns a single block id (str) for
+        the cell directly ahead, e.g. drone.scan() == "air".
+        With a larger distance, returns a list of block ids, one per cell,
+        stopping at (and including) the first cell that blocks the path,
+        e.g. drone.scan(3) == ["air", "air", "movable_block"]."""
         results = []
         dx, dy, dz = self.VECTORS[self.dir]
         for step in range(1, distance + 1):
@@ -236,7 +238,10 @@ class Drone:
             results.append(block_id)
             if self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
                 break
+        if distance == 1:
+            return results[0]
         return results
 
-    def at_portal(self):
-        return self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) == "finish_portal"        
+    def at_goal(self):
+        """Check whether the drone is currently standing on the finish portal."""
+        return self.level_data.get_block_id(int(self.x), int(self.y), int(self.z)) == "finish_portal"

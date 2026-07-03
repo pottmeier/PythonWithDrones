@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { toast } from "sonner";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -38,6 +39,8 @@ export function usePyodideWorker() {
         if (action?.type === "crash") {
           setHasCrashed(true);
         }
+      } else if (type === "PRINT") {
+        toast.message(message);
       } else if (type === "FINISHED") {
         setIsRunning(false);
         console.log("Script finished");

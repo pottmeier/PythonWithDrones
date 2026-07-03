@@ -12,9 +12,11 @@ tags:
 description: |
   Welcome to **Level 7** - Obstacles & Coins!
 
-  Two new tools for your toolbox:<br>
-  - `drone.scan(distance)` looks ahead and tells you what blocks are there, as a list.<br>
+  A new tool for your toolbox:<br>
   - `drone.push()` shoves a movable crate one cell forward, then flies the drone into the space it left behind.<br>
+
+  You already know `drone.scan()` from a previous level - combine it with `push()` to detect
+  the crate before shoving it out of the way.
 
   This level blocks the direct path with a crate, and hides a coin down a side path.
   You must collect the coin before you're allowed to finish!
@@ -28,8 +30,7 @@ description: |
 
   ### Example:
   ```code
-  ahead = drone.scan()
-  if "movable_block" in ahead:
+  if drone.scan() == "movable_block":
       drone.push()
   ```
 

@@ -146,7 +146,7 @@ class TestGoal:
         )
         drone.move()
         assert any(a["type"] == "goal" for a in actions)
-        assert drone.at_portal() is True
+        assert drone.at_goal() is True
 
     def test_goal_withheld_and_hint_sent_when_coins_missing(self, make_drone, actions):
         drone = make_drone(
@@ -158,7 +158,7 @@ class TestGoal:
         assert not any(a["type"] == "goal" for a in actions)
         hint = [a for a in actions if a["type"] == "hint"][0]
         assert "1 more coin" in hint["message"]
-        assert drone.at_portal() is True  # standing on it, just not allowed to finish
+        assert drone.at_goal() is True  # standing on it, just not allowed to finish
 
     def test_goal_withheld_when_delivery_missing(self, make_drone, actions):
         drone = make_drone(
@@ -440,7 +440,7 @@ class TestScan:
             {"layer_0": [["grass"], ["grass"]], "layer_1": [["coin"], ["air"]]},
             spawn={"x": 0, "y": 1, "z": 1},
         )
-        assert drone.scan() == ["coin"]
+        assert drone.scan() == "coin"
 
     def test_scan_stops_at_first_collidable(self, make_drone):
         drone = make_drone(
@@ -460,7 +460,7 @@ class TestScan:
             },
             spawn={"x": 0, "y": 1, "z": 2},
         )
-        assert drone.scan(distance=1) == ["air"]
+        assert drone.scan(distance=1) == "air"
         assert drone.scan(distance=2) == ["air", "air"]
 
     def test_scan_off_the_negative_edge_is_empty(self, make_drone):
@@ -473,20 +473,20 @@ class TestScan:
         assert drone.scan(distance=2) == ["empty"]
 
 
-class TestAtPortal:
+class TestAtGoal:
     def test_true_on_finish_portal(self, make_drone):
         drone = make_drone(
             {"layer_0": [["grass"]], "layer_1": [["finish_portal"]]},
             spawn={"x": 0, "y": 1, "z": 0},
         )
-        assert drone.at_portal() is True
+        assert drone.at_goal() is True
 
     def test_false_elsewhere(self, make_drone):
         drone = make_drone(
             {"layer_0": [["grass"]], "layer_1": [["air"]]},
             spawn={"x": 0, "y": 1, "z": 0},
         )
-        assert drone.at_portal() is False
+        assert drone.at_goal() is False
 
 
 class TestInitializeLevel:
@@ -506,4 +506,4 @@ class TestInitializeLevel:
         assert game.block_registry == registry
         assert game.drone is not None
         assert game.drone.get_position() == {"x": 0.0, "y": 1.0, "z": 0.0}
-        assert game.drone.at_portal() is False
+        assert game.drone.at_goal() is False

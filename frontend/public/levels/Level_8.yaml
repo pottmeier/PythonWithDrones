@@ -28,8 +28,7 @@ description: |
 
   ### Example:
   ```code
-  ahead = drone.scan()
-  if "movable_block" in ahead:
+  if drone.scan() == "movable_block":
       drone.push()
   drone.pickup()
   ```

@@ -18,7 +18,7 @@ description: |
   a number we need to compare that number, look in the example for better understanding.
 
   ### Instructions
-  - Use `drone.scan()` together with if to check what's directly ahead of the drone. It returns a list like `['tree_trunk']`, so compare `drone.scan()[0]` to `'air'` to see whether the path is clear.
+  - Use `drone.scan()` together with if to check what's directly ahead of the drone. It returns the block id right in front of you, e.g. `'tree_trunk'`, so compare `drone.scan()` to `'air'` to see whether the path is clear.
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
   - Don't crash into the <span class="text-purple-500 ">World Border</span> or the tree.
 
