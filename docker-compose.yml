@@ -1,6 +1,24 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_LEADERBOARD_URL: ${NEXT_PUBLIC_LEADERBOARD_URL:-http://localhost:8000}
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    restart: unless-stopped
+
   api:
     build: ./leaderboard-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     environment:
@@ -8,6 +26,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-changeme-set-in-prod}
       ADMIN_SECRET: ${ADMIN_SECRET:-changeme-set-in-prod}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,https://pottmeier.github.io}
+    volumes:
+      - ./leaderboard-api/app:/app/app
     depends_on:
       db:
         condition: service_healthy
