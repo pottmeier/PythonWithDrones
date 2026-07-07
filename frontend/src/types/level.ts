@@ -1,8 +1,15 @@
 export type Spawn = { x: number; y: number; z: number };
 
+// All fields are overrides -- when omitted, the game infers them from what's
+// actually placed in the level (every coin must be collected, a package +
+// delivery_pad pair requires delivery, a movable_block + push_target pair
+// requires pushing). Only set a field here to deviate from that default,
+// e.g. requiring fewer coins than are placed. See model.py's
+// SolveConditions.infer_from_layers for the authoritative inference logic.
 export type SolveConditions = {
-  finish_block: boolean;
-  collected_coins: number;
+  collected_coins?: number;
+  requires_delivery?: boolean;
+  push_target?: [number, number, number];
 };
 
 export type LevelLayers = Record<string, string[][]>;
@@ -15,10 +22,26 @@ export type LevelData = {
   description?: string;
   spawn: Spawn;
   orientation?: number;
-  solve_conditions: SolveConditions;
+  solve_conditions?: SolveConditions;
   layers: LevelLayers;
   procedural?: unknown[];
 };
+
+/** Count how many cells across all layers hold the given block id. */
+export function countBlockOccurrences(
+  layers: LevelLayers,
+  blockId: string,
+): number {
+  let count = 0;
+  for (const rows of Object.values(layers)) {
+    for (const row of rows) {
+      for (const cell of row) {
+        if (cell === blockId) count++;
+      }
+    }
+  }
+  return count;
+}
 
 export type LevelSource = "user" | "official" | "community";
 export type StoredLevelStatus = "draft" | "published";
@@ -81,7 +104,6 @@ export function createEmptyLevel(
     description: "",
     spawn: { x: 0, y: 1, z: 0 },
     orientation: 0,
-    solve_conditions: { finish_block: true, collected_coins: 0 },
     layers,
   };
 }

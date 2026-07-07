@@ -22,10 +22,6 @@ description: |
 
 spawn: { x: 1, y: 1, z: 3}
 
-solve_conditions:
-  finish_block: true
-  collected_coins: 0
-
 layers:
   layer_0: 
     - [dirt, dirt, grass, grass, grass, grass, grass, grass, dirt]

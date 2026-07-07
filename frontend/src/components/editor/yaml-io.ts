@@ -57,12 +57,19 @@ export function levelToYaml(level: LevelData): string {
   }
   sections.push(spawnSection);
 
-  if (level.solve_conditions) {
-    sections.push(
-      `solve_conditions:\n` +
-        `  finish_block: ${level.solve_conditions.finish_block}\n` +
-        `  collected_coins: ${level.solve_conditions.collected_coins}`,
-    );
+  const sc = level.solve_conditions;
+  if (sc && (sc.collected_coins !== undefined || sc.requires_delivery !== undefined || sc.push_target !== undefined)) {
+    const scLines: string[] = [];
+    if (sc.collected_coins !== undefined) {
+      scLines.push(`  collected_coins: ${sc.collected_coins}`);
+    }
+    if (sc.requires_delivery !== undefined) {
+      scLines.push(`  requires_delivery: ${sc.requires_delivery}`);
+    }
+    if (sc.push_target !== undefined) {
+      scLines.push(`  push_target: [${sc.push_target.join(", ")}]`);
+    }
+    sections.push(`solve_conditions:\n${scLines.join("\n")}`);
   }
 
   const layerNames = Object.keys(level.layers).sort((a, b) => {
@@ -96,9 +103,6 @@ export function yamlToLevel(text: string): LevelData {
   }
   if (!parsed.spawn || typeof parsed.spawn !== "object") {
     throw new Error("Invalid level: missing 'spawn'");
-  }
-  if (!parsed.solve_conditions) {
-    parsed.solve_conditions = { finish_block: true, collected_coins: 0 };
   }
   return parsed;
 }

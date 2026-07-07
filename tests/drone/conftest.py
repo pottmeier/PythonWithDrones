@@ -86,7 +86,6 @@ def make_level(registry):
             description="test level",
             spawn=model.Spawn(**(spawn or {"x": 0, "y": 0, "z": 0})),
             solve_conditions=model.SolveConditions(
-                finish_block=True,
                 collected_coins=collected_coins,
                 requires_delivery=requires_delivery,
                 push_target=push_target,

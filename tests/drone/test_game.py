@@ -495,7 +495,7 @@ class TestInitializeLevel:
         level_dict = {
             "description": "d",
             "spawn": {"x": 0, "y": 1, "z": 0},
-            "solve_conditions": {"finish_block": True, "collected_coins": 0},
+            "solve_conditions": {"collected_coins": 0},
             "layers": layers,
         }
         game.initialize_level(
