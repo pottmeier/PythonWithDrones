@@ -503,15 +503,6 @@ function EditorContent() {
           <header className="p-2 sm:p-3 flex items-center gap-1.5 sm:gap-3 border-b shrink-0">
             <SidebarTrigger />
             <Button
-              variant="outline"
-              size="icon-sm"
-              className="md:hidden"
-              onClick={() => setPaletteOpen(true)}
-              title="Open block palette"
-            >
-              <Menu className="w-4 h-4" />
-            </Button>
-            <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push(`/editor`)}
@@ -526,24 +517,6 @@ function EditorContent() {
               )}
             </div>
             <div className="ml-auto flex items-center gap-1 sm:gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={undo}
-                disabled={past.length === 0}
-                title="Undo (Ctrl+Z)"
-              >
-                <Undo2 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={redo}
-                disabled={future.length === 0}
-                title="Redo (Ctrl+Y / Ctrl+Shift+Z)"
-              >
-                <Redo2 className="w-4 h-4" />
-              </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Export YAML</span>
@@ -626,52 +599,86 @@ function EditorContent() {
                 onSetSpawn={handleSetSpawn}
                 onLayerChange={handleLayerChange}
               />
-              <div className="absolute top-3 right-3 flex flex-wrap justify-end gap-2 z-10">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleResetCamera}
-                  title="Reset camera view"
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
-                >
-                  <ScanEye className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowGrid((s) => !s)}
-                  title={showGrid ? "Hide grid" : "Show grid"}
-                  className={
-                    showGrid
-                      ? "bg-blue-500/20 backdrop-blur border-blue-400"
-                      : "bg-white/80 dark:bg-gray-800/80 backdrop-blur"
-                  }
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <div className="flex items-center gap-0.5 h-8 rounded-md border bg-white/80 dark:bg-gray-800/80 backdrop-blur px-1">
+              <Button
+                size="icon-sm"
+                variant="outline"
+                className="absolute top-3 left-3 z-10 md:hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                onClick={() => setPaletteOpen(true)}
+                title="Open block palette"
+              >
+                <Menu className="w-4 h-4" />
+              </Button>
+
+              <div className="absolute top-3 right-3 flex flex-col items-end gap-2 z-10">
+                <div className="flex flex-wrap justify-end gap-2">
                   <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => sceneApiRef.current?.applyLayerStep(-1)}
-                    disabled={activeLayer <= 0}
-                    title="Layer down"
-                    className="h-6 w-6"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleResetCamera}
+                    title="Reset camera view"
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
                   >
-                    <ChevronDown className="w-3.5 h-3.5" />
+                    <ScanEye className="w-4 h-4" />
                   </Button>
-                  <span className="text-xs font-medium px-0.5 tabular-nums">
-                    Y={activeLayer}
-                  </span>
                   <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => sceneApiRef.current?.applyLayerStep(1)}
-                    disabled={activeLayer >= currentDims.height - 1}
-                    title="Layer up"
-                    className="h-6 w-6"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowGrid((s) => !s)}
+                    title={showGrid ? "Hide grid" : "Show grid"}
+                    className={
+                      showGrid
+                        ? "bg-blue-500/20 backdrop-blur border-blue-400"
+                        : "bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                    }
                   >
-                    <ChevronUp className="w-3.5 h-3.5" />
+                    <Grid3X3 className="w-4 h-4" />
+                  </Button>
+                  <div className="flex items-center gap-0.5 h-8 rounded-md border bg-white/80 dark:bg-gray-800/80 backdrop-blur px-1">
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => sceneApiRef.current?.applyLayerStep(-1)}
+                      disabled={activeLayer <= 0}
+                      title="Layer down"
+                      className="h-6 w-6"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </Button>
+                    <span className="text-xs font-medium px-0.5 tabular-nums">
+                      Y={activeLayer}
+                    </span>
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      onClick={() => sceneApiRef.current?.applyLayerStep(1)}
+                      disabled={activeLayer >= currentDims.height - 1}
+                      title="Layer up"
+                      className="h-6 w-6"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={undo}
+                    disabled={past.length === 0}
+                    title="Undo (Ctrl+Z)"
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                  >
+                    <Undo2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={redo}
+                    disabled={future.length === 0}
+                    title="Redo (Ctrl+Y / Ctrl+Shift+Z)"
+                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                  >
+                    <Redo2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
