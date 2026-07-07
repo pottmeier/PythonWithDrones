@@ -131,7 +131,7 @@ export default function EditorLibraryPage() {
           </header>
 
           <main className="flex-1 p-4 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h1 className="text-2xl font-semibold">Level Editor</h1>
                 <p className="text-sm text-muted-foreground">
@@ -140,7 +140,7 @@ export default function EditorLibraryPage() {
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   onClick={handleDeleteAll}
