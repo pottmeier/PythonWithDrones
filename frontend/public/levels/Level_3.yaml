@@ -30,10 +30,6 @@ description: |
 
 spawn: { x: 0, y: 1, z: 8}
 
-solve_conditions:
-  finish_block: true
-  collected_coins: 0
-
 layers:
   layer_0: 
     - [grass]

@@ -35,12 +35,6 @@ description: |
 
 spawn: { x: 1, y: 1, z: 7 }
 
-solve_conditions:
-  finish_block: true
-  collected_coins: 0
-  requires_delivery: true
-  push_target: [1, 1, 3]
-
 layers:
   layer_0:
     - [empty, grass, empty]

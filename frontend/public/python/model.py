@@ -1,7 +1,5 @@
-from pydantic import BaseModel, Field   # type: ignore
+from pydantic import BaseModel, model_validator   # type: ignore
 from typing import List, Dict, Union, Optional
-
-#TODO: Move some of pydantic to optional fields so levels stay valid when some requirement is not met
 
 class Spawn(BaseModel):
     x: float
@@ -9,7 +7,6 @@ class Spawn(BaseModel):
     z: float
 
 class SolveConditions(BaseModel):
-    finish_block: bool
     collected_coins: int = 0
     requires_delivery: bool = False
     push_target: Optional[List[int]] = None  # [x, y, z]
@@ -32,6 +29,41 @@ class SolveConditions(BaseModel):
             reasons.append("The crate hasn't been pushed onto the target yet")
         return reasons
 
+    @classmethod
+    def infer_from_layers(cls, layers: Dict[str, List[List[str]]]) -> "SolveConditions":
+        """Derive default solve conditions from what's actually placed in the
+        level, so a level author doesn't have to restate the layout in
+        solve_conditions: every coin present must be collected, a package +
+        delivery_pad pair requires delivery, and a movable_block + push_target
+        pair requires pushing the block onto that target."""
+        coin_count = 0
+        has_package = False
+        has_delivery_pad = False
+        has_movable_block = False
+        push_target_pos: Optional[List[int]] = None
+        for layer_name, rows in layers.items():
+            try:
+                y = int(layer_name.split("_")[1])
+            except (IndexError, ValueError):
+                continue
+            for z, row in enumerate(rows):
+                for x, cell in enumerate(row):
+                    if cell == "coin":
+                        coin_count += 1
+                    elif cell == "package":
+                        has_package = True
+                    elif cell == "delivery_pad":
+                        has_delivery_pad = True
+                    elif cell == "movable_block":
+                        has_movable_block = True
+                    elif cell == "push_target" and push_target_pos is None:
+                        push_target_pos = [x, y, z]
+        return cls(
+            collected_coins=coin_count,
+            requires_delivery=has_package and has_delivery_pad,
+            push_target=push_target_pos if has_movable_block else None,
+        )
+
 class ProceduralItem(BaseModel):
     id: str
     count: int
@@ -46,11 +78,39 @@ class ProceduralRule(BaseModel):
 class LevelModel(BaseModel):
     description: str
     spawn: Spawn
-    solve_conditions: SolveConditions
+    solve_conditions: Optional[SolveConditions] = None
     # Using Dict for layers because keys are 'layer_0', 'layer_1', etc.
     layers: Dict[str, List[List[str]]]
     #procedural: List[ProceduralRule]
 
+    @model_validator(mode="after")
+    def _resolve_solve_conditions(self) -> "LevelModel":
+        """Fill in solve_conditions from the layout, field by field. A field
+        the YAML set explicitly (even to its default value) always wins over
+        the inferred one -- only genuinely unset fields get the inferred
+        value, so a level only needs to mention a condition when overriding
+        what's already implied by the blocks it placed."""
+        inferred = SolveConditions.infer_from_layers(self.layers)
+        explicit = self.solve_conditions
+        explicit_fields = explicit.model_fields_set if explicit is not None else set()
+        self.solve_conditions = SolveConditions(
+            collected_coins=(
+                explicit.collected_coins
+                if explicit is not None and "collected_coins" in explicit_fields
+                else inferred.collected_coins
+            ),
+            requires_delivery=(
+                explicit.requires_delivery
+                if explicit is not None and "requires_delivery" in explicit_fields
+                else inferred.requires_delivery
+            ),
+            push_target=(
+                explicit.push_target
+                if explicit is not None and "push_target" in explicit_fields
+                else inferred.push_target
+            ),
+        )
+        return self
 
     def get_block_id(self, x:int,y:int, z:int) -> Optional[str]:
         """Return the block id at the given grid coordinate, or "empty" if out of bounds."""

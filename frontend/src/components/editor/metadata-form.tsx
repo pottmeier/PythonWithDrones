@@ -85,40 +85,38 @@ export function MetadataForm({ level, onChange }: MetadataFormProps) {
       </Field>
 
       <Field label="Solve conditions">
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={level.solve_conditions.finish_block}
-              onChange={(e) =>
-                patch({
-                  solve_conditions: {
-                    ...level.solve_conditions,
-                    finish_block: e.target.checked,
-                  },
-                })
+        <label className="flex items-center gap-2 text-sm">
+          Coins required:
+          <Input
+            type="number"
+            min={0}
+            placeholder="Auto"
+            value={level.solve_conditions?.collected_coins ?? ""}
+            onChange={(e) => {
+              const raw = e.target.value;
+              const { requires_delivery, push_target } =
+                level.solve_conditions ?? {};
+              const restSolveConditions = { requires_delivery, push_target };
+              if (raw === "") {
+                patch({ solve_conditions: restSolveConditions });
+                return;
               }
-            />
-            Reach finish portal
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            Coins:
-            <Input
-              type="number"
-              min={0}
-              value={level.solve_conditions.collected_coins ?? 0}
-              onChange={(e) =>
-                patch({
-                  solve_conditions: {
-                    ...level.solve_conditions,
-                    collected_coins: Number(e.target.value) || 0,
-                  },
-                })
-              }
-              className="w-20"
-            />
-          </label>
-        </div>
+              patch({
+                solve_conditions: {
+                  ...restSolveConditions,
+                  collected_coins: Number(raw) || 0,
+                },
+              });
+            }}
+            className="w-20"
+          />
+        </label>
+        <p className="text-xs text-muted-foreground mt-1">
+          Reaching the finish portal is always required. Coins, package
+          delivery, and crate pushes are required automatically whenever
+          they&apos;re placed in the level -- leave this blank unless you
+          want to require fewer coins than are placed.
+        </p>
       </Field>
 
       <Field label="Spawn">

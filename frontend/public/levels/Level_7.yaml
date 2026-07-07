@@ -36,10 +36,6 @@ description: |
 
 spawn: { x: 1, y: 1, z: 6 }
 
-solve_conditions:
-  finish_block: true
-  collected_coins: 1
-
 layers:
   layer_0:
     - [empty, grass, empty]

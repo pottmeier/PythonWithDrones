@@ -30,10 +30,6 @@ description: |
   ```
 spawn: { x: 1, y: 1, z: 9 }
 
-solve_conditions:
-  finish_block: true
-  collected_coins: 0
-
 layers:
   layer_0:
     - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]

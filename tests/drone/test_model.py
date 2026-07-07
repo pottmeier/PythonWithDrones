@@ -7,7 +7,7 @@ def make_level(layers, registry=None, collected_coins=0):
     return model.LevelModel(
         description="test",
         spawn=model.Spawn(x=0, y=0, z=0),
-        solve_conditions=model.SolveConditions(finish_block=True, collected_coins=collected_coins),
+        solve_conditions=model.SolveConditions(collected_coins=collected_coins),
         layers=layers,
     )
 
@@ -144,36 +144,35 @@ class TestSolveConditionsUnmetReasons:
         return dict(coins_collected=0, delivered=True, push_target_reached=True)
 
     def test_no_conditions_configured_is_solved(self):
-        conditions = model.SolveConditions(finish_block=True)
+        conditions = model.SolveConditions()
         assert conditions.unmet_reasons(**self._satisfied_kwargs()) == []
 
     def test_missing_coins_reported(self):
-        conditions = model.SolveConditions(finish_block=True, collected_coins=2)
+        conditions = model.SolveConditions(collected_coins=2)
         kwargs = self._satisfied_kwargs()
         reasons = conditions.unmet_reasons(**{**kwargs, "coins_collected": 0})
         assert "Need 2 more coin(s)" in reasons
 
     def test_missing_delivery_reported(self):
-        conditions = model.SolveConditions(finish_block=True, requires_delivery=True)
+        conditions = model.SolveConditions(requires_delivery=True)
         kwargs = self._satisfied_kwargs()
         reasons = conditions.unmet_reasons(**{**kwargs, "delivered": False})
         assert any("delivered" in r for r in reasons)
 
     def test_missing_push_target_reported(self):
-        conditions = model.SolveConditions(finish_block=True, push_target=[1, 1, 1])
+        conditions = model.SolveConditions(push_target=[1, 1, 1])
         kwargs = self._satisfied_kwargs()
         reasons = conditions.unmet_reasons(**{**kwargs, "push_target_reached": False})
         assert any("target" in r for r in reasons)
 
     def test_push_target_not_configured_is_never_unmet(self):
-        conditions = model.SolveConditions(finish_block=True, push_target=None)
+        conditions = model.SolveConditions(push_target=None)
         kwargs = self._satisfied_kwargs()
         reasons = conditions.unmet_reasons(**{**kwargs, "push_target_reached": False})
         assert reasons == []
 
     def test_multiple_unmet_conditions_all_reported(self):
         conditions = model.SolveConditions(
-            finish_block=True,
             collected_coins=1,
             requires_delivery=True,
             push_target=[1, 1, 1],
@@ -185,7 +184,6 @@ class TestSolveConditionsUnmetReasons:
 
     def test_all_conditions_satisfied_is_solved(self):
         conditions = model.SolveConditions(
-            finish_block=True,
             collected_coins=1,
             requires_delivery=True,
             push_target=[1, 1, 1],
@@ -194,3 +192,105 @@ class TestSolveConditionsUnmetReasons:
             coins_collected=1, delivered=True, push_target_reached=True
         )
         assert reasons == []
+
+
+# ---------------------------------------------------------------------------
+# SolveConditions.infer_from_layers
+# ---------------------------------------------------------------------------
+
+class TestSolveConditionsInferFromLayers:
+    def test_no_relevant_blocks_infers_nothing_required(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["grass", "dirt"]]}
+        )
+        assert conditions.collected_coins == 0
+        assert conditions.requires_delivery is False
+        assert conditions.push_target is None
+
+    def test_coins_are_counted(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["coin", "coin", "grass"]]}
+        )
+        assert conditions.collected_coins == 2
+
+    def test_package_and_delivery_pad_together_require_delivery(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["package", "delivery_pad"]]}
+        )
+        assert conditions.requires_delivery is True
+
+    def test_package_alone_does_not_require_delivery(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["package", "grass"]]}
+        )
+        assert conditions.requires_delivery is False
+
+    def test_delivery_pad_alone_does_not_require_delivery(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["delivery_pad", "grass"]]}
+        )
+        assert conditions.requires_delivery is False
+
+    def test_movable_block_and_push_target_together_infer_target_position(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["movable_block", "push_target"]]}
+        )
+        assert conditions.push_target == [1, 0, 0]
+
+    def test_movable_block_alone_does_not_require_push(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["movable_block", "grass"]]}
+        )
+        assert conditions.push_target is None
+
+    def test_push_target_alone_does_not_require_push(self):
+        conditions = model.SolveConditions.infer_from_layers(
+            {"layer_0": [["push_target", "grass"]]}
+        )
+        assert conditions.push_target is None
+
+
+# ---------------------------------------------------------------------------
+# LevelModel solve_conditions resolution (inferred vs explicit merge)
+# ---------------------------------------------------------------------------
+
+class TestLevelModelSolveConditionsResolution:
+    def _level(self, layers, solve_conditions=None):
+        kwargs = dict(
+            description="test",
+            spawn=model.Spawn(x=0, y=0, z=0),
+            layers=layers,
+        )
+        if solve_conditions is not None:
+            kwargs["solve_conditions"] = solve_conditions
+        return model.LevelModel(**kwargs)
+
+    def test_omitted_solve_conditions_is_fully_inferred(self):
+        level = self._level({"layer_0": [["coin", "package", "delivery_pad"]]})
+        assert level.solve_conditions.collected_coins == 1
+        assert level.solve_conditions.requires_delivery is True
+
+    def test_explicit_field_overrides_inferred_value(self):
+        # 3 coins placed, but the level only requires 1 -- the explicit
+        # value wins for that field.
+        level = self._level(
+            {"layer_0": [["coin", "coin", "coin"]]},
+            solve_conditions=model.SolveConditions(collected_coins=1),
+        )
+        assert level.solve_conditions.collected_coins == 1
+
+    def test_unset_fields_in_partial_solve_conditions_are_still_inferred(self):
+        # Only collected_coins is explicitly set; requires_delivery should
+        # still be inferred from the layout.
+        level = self._level(
+            {"layer_0": [["coin", "package", "delivery_pad"]]},
+            solve_conditions=model.SolveConditions(collected_coins=1),
+        )
+        assert level.solve_conditions.collected_coins == 1
+        assert level.solve_conditions.requires_delivery is True
+
+    def test_empty_layout_with_no_solve_conditions_requires_nothing(self):
+        level = self._level({"layer_0": [["grass", "grass"]]})
+        assert level.solve_conditions.collected_coins == 0
+        assert level.solve_conditions.requires_delivery is False
+        assert level.solve_conditions.push_target is None

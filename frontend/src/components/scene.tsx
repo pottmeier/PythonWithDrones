@@ -31,7 +31,7 @@ interface LevelLoadData {
   size: { width: number; height: number; depth: number };
   spawn: { x: number; y: number; z: number };
   description?: string;
-  solveConditions?: { finish_block: boolean; collected_coins: number };
+  coinsRequired: number;
   orientation?: number;
 }
 
@@ -278,7 +278,7 @@ function SceneComponent({
     spawnOrientationRef.current = data.orientation ?? 0;
     setSpawnPosition(startPos);
     setSpawnOrientation(data.orientation ?? 0);
-    setCoinsRequired(data.solveConditions?.collected_coins || 0);
+    setCoinsRequired(data.coinsRequired);
     setCoinsCollected(0);
   }, []);
 

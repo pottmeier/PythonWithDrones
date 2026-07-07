@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import yaml from "js-yaml";
 import { BLOCK_REGISTRY } from "@/lib/block-registry";
 import type { LevelData } from "@/types/level";
+import { countBlockOccurrences } from "@/types/level";
 //import { generateLevel } from "@/lib/level-generator";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -13,7 +14,7 @@ interface GridProps {
     size: { width: number; height: number; depth: number };
     spawn: { x: number; y: number; z: number };
     description?: string;
-    solveConditions?: { finish_block: boolean; collected_coins: number };
+    coinsRequired: number;
     orientation?: number;
   }) => void;
   levelId?: string;
@@ -37,11 +38,17 @@ function publishLevel(
   const height = Object.keys(blueprint.layers).length;
   const depth = baseLayer.length;
 
+  // Mirrors model.py's SolveConditions inference: an explicit override wins,
+  // otherwise every coin placed in the level is required.
+  const coinsRequired =
+    blueprint.solve_conditions?.collected_coins ??
+    countBlockOccurrences(blueprint.layers, "coin");
+
   onLevelLoaded({
     size: { width, height, depth },
     spawn: blueprint.spawn,
     description: blueprint.description || "No description available.",
-    solveConditions: blueprint.solve_conditions,
+    coinsRequired,
     orientation: blueprint.orientation ?? 0,
   });
 }

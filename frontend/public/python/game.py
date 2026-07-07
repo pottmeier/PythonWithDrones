@@ -1,6 +1,6 @@
 import js # type: ignore
 import time
-from model import LevelModel,Spawn,SolveConditions
+from model import LevelModel,Spawn
 
 level = None
 drone = None
@@ -31,7 +31,7 @@ class Drone:
         self.y = 0.0
         self.z = 0.0
         self.dir = 0  # 0: North, 1: East, 2: South, 3: West
-        self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),solve_conditions=SolveConditions(finish_block=True, collected_coins=0),layers={"layer_0":[["empty"]]})
+        self.level_data = LevelModel(description="",spawn=Spawn(x=0,y=0,z=0),layers={"layer_0":[["empty"]]})
         self.is_dead = False
         self.coins_collected = 0
         self.carrying_package = False
