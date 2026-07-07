@@ -216,9 +216,21 @@ export function SceneController({
     }
   }, [computeHover, hoverGroupRef, performActionAtCell]);
 
-  // Touch/pen drags shouldn't scroll or pinch-zoom the page.
+  // Block single-finger touch/pen panning (it would otherwise scroll the
+  // page mid-paint-stroke) but keep the native two-finger pinch-zoom
+  // gesture available for accessibility. OrbitControls sets its own
+  // touchAction on this same element and can reset ours after mount, so a
+  // MutationObserver keeps re-asserting the value we want.
   useEffect(() => {
-    gl.domElement.style.touchAction = "none";
+    const el = gl.domElement;
+    const desired = "pinch-zoom";
+    const apply = () => {
+      if (el.style.touchAction !== desired) el.style.touchAction = desired;
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(el, { attributes: true, attributeFilter: ["style"] });
+    return () => observer.disconnect();
   }, [gl]);
 
   // DOM pointer listeners — attached once.
