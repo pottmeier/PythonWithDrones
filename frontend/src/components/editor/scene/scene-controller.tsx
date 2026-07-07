@@ -135,10 +135,18 @@ export function SceneController({
       raycaster.setFromCamera(tmps.ndc, camera);
 
       if (s.tool === "erase") {
+        // Same active-layer scoping as paint/spawn below -- without this,
+        // erase would raycast against blocks on every layer and could
+        // delete something on a layer the user isn't even looking at.
+        // planeRef's constant is offset by half a unit from the integer
+        // layer index (see the "+ 0.5" a few lines down for paint/spawn's
+        // own cell.y), so it needs the same correction here.
+        const layerY = -planeRef.current.constant + 0.5;
         let best: HoverCell | null = null;
         let bestDistSq = Infinity;
         for (let i = 0; i < s.blocks.length; i++) {
           const b = s.blocks[i];
+          if (b.y !== layerY) continue;
           tmps.min.set(b.x - 0.5, b.y - 0.5, b.z - 0.5);
           tmps.max.set(b.x + 0.5, b.y + 0.5, b.z + 0.5);
           tmps.box.set(tmps.min, tmps.max);
