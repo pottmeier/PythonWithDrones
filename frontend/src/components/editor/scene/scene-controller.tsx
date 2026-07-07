@@ -75,13 +75,6 @@ export function SceneController({
   // the same cell don't spam the undo history.
   const lastActionCellRef = useRef<HoverCell | null>(null);
 
-  // Tracks the single active pointer for touch drag-paint (no Space key
-  // on touch devices). Mouse behavior is untouched — it still requires
-  // spaceHeldRef for continuous painting.
-  const pointerDownRef = useRef(false);
-  const activePointerIdRef = useRef<number | null>(null);
-  const activePointerIsTouchRef = useRef(false);
-
   const stateRef = useRef({
     tool,
     selectedBlockId,
@@ -196,14 +189,9 @@ export function SceneController({
     }
     s.onHoverChange(cell);
 
-    // Hold-space-to-paint (mouse) or press-and-hold-drag (touch/pen):
-    // re-fire the tool action whenever the hover moves to a different
-    // cell while the modifier/touch-drag is active.
-    if (
-      cell &&
-      (s.spaceHeldRef?.current ||
-        (pointerDownRef.current && activePointerIsTouchRef.current))
-    ) {
+    // Hold-space-to-paint: re-fire the tool action whenever the hover
+    // moves to a different cell while space is held.
+    if (cell && s.spaceHeldRef?.current) {
       const last = lastActionCellRef.current;
       if (
         !last ||
@@ -216,11 +204,6 @@ export function SceneController({
     }
   }, [computeHover, hoverGroupRef, performActionAtCell]);
 
-  // Touch/pen drags shouldn't scroll or pinch-zoom the page.
-  useEffect(() => {
-    gl.domElement.style.touchAction = "none";
-  }, [gl]);
-
   // DOM pointer listeners — attached once.
   useEffect(() => {
     const canvas = gl.domElement;
@@ -232,28 +215,9 @@ export function SceneController({
       if (e.button !== 0) return;
       const s = stateRef.current;
       if (s.mode !== "placement") return;
-      if (activePointerIdRef.current !== null) return;
-      pointerDownRef.current = true;
-      activePointerIdRef.current = e.pointerId;
-      activePointerIsTouchRef.current = e.pointerType !== "mouse";
-      try {
-        canvas.setPointerCapture(e.pointerId);
-      } catch {
-        // ignore - not critical if capture isn't supported
-      }
       const cell = computeHover(e.clientX, e.clientY);
       if (!cell) return;
       performActionAtCell(cell);
-    };
-    const endStroke = (e: PointerEvent) => {
-      if (activePointerIdRef.current !== e.pointerId) return;
-      pointerDownRef.current = false;
-      activePointerIdRef.current = null;
-      try {
-        canvas.releasePointerCapture(e.pointerId);
-      } catch {
-        // ignore - pointer capture may already be released
-      }
     };
     const handleLeave = () => {
       lastCursorRef.current = null;
@@ -262,14 +226,10 @@ export function SceneController({
     };
     canvas.addEventListener("pointermove", handleMove);
     canvas.addEventListener("pointerdown", handleDown);
-    canvas.addEventListener("pointerup", endStroke);
-    canvas.addEventListener("pointercancel", endStroke);
     canvas.addEventListener("pointerleave", handleLeave);
     return () => {
       canvas.removeEventListener("pointermove", handleMove);
       canvas.removeEventListener("pointerdown", handleDown);
-      canvas.removeEventListener("pointerup", endStroke);
-      canvas.removeEventListener("pointercancel", endStroke);
       canvas.removeEventListener("pointerleave", handleLeave);
     };
   }, [gl, computeHover, updateHover, performActionAtCell, hoverGroupRef]);
