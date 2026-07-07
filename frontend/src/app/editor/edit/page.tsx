@@ -499,7 +499,7 @@ function EditorContent() {
           <header className="p-2 sm:p-3 flex items-center gap-1.5 sm:gap-3 border-b shrink-0">
             <SidebarTrigger />
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon-sm"
               className="md:hidden"
               onClick={() => setPaletteOpen(true)}
@@ -622,7 +622,7 @@ function EditorContent() {
                 onSetSpawn={handleSetSpawn}
                 onLayerChange={handleLayerChange}
               />
-              <div className="absolute top-3 right-3 flex gap-2 z-10">
+              <div className="absolute top-3 right-3 flex flex-wrap justify-end gap-2 z-10">
                 <Button
                   size="sm"
                   variant="outline"
@@ -645,31 +645,31 @@ function EditorContent() {
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
-              </div>
-              <div className="absolute bottom-3 right-3 flex flex-col items-center gap-1 z-10">
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => sceneApiRef.current?.applyLayerStep(1)}
-                  disabled={activeLayer >= currentDims.height - 1}
-                  title="Layer up"
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
-                >
-                  <ChevronUp className="w-4 h-4" />
-                </Button>
-                <span className="text-xs bg-black/60 text-white rounded px-1.5 py-0.5">
-                  Y={activeLayer}
-                </span>
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => sceneApiRef.current?.applyLayerStep(-1)}
-                  disabled={activeLayer <= 0}
-                  title="Layer down"
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-0.5 h-8 rounded-md border bg-white/80 dark:bg-gray-800/80 backdrop-blur px-1">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => sceneApiRef.current?.applyLayerStep(-1)}
+                    disabled={activeLayer <= 0}
+                    title="Layer down"
+                    className="h-6 w-6"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </Button>
+                  <span className="text-xs font-medium px-0.5 tabular-nums">
+                    Y={activeLayer}
+                  </span>
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    onClick={() => sceneApiRef.current?.applyLayerStep(1)}
+                    disabled={activeLayer >= currentDims.height - 1}
+                    title="Layer up"
+                    className="h-6 w-6"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
               </div>
               <div className="absolute bottom-3 left-3 text-xs bg-black/60 text-white rounded px-2 py-1 pointer-events-none">
                 {effectiveMode === "camera" ? (
