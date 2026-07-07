@@ -476,7 +476,11 @@ function EditorContent() {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [effectiveMode]);
+    // `loading` is included so this re-attaches once sceneWrapRef's div
+    // actually mounts — this effect is declared above the loading-guard's
+    // early return (required by rules of hooks), so its first run always
+    // sees sceneWrapRef.current as null while the spinner is showing.
+  }, [effectiveMode, loading]);
 
 
   const currentDims = level ? getLevelDimensions(level) : null;
