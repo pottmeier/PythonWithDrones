@@ -11,6 +11,12 @@ import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { toast, Toaster } from "sonner";
 import {
   ArrowLeft,
@@ -21,6 +27,9 @@ import {
   Redo2,
   ScanEye,
   Grid3X3,
+  Menu,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import {
   getLevelStorage,
@@ -69,6 +78,56 @@ function SidebarBackdrop() {
         isOpen ? "opacity-100" : "pointer-events-none opacity-0",
       ].join(" ")}
     />
+  );
+}
+
+function EditorPalette({
+  mode,
+  onModeChange,
+  altHeld,
+  xHeld,
+  tool,
+  onToolChange,
+  selectedBlockId,
+  onSelect,
+  currentDims,
+  onPreviewChange,
+  onApply,
+  level,
+  onChange,
+}: {
+  mode: EditorMode;
+  onModeChange: (mode: EditorMode) => void;
+  altHeld: boolean;
+  xHeld: boolean;
+  tool: EditorTool;
+  onToolChange: (tool: EditorTool) => void;
+  selectedBlockId: string;
+  onSelect: (id: string) => void;
+  currentDims: LevelDimensions;
+  onPreviewChange: (dims: LevelDimensions | null) => void;
+  onApply: (dims: LevelDimensions) => void;
+  level: LevelData;
+  onChange: (level: LevelData) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <ToolPanel
+        mode={mode}
+        onModeChange={onModeChange}
+        altHeld={altHeld}
+        xHeld={xHeld}
+        tool={tool}
+        onToolChange={onToolChange}
+      />
+      <BlockPalette selectedBlockId={selectedBlockId} onSelect={onSelect} />
+      <ResizePanel
+        current={currentDims}
+        onPreviewChange={onPreviewChange}
+        onApply={onApply}
+      />
+      <MetadataForm level={level} onChange={onChange} />
+    </div>
   );
 }
 
@@ -130,6 +189,7 @@ function EditorContent() {
   const [altHeld, setAltHeld] = useState(false);
   const [xHeld, setXHeld] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
@@ -436,23 +496,32 @@ function EditorContent() {
         <SidebarBackdrop />
 
         <div className="flex flex-1 flex-col h-screen overflow-hidden">
-          <header className="p-3 flex items-center gap-3 border-b shrink-0">
+          <header className="p-2 sm:p-3 flex items-center gap-1.5 sm:gap-3 border-b shrink-0">
             <SidebarTrigger />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="md:hidden"
+              onClick={() => setPaletteOpen(true)}
+              title="Open block palette"
+            >
+              <Menu className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push(`/editor`)}
             >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Library
+              <ArrowLeft className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Library</span>
             </Button>
-            <div className="text-sm text-muted-foreground truncate">
+            <div className="min-w-0 flex-1 text-sm text-muted-foreground truncate">
               {level.title || "Untitled"} {dirty && "·"}
               {dirty && (
                 <span className="text-amber-500 font-medium"> unsaved</span>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-1 sm:gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -472,8 +541,8 @@ function EditorContent() {
                 <Redo2 className="w-4 h-4" />
               </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="w-4 h-4 mr-1.5" />
-                Export YAML
+                <Download className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Export YAML</span>
               </Button>
               <Button
                 variant="outline"
@@ -481,40 +550,60 @@ function EditorContent() {
                 onClick={handleTestPlay}
                 className="text-blue-600 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
-                <Play className="w-4 h-4 mr-1.5" />
-                Test Play
+                <Play className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Test Play</span>
               </Button>
               <Button size="sm" onClick={handleSave}>
-                <Save className="w-4 h-4 mr-1.5" />
-                Save
+                <Save className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Save</span>
               </Button>
               <DarkModeToggle />
             </div>
           </header>
 
           <main className="flex-1 flex overflow-hidden">
-            <aside className="w-72 shrink-0 border-r overflow-y-auto p-4 space-y-6 bg-white/50 dark:bg-gray-800/50">
-              <ToolPanel
+            <aside className="hidden md:flex md:flex-col w-72 shrink-0 border-r overflow-y-auto p-4 bg-white/50 dark:bg-gray-800/50">
+              <EditorPalette
                 mode={mode}
                 onModeChange={setMode}
                 altHeld={altHeld}
                 xHeld={xHeld}
                 tool={tool}
                 onToolChange={setTool}
-              />
-              <BlockPalette
                 selectedBlockId={selectedBlockId}
                 onSelect={setSelectedBlockId}
-              />
-              <ResizePanel
-                current={currentDims}
+                currentDims={currentDims}
                 onPreviewChange={setResizePreview}
                 onApply={handleApplyResize}
+                level={level}
+                onChange={updateLevelMeta}
               />
-              <MetadataForm level={level} onChange={updateLevelMeta} />
             </aside>
 
-            <div ref={sceneWrapRef} className="flex-1 relative">
+            <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
+              <SheetContent side="left" className="w-72 p-4 overflow-y-auto">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Block Palette</SheetTitle>
+                </SheetHeader>
+                <EditorPalette
+                  mode={mode}
+                  onModeChange={setMode}
+                  altHeld={altHeld}
+                  xHeld={xHeld}
+                  tool={tool}
+                  onToolChange={setTool}
+                  selectedBlockId={selectedBlockId}
+                  onSelect={setSelectedBlockId}
+                  currentDims={currentDims}
+                  onPreviewChange={setResizePreview}
+                  onApply={handleApplyResize}
+                  level={level}
+                  onChange={updateLevelMeta}
+                />
+              </SheetContent>
+            </Sheet>
+
+            <div ref={sceneWrapRef} className="flex-1 relative min-w-0">
               <EditorScene
                 key={storedId ?? "no-id"}
                 level={level}
@@ -555,6 +644,31 @@ function EditorContent() {
                   }
                 >
                   <Grid3X3 className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="absolute bottom-3 right-3 flex flex-col items-center gap-1 z-10">
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  onClick={() => sceneApiRef.current?.applyLayerStep(1)}
+                  disabled={activeLayer >= currentDims.height - 1}
+                  title="Layer up"
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </Button>
+                <span className="text-xs bg-black/60 text-white rounded px-1.5 py-0.5">
+                  Y={activeLayer}
+                </span>
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  onClick={() => sceneApiRef.current?.applyLayerStep(-1)}
+                  disabled={activeLayer <= 0}
+                  title="Layer down"
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur"
+                >
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
               </div>
               <div className="absolute bottom-3 left-3 text-xs bg-black/60 text-white rounded px-2 py-1 pointer-events-none">

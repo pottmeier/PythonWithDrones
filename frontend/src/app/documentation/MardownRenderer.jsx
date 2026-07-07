@@ -1,15 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula, oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "@/contexts/ThemeContext";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ListTree } from "lucide-react";
 
 export default function MarkdownRenderer({ children }) {
   const { theme } = useTheme();
-  
+  const [tocOpen, setTocOpen] = useState(false);
+
   // Theme-based styling
   const isDark = theme === 'dark';
   const syntaxTheme = isDark ? dracula : oneLight;
@@ -32,10 +42,29 @@ export default function MarkdownRenderer({ children }) {
         })
     : [];
 
+  const tocList = (
+    <ul className="space-y-3">
+      {headings.map((heading, i) => (
+        <li
+          key={i}
+          style={{ marginLeft: heading.level === 3 ? "1rem" : "0" }}
+        >
+          <a
+            href={`#${heading.id}`}
+            onClick={() => setTocOpen(false)}
+            className="text-sm text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors block"
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     // Changed to md:flex-row-reverse to put TOC on the right
     <div className="flex flex-col md:flex-row-reverse gap-12 relative">
-      
+
       {/* 1. RIGHT SIDEBAR TABLE OF CONTENTS */}
       {headings.length > 0 && (
         <aside className="hidden lg:block w-64 shrink-0">
@@ -43,23 +72,31 @@ export default function MarkdownRenderer({ children }) {
             <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-50">
               On this page
             </h4>
-            <ul className="space-y-3">
-              {headings.map((heading, i) => (
-                <li 
-                  key={i} 
-                  style={{ marginLeft: heading.level === 3 ? "1rem" : "0" }}
-                >
-                  <a
-                    href={`#${heading.id}`}
-                    className="text-sm text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors block"
-                  >
-                    {heading.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {tocList}
           </div>
         </aside>
+      )}
+
+      {headings.length > 0 && (
+        <>
+          <Button
+            variant="outline"
+            size="icon"
+            className="lg:hidden fixed bottom-6 right-6 z-30 rounded-full shadow-lg h-12 w-12"
+            onClick={() => setTocOpen(true)}
+            title="On this page"
+          >
+            <ListTree className="w-5 h-5" />
+          </Button>
+          <Sheet open={tocOpen} onOpenChange={setTocOpen}>
+            <SheetContent side="right" className="w-72 overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>On this page</SheetTitle>
+              </SheetHeader>
+              <div className="p-4 pt-0">{tocList}</div>
+            </SheetContent>
+          </Sheet>
+        </>
       )}
 
       {/* 2. MAIN CONTENT (Left side) */}
