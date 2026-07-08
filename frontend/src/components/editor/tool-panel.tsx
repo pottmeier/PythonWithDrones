@@ -107,7 +107,7 @@ function ModeButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center justify-center gap-1 py-2 rounded-md border-2 transition-all text-xs",
+        "flex items-center justify-center gap-1 py-2 rounded-md border-2 transition-all text-xs cursor-pointer",
         active
           ? transient
             ? "border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
@@ -141,7 +141,7 @@ function ToolButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex flex-col items-center justify-center gap-1 py-2 rounded-md border-2 transition-all text-xs",
+        "flex flex-col items-center justify-center gap-1 py-2 rounded-md border-2 transition-all text-xs cursor-pointer",
         active
           ? transient
             ? "border-amber-400 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"

@@ -8,7 +8,7 @@ Frontend commands run from `frontend/`:
 
 ```bash
 cd frontend
-npm run dev      # Start dev server (localhost:3000)
+npm run dev      # Start dev server on a fixed port (localhost:3005), bound to 0.0.0.0 so phones on the LAN can reach it at http://<this machine's LAN IP>:3005
 npm run build    # Static export → frontend/out/
 npm run lint     # ESLint
 ```

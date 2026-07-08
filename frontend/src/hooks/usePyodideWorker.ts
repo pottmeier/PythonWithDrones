@@ -46,7 +46,6 @@ export function usePyodideWorker() {
         console.log("Script finished");
       } else if (type === "ERROR") {
         setIsRunning(false);
-        console.error("Python Error:", message);
         setError(message);
       }
     };

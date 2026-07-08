@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "3005:3005"
     environment:
       NEXT_PUBLIC_LEADERBOARD_URL: ${NEXT_PUBLIC_LEADERBOARD_URL:-http://localhost:8000}
       WATCHPACK_POLLING: "true"
@@ -25,7 +25,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://pguser:pgpass@db:5432/leaderboard}
       JWT_SECRET: ${JWT_SECRET:-changeme-set-in-prod}
       ADMIN_SECRET: ${ADMIN_SECRET:-changeme-set-in-prod}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,https://pottmeier.github.io}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3005,https://pottmeier.github.io}
     volumes:
       - ./leaderboard-api/app:/app/app
     depends_on:

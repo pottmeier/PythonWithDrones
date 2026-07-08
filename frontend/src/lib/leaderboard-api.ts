@@ -21,24 +21,29 @@ export type AuthResult = {
 
 const BASE = process.env.NEXT_PUBLIC_LEADERBOARD_URL ?? "";
 
+// Returns null if the leaderboard feature isn't configured for this
+// deployment (no BASE URL). Throws if BASE is configured but the request
+// itself fails (backend unreachable) -- callers decide how to distinguish
+// "not configured" from "configured but down".
 async function apiFetch(path: string, options?: RequestInit): Promise<Response | null> {
   if (!BASE) return null;
-  try {
-    return await fetch(`${BASE}${path}`, options);
-  } catch {
-    return null;
-  }
+  return fetch(`${BASE}${path}`, options);
 }
 
 export async function register(
   username: string,
   password: string,
 ): Promise<AuthResult | string | null> {
-  const res = await apiFetch("/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username, password }).toString(),
-  });
+  let res: Response | null;
+  try {
+    res = await apiFetch("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username, password }).toString(),
+    });
+  } catch {
+    return null;
+  }
   if (!res) return null;
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -52,11 +57,16 @@ export async function login(
   username: string,
   password: string,
 ): Promise<AuthResult | string | null> {
-  const res = await apiFetch("/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username, password }).toString(),
-  });
+  let res: Response | null;
+  try {
+    res = await apiFetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ username, password }).toString(),
+    });
+  } catch {
+    return null;
+  }
   if (!res) return null;
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -73,19 +83,23 @@ export async function submitScore(
   steps: number,
   linesOfCode: number,
 ): Promise<void> {
-  await apiFetch("/leaderboard/submit", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      level_id: levelId,
-      time_ms: timeMs,
-      steps,
-      lines_of_code: linesOfCode,
-    }),
-  });
+  try {
+    await apiFetch("/leaderboard/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        level_id: levelId,
+        time_ms: timeMs,
+        steps,
+        lines_of_code: linesOfCode,
+      }),
+    });
+  } catch {
+    // best-effort; a submission failing silently matches prior behavior
+  }
 }
 
 type ScoreEntryResponse = {
@@ -104,9 +118,20 @@ type AttemptEntryResponse = {
   created_at: string;
 };
 
-export async function getLeaderboard(levelId: number): Promise<ScoreEntry[]> {
-  const res = await apiFetch(`/leaderboard?level_id=${levelId}`);
-  if (!res || !res.ok) return [];
+// null return means "couldn't load" (unreachable backend or an error
+// response) so the UI can show a distinct error state; an empty array means
+// the backend was reached successfully and there's genuinely nothing there
+// (this also covers the leaderboard feature not being configured at all,
+// which should stay silent rather than look like an error).
+export async function getLeaderboard(levelId: number): Promise<ScoreEntry[] | null> {
+  let res: Response | null;
+  try {
+    res = await apiFetch(`/leaderboard?level_id=${levelId}`);
+  } catch {
+    return null;
+  }
+  if (!res) return [];
+  if (!res.ok) return null;
   const rows: ScoreEntryResponse[] = await res.json();
   return rows.map((r) => ({
     username: r.username,
@@ -121,11 +146,17 @@ export async function getLeaderboard(levelId: number): Promise<ScoreEntry[]> {
 export async function getHistory(
   token: string,
   levelId: number,
-): Promise<AttemptEntry[]> {
-  const res = await apiFetch(`/leaderboard/history?level_id=${levelId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res || !res.ok) return [];
+): Promise<AttemptEntry[] | null> {
+  let res: Response | null;
+  try {
+    res = await apiFetch(`/leaderboard/history?level_id=${levelId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    return null;
+  }
+  if (!res) return [];
+  if (!res.ok) return null;
   const rows: AttemptEntryResponse[] = await res.json();
   return rows.map((r) => ({
     timeMs: r.time_ms,

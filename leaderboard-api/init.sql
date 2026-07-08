@@ -1,12 +1,15 @@
 CREATE TABLE IF NOT EXISTS users (
     id          SERIAL PRIMARY KEY,
-    username    VARCHAR(32) UNIQUE NOT NULL,
+    username    VARCHAR(32) NOT NULL,
     password_hash TEXT NOT NULL,
     is_admin    BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS ix_users_username ON users (username);
+-- Case-insensitive uniqueness so "Alice" and "alice" collide, while the
+-- plain column above still preserves the originally-typed casing.
+CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username_lower ON users (lower(username));
 
 CREATE TABLE IF NOT EXISTS scores (
     id            SERIAL PRIMARY KEY,
