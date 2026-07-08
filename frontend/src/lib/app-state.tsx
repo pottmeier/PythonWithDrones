@@ -35,6 +35,10 @@ const INITIAL_LEVELS: Record<number, LevelProgress> = {
     status: "locked",
     code: "",
   },
+  9: {
+    status: "locked",
+    code: "",
+  },
 };
 
 export type LevelProgress = {

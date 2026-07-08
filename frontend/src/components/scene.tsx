@@ -73,7 +73,7 @@ function SceneComponent({
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const spawnOrientationRef = useRef(0);
   const compassRef = useRef<HTMLDivElement>(null);
-  const NUM_LEVELS = 8;
+  const NUM_LEVELS = 9;
 
   // ui states and config
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
