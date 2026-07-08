@@ -1,0 +1,138 @@
+name: Level Submission
+description: Submit a finished (or draft) level YAML for PythonWithDrones, including how it should be understood and solved.
+title: "[Level Submission] <Title>"
+labels: ["level request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for building a level! Fill in as much as you can — the metrics section below helps maintainers triage and label your submission faster.
+        See `frontend/public/levels/Level_N.yaml` for examples and `src/lib/block-registry.tsx` for the full list of available block types.
+
+  - type: input
+    id: title
+    attributes:
+      label: Level Title
+      description: The in-game title for this level.
+      placeholder: "e.g. Build Your Own Commands"
+    validations:
+      required: true
+
+  - type: textarea
+    id: level-yaml
+    attributes:
+      label: Level YAML
+      description: Paste the full `Level_N.yaml` content here (or drag-and-drop the file below — GitHub will attach it and you can link it here instead).
+      render: yaml
+      placeholder: |
+        id: 99
+        title: Level 99
+        homepage_intro: "..."
+        tags: [Medium, Loops]
+        description: |
+          ...
+        spawn: { x: 0, y: 1, z: 8 }
+        orientation: 1
+        layers:
+          layer_0:
+            - [grass, grass, ...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What's the idea/theme of this level? What should the player learn or experience?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Intended Solution
+      description: Describe (or paste example code for) how the level is meant to be solved, step by step.
+      placeholder: |
+        1. Move forward 3 times
+        2. Turn right, pick up the package
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      description: How hard is this level relative to existing levels?
+      options:
+        - Beginner
+        - Easy
+        - Medium
+        - Hard
+        - Expert
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: concepts
+    attributes:
+      label: Python / CS Concepts Covered
+      description: Select every concept this level is meant to teach or exercise.
+      options:
+        - label: Variables
+        - label: Conditionals (if/else)
+        - label: Loops (for)
+        - label: Loops (while)
+        - label: Functions
+        - label: Recursion
+        - label: Lists / arrays
+        - label: Pickup & delivery mechanics
+        - label: Push mechanics
+        - label: Scanning / sensing
+    validations:
+      required: true
+
+  - type: input
+    id: grid-size
+    attributes:
+      label: Grid Size
+      description: Approximate dimensions (rows x cols x layers), e.g. "5x9x2".
+    validations:
+      required: false
+
+  - type: dropdown
+    id: new-blocks
+    attributes:
+      label: Requires new block types?
+      description: Does this level need block types that don't exist in `block-registry.tsx` yet?
+      options:
+        - "No, only existing block types"
+        - "Yes (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: new-blocks-detail
+    attributes:
+      label: New Block Details
+      description: If you selected "Yes" above, describe the new block(s) needed (behavior, collision, visuals).
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: tested
+    attributes:
+      label: Testing
+      options:
+        - label: I loaded this YAML in the editor and confirmed the level is solvable end-to-end.
+          required: false
+        - label: I checked that `solve_conditions` match the intended win state.
+          required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Anything else maintainers should know (inspiration, known issues, alternative solutions, etc.).
+    validations:
+      required: false

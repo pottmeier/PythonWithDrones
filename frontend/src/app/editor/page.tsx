@@ -209,7 +209,7 @@ export default function EditorLibraryPage() {
                           e.stopPropagation();
                           handleDelete(lvl.id);
                         }}
-                        className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"
+                        className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

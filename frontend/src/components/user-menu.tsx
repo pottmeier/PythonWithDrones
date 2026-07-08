@@ -38,7 +38,7 @@ export function UserMenu({ username, token, onAuthChange }: Props) {
       {token ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button type="button" className="rounded-full outline-none">
+            <button type="button" className="rounded-full outline-none cursor-pointer">
               <Avatar className="cursor-pointer">
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>

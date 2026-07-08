@@ -10,10 +10,16 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(32), unique=True, nullable=False, index=True)
+    # Not unique=True here -- uniqueness is enforced case-insensitively via
+    # the functional index below instead, so "Alice" and "alice" collide.
+    username = Column(String(32), nullable=False, index=True)
     password_hash = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_users_username_lower", func.lower(username), unique=True),
+    )
 
 
 class Score(Base):

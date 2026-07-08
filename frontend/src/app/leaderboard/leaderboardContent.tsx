@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, RefreshCw, TrendingUp } from "lucide-react";
+import { Trophy, RefreshCw, TrendingUp, WifiOff } from "lucide-react";
 import { getLeaderboard, getHistory, ScoreEntry, AttemptEntry } from "@/lib/leaderboard-api";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -43,10 +43,12 @@ export default function LeaderboardContent() {
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [scores, setScores] = useState<ScoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
   const [history, setHistory] = useState<AttemptEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
 
   useEffect(() => {
     const state = loadState();
@@ -57,7 +59,8 @@ export default function LeaderboardContent() {
   useEffect(() => {
     setLoading(true);
     getLeaderboard(selectedLevel).then((data) => {
-      setScores(data);
+      setError(data === null);
+      setScores(data ?? []);
       setLoading(false);
     });
   }, [selectedLevel]);
@@ -65,11 +68,13 @@ export default function LeaderboardContent() {
   useEffect(() => {
     if (!token) {
       setHistory([]);
+      setHistoryError(false);
       return;
     }
     setHistoryLoading(true);
     getHistory(token, selectedLevel).then((data) => {
-      setHistory(data);
+      setHistoryError(data === null);
+      setHistory(data ?? []);
       setHistoryLoading(false);
     });
   }, [selectedLevel, token]);
@@ -77,7 +82,8 @@ export default function LeaderboardContent() {
   const refresh = () => {
     setLoading(true);
     getLeaderboard(selectedLevel).then((data) => {
-      setScores(data);
+      setError(data === null);
+      setScores(data ?? []);
       setLoading(false);
     });
   };
@@ -118,7 +124,7 @@ export default function LeaderboardContent() {
                   key={lvl}
                   onClick={() => setSelectedLevel(lvl)}
                   className={[
-                    "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                    "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
                     selectedLevel === lvl
                       ? "bg-blue-600 text-white"
                       : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700",
@@ -129,7 +135,7 @@ export default function LeaderboardContent() {
               ))}
               <button
                 onClick={refresh}
-                className="ml-auto p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="ml-auto p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 title="Refresh"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -141,6 +147,17 @@ export default function LeaderboardContent() {
               {loading ? (
                 <div className="flex justify-center items-center py-16">
                   <Spinner />
+                </div>
+              ) : error ? (
+                <div className="text-center py-16 text-gray-400 dark:text-gray-500">
+                  <WifiOff className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p>Couldn&apos;t connect to the leaderboard server.</p>
+                  <button
+                    onClick={refresh}
+                    className="mt-3 text-sm text-blue-500 hover:underline cursor-pointer"
+                  >
+                    Try again
+                  </button>
                 </div>
               ) : scores.length === 0 ? (
                 <div className="text-center py-16 text-gray-400 dark:text-gray-500">
@@ -211,6 +228,11 @@ export default function LeaderboardContent() {
                   {historyLoading ? (
                     <div className="flex justify-center items-center py-10">
                       <Spinner />
+                    </div>
+                  ) : historyError ? (
+                    <div className="text-center py-10 text-gray-400 dark:text-gray-500">
+                      <WifiOff className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                      <p>Couldn&apos;t connect to the leaderboard server.</p>
                     </div>
                   ) : history.length === 0 ? (
                     <div className="text-center py-10 text-gray-400 dark:text-gray-500">

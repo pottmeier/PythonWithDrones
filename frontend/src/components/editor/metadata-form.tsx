@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { LevelData } from "@/types/level";
+import type { LevelData, SolveConditions } from "@/types/level";
 
 const ORIENTATIONS = [
   { value: 0, label: "N" },
@@ -96,9 +96,24 @@ export function MetadataForm({ level, onChange }: MetadataFormProps) {
               const raw = e.target.value;
               const { requires_delivery, push_target } =
                 level.solve_conditions ?? {};
-              const restSolveConditions = { requires_delivery, push_target };
+              // Only carry over fields that were actually set -- an explicit
+              // `undefined` here would survive the postMessage to the
+              // Pyodide worker as Python `None`, which fails validation
+              // since SolveConditions.requires_delivery is a plain bool.
+              const restSolveConditions: SolveConditions = {};
+              if (requires_delivery !== undefined) {
+                restSolveConditions.requires_delivery = requires_delivery;
+              }
+              if (push_target !== undefined) {
+                restSolveConditions.push_target = push_target;
+              }
               if (raw === "") {
-                patch({ solve_conditions: restSolveConditions });
+                patch({
+                  solve_conditions:
+                    Object.keys(restSolveConditions).length > 0
+                      ? restSolveConditions
+                      : undefined,
+                });
                 return;
               }
               patch({
@@ -151,7 +166,7 @@ export function MetadataForm({ level, onChange }: MetadataFormProps) {
                 type="button"
                 onClick={() => patch({ orientation: o.value })}
                 className={cn(
-                  "py-2 rounded-md border-2 text-xs font-mono transition-all",
+                  "py-2 rounded-md border-2 text-xs font-mono transition-all cursor-pointer",
                   active
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                     : "border-transparent bg-muted hover:bg-muted/70",

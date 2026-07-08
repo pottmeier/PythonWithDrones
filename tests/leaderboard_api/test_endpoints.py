@@ -18,6 +18,11 @@ class TestRegister:
         resp = await client.post("/auth/register", data={"username": "alice", "password": "different1"})
         assert resp.status_code == 409
 
+    async def test_duplicate_username_conflicts_case_insensitive(self, client):
+        await client.post("/auth/register", data={"username": "Alice", "password": "hunter22"})
+        resp = await client.post("/auth/register", data={"username": "alice", "password": "different1"})
+        assert resp.status_code == 409
+
     async def test_empty_username_rejected(self, client):
         resp = await client.post("/auth/register", data={"username": "   ", "password": "hunter22"})
         assert resp.status_code == 422
@@ -45,6 +50,14 @@ class TestLogin:
             "/auth/login", data={"username": registered_user["username"], "password": "nope1234"}
         )
         assert resp.status_code == 401
+
+    async def test_login_is_case_insensitive(self, client, registered_user):
+        resp = await client.post(
+            "/auth/login",
+            data={"username": registered_user["username"].upper(), "password": registered_user["password"]},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["username"] == registered_user["username"]
 
     async def test_unknown_user_rejected(self, client):
         resp = await client.post("/auth/login", data={"username": "ghost", "password": "whatever1"})

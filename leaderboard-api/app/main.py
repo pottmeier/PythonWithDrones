@@ -41,6 +41,9 @@ async def lifespan(app: FastAPI):
         if engine.dialect.name == "postgresql":
             await conn.execute(text("ALTER TABLE scores ADD COLUMN IF NOT EXISTS steps INTEGER"))
             await conn.execute(text("ALTER TABLE scores ADD COLUMN IF NOT EXISTS lines_of_code INTEGER"))
+            await conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username_lower ON users (lower(username))"
+            ))
     yield
 
 
@@ -87,7 +90,9 @@ async def register(
         raise HTTPException(status_code=422, detail="Username must be 1–32 characters")
     if len(password.get_secret_value()) < 6:
         raise HTTPException(status_code=422, detail="Password must be at least 6 characters")
-    existing = await db.scalar(select(User).where(User.username == username))
+    existing = await db.scalar(
+        select(User).where(func.lower(User.username) == username.lower())
+    )
     if existing:
         raise HTTPException(status_code=409, detail="Username already taken")
     user = User(username=username, password_hash=hash_password(password))
@@ -108,7 +113,9 @@ async def login(
     password: Annotated[SecretStr, Form()],
     db: AsyncSession = Depends(get_db),
 ):
-    user = await db.scalar(select(User).where(User.username == username))
+    user = await db.scalar(
+        select(User).where(func.lower(User.username) == username.lower())
+    )
     if not user or not verify_password(password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return TokenResponse(

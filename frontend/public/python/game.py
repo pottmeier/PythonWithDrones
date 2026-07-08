@@ -98,7 +98,6 @@ class Drone:
         else:
             # crash
             self.is_dead = True
-            print("drone crashed")
             landing_y = self.level_data.get_floor(int(self.x), int(self.y), int(self.z), block_registry)
             self.__send_action__({
                 "type": "crash",

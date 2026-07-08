@@ -92,7 +92,7 @@ export function BlockPalette({
               onClick={() => onSelect(id)}
               title={style.hint ? `${id} — ${style.hint}` : id}
               className={cn(
-                "aspect-square rounded-md border-2 flex flex-col items-center justify-center text-[10px] font-semibold p-1 text-center leading-tight transition-all",
+                "aspect-square rounded-md border-2 flex flex-col items-center justify-center text-[10px] font-semibold p-1 text-center leading-tight transition-all cursor-pointer",
                 style.bg,
                 ["air", "empty", "coin"].includes(id)
                   ? "text-foreground"
