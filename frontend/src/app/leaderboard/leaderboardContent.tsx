@@ -13,7 +13,7 @@ import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { UserMenu } from "@/components/user-menu";
 import { loadState } from "@/lib/app-state";
 
-const NUM_LEVELS = 8;
+const NUM_LEVELS = 9;
 
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
