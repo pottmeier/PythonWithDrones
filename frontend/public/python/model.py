@@ -76,7 +76,7 @@ class ProceduralRule(BaseModel):
     items: List[ProceduralItem]
 
 class LevelModel(BaseModel):
-    description: str
+    description: str = ""
     spawn: Spawn
     solve_conditions: Optional[SolveConditions] = None
     # Using Dict for layers because keys are 'layer_0', 'layer_1', etc.

@@ -70,7 +70,7 @@ export function AuthDialog({ open, onOpenChange, onAuthChange }: Props) {
                 setError("");
               }}
               className={[
-                "pb-2 px-3 text-sm font-medium border-b-2 -mb-px transition-colors",
+                "pb-2 px-3 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer",
                 tab === t
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-muted-foreground hover:text-foreground",
