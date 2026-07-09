@@ -67,10 +67,11 @@ Block types are defined in `src/lib/block-registry.tsx`. Adding a new block type
 
 ### Adding a New Level
 
-Three places must be updated in sync:
+Four places must be updated in sync:
 1. Create `public/levels/Level_N.yaml`
 2. Add entry to `INITIAL_LEVELS` in `src/lib/app-state.tsx`
 3. Update `NUM_LEVELS` constant in both `src/components/scene.tsx` and `src/app/leaderboard/leaderboardContent.tsx`
+4. Add `{ id: "N" }` to the hardcoded `levels` array in `src/app/level/[id]/page.tsx` (feeds `generateStaticParams` for the static export *and* gates the page itself — `LevelPage` renders "Level nicht gefunden" for any id not in this array, in both dev and prod)
 
 ### Python Game Logic
 
