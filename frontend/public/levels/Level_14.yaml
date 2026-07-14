@@ -1,0 +1,57 @@
+id: 800
+
+title: Level 8
+
+homepage_intro: "Crate & Delivery"
+
+tags:
+  - Hard
+  - Push
+  - Delivery
+
+description: |
+  Welcome to **Level 8** - Crate & Delivery!
+
+  Two new commands this time:<br>
+  - `drone.pickup()` picks up a package, but only while the drone is sitting right on top of it.<br>
+  - `drone.deliver()` drops off a package you're carrying, but only while the drone is sitting right on top of the delivery pad.<br>
+
+  Neither happens automatically - just flying over the package or the pad does nothing on its own.
+
+  ### Instructions:
+  - Detour off the main corridor to reach the package, then call `drone.pickup()`.
+  - Push the crate onto the target pad, then fly around it using the open lane to its side.
+  - Fly to the delivery pad and call `drone.deliver()` before reaching the portal.
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level - it won't let you finish
+    until the crate is in place and the package is delivered!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+
+  ### Example:
+  ```code
+  if drone.scan() == "movable_block":
+      drone.push()
+  drone.pickup()
+  ```
+
+spawn: { x: 1, y: 1, z: 7 }
+
+layers:
+  layer_0:
+    - [empty, grass, empty]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, empty]
+    - [grass, grass, empty]
+    - [empty, grass, empty]
+
+  layer_1:
+    - [empty, finish_portal, empty]
+    - [empty, air, air]
+    - [empty, air, delivery_pad]
+    - [empty, push_target, air]
+    - [empty, movable_block, air]
+    - [empty, air, empty]
+    - [package, air, empty]
+    - [empty, air, empty]

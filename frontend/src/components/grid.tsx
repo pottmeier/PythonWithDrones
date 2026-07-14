@@ -11,6 +11,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 interface GridProps {
   onLevelLoaded: (data: {
+    title: string;
     size: { width: number; height: number; depth: number };
     spawn: { x: number; y: number; z: number };
     description?: string;
@@ -45,6 +46,7 @@ function publishLevel(
     countBlockOccurrences(blueprint.layers, "coin");
 
   onLevelLoaded({
+    title: blueprint.title || `Level ${blueprint.id}`,
     size: { width, height, depth },
     spawn: blueprint.spawn,
     description: blueprint.description || "No description available.",

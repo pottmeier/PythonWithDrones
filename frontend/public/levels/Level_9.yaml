@@ -1,87 +1,60 @@
-id: 9
+id: 400
 
-title: Level 9
+title: Level 4
 
-homepage_intro: "Forest Navigation"
+homepage_intro: "Build Your Own Commands"
 
 tags:
-  - Hard
-  - 3D Movement
-  - Coins
+  - Medium
+  - Functions
+  - Reusability
 
 description: |
-  Welcome to **Level 9** - Forest Navigation!
+  Welcome to **Level 4** - Functions!
 
-  Every level so far has kept you flying at a single height. This forest doesn't let you off that easy:<br>
-  a thick trunk blocks the path at drone height, and its canopy blocks the way above that too.<br>
-  Time to learn `drone.up()` and `drone.down()` - each moves the drone one block vertically, no matter which way it's facing.<br>
-  <br>
-  You'll need to climb over the trunk, squeeze through a gap in the canopy, then drop back down on the other side.
-  A coin is hidden along the detour - the Portal won't let you finish without it.
-
+  You have learned loops and variables. Now let's take it further with **functions**!
+  A function is a **reusable block of code** you give a name to. You can also use functions with parameters like variables see the example.<br>
+  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
   ### Instructions:
-  - Use `drone.up()` and `drone.down()` to change altitude.
-  - Combine them with `drone.turn_left()` / `drone.turn_right()` and `drone.move()` to steer around the tree.
-  - Use `drone.scan()` if you want to check what's ahead before committing to a move.
-  - Collect the coin along the way.
+  - Define a def function for the repeating path pattern.
+  - Call your function multiple times.
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span> or the tree.
 
   ### Example:
+
   ```code
-  drone.up()
-  drone.up()
-  drone.move()
-  drone.down()
+  def move(steps):
+    for i in range(steps)
+      drone.move()
+
+  move(1)
+  move(2)
   ```
+  <br>
+  The path ahead repeats a pattern, define a function to handle it cleanly!  
 
-spawn: { x: 1, y: 1, z: 0}
-orientation: 2
-
-solve_conditions:
-  collected_coins: 1
+spawn: { x: 0, y: 1, z: 8}
+orientation: 1
 
 layers:
   layer_0:
-    - [grass, grass]
-    - [grass, grass]
-    - [grass, grass]
-    - [grass, grass]
-    - [grass, grass]
-    - [grass, grass]
-    - [empty, grass]
-    - [empty, grass]
-    - [empty, grass]
+    - [grass, grass, grass, grass, grass]
+    - [grass, empty, empty, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, grass, grass, empty, grass]
+    - [empty, empty, empty, empty, grass]
+    - [dirt, grass, grass, grass, grass]
 
   layer_1:
-    - [tree_leaves, air]
-    - [tree_leaves, air]
-    - [tree_trunk, tree_trunk]
-    - [tree_trunk, tree_trunk]
-    - [tree_trunk, tree_trunk]
-    - [air, air]
-    - [empty, air]
-    - [empty, air]
-    - [empty, finish_portal]
-
-  layer_2:
-    - [air, air]
-    - [air, air]
-    - [tree_trunk, tree_trunk]
-    - [coin, tree_trunk]
-    - [air, tree_trunk]
-    - [air, air]
-    - [empty, air]
-    - [empty, air]
-    - [empty, air]
-
-  layer_3:
-    - [air, air]
-    - [air, air]
-    - [tree_leaves, air]
-    - [air, air]
-    - [tree_leaves, tree_leaves]
-    - [air, air]
-    - [empty, air]
-    - [empty, air]
-    - [empty, air]
+    - [air, air, air, air, air]
+    - [air, empty, empty, empty, air]
+    - [air, empty, finish_portal, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, air, air, empty, air]
+    - [empty, empty, empty, empty, air]
+    - [air, air, air, air, air]

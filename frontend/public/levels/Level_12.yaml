@@ -1,0 +1,58 @@
+id: 600
+
+title: Level 6
+
+homepage_intro: "While Loops & Logic"
+
+tags:
+  - Medium
+  - While Loops
+  - Logic
+
+description: |
+  Welcome to **Level 6** - While Loops!
+
+  You have used `for` loops with a fixed count.<br>
+  But what if you don't know how many steps you need?<br>
+  That's where the **while loop** comes in!<br>
+
+  ### Instructions:
+  - Use `drone.at_goal()` to check wether the drone is at the finish portal or not.
+  - Use a while loop to keep moving until a condition is met.
+  - Use everything you learned up until this point!
+  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
+
+  ### Example:
+  ```code
+  while not False:
+    print("This will be printed forever!")
+  ```
+spawn: { x: 1, y: 1, z: 9 }
+
+layers:
+  layer_0:
+    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
+    - [stone, grass, grass, grass, stone, grass, grass, grass, grass, stone]
+    - [stone, grass, stone, grass, stone, grass, stone, stone, grass, stone]
+    - [stone, grass, stone, grass, grass, grass, stone, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, grass, stone, grass, stone, stone]
+    - [stone, grass, grass, grass, grass, grass, stone, grass, grass, stone]
+    - [stone, grass, stone, stone, stone, stone, stone, stone, grass, stone]
+    - [stone, grass, grass, grass, grass, grass, grass, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, stone, stone, stone, grass, stone]
+    - [stone, dirt, grass, grass, grass, grass, grass, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
+
+  layer_1:
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]
+    - [stone_pillar, air , air, air, stone_pillar, air, air, air, air, stone_pillar]
+    - [stone_pillar, air, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, finish_portal, stone_pillar, air, air, air, stone_pillar, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, stone_pillar, air, air, stone_pillar]
+    - [stone_pillar, air, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]
