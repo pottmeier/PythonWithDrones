@@ -17,7 +17,7 @@ const INITIAL_LEVELS: Record<number, LevelProgress> = {
   },
   4: {
     status: "locked",
-    code: "",
+    code: "", 
   },
   5: {
     status: "locked",
@@ -36,6 +36,30 @@ const INITIAL_LEVELS: Record<number, LevelProgress> = {
     code: "",
   },
   9: {
+    status: "locked",
+    code: "",
+  },
+  10: {
+    status: "locked",
+    code: "",
+  },
+  11: {
+    status: "locked",
+    code: "",
+  },
+  12: {
+    status: "locked",
+    code: "",
+  },
+  13: {
+    status: "locked",
+    code: "",
+  },
+  14: {
+    status: "locked",
+    code: "",
+  },
+  15: {
     status: "locked",
     code: "",
   },

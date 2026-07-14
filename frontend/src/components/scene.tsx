@@ -28,6 +28,7 @@ import { blockEvents, positionKey } from "@/lib/block-events";
 import { toast } from "sonner";
 
 interface LevelLoadData {
+  title: string;
   size: { width: number; height: number; depth: number };
   spawn: { x: number; y: number; z: number };
   description?: string;
@@ -79,6 +80,7 @@ function SceneComponent({
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
     null,
   );
+  const [levelTitle, setLevelTitle] = useState("");
   const [levelDescription, setLevelDescription] = useState("");
   const [spawnPosition, setSpawnPosition] = useState<[number, number, number]>([
     0, 10, 0,
@@ -268,6 +270,7 @@ function SceneComponent({
   // get the level data from the .yaml
   const handleLevelLoaded = useCallback((data: LevelLoadData) => {
     setLevelSize(data.size);
+    setLevelTitle(data.title);
     setLevelDescription(data.description || "");
     const startPos: [number, number, number] = [
       data.spawn.x,
@@ -529,7 +532,7 @@ function SceneComponent({
         <div className="h-full overflow-y-auto">
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white/50 dark:bg-black/20 shadow-sm">
             <TaskCard
-              title={`Level ${levelId}`}
+              title={levelTitle}
               description={levelDescription}
             />
           </div>
