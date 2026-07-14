@@ -12,15 +12,13 @@ tags:
 description: |
   Congratulations!
   You have mastered flying on the ground.
-  Real drones can also fly vertically.
+  But real drones can also fly vertically.
 
-  In this level, you will learn `drone.up()`
-
-  Fly vertically to reach the portal.
+  In this level, you will learn `drone.up()` to move vertically and reach the portal.
 
   ### Mission
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.up()`.
+  - Use only `drone.up()`
 
 spawn: { x: 1, y: 1, z: 1 }
 
