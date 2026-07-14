@@ -131,8 +131,6 @@ export default function Home() {
     return matchesSearch && matchesFilter;
   });
 
-
-
   useEffect(() => {
     const state = loadState();
     setUsername(state.user.username || "");
@@ -195,7 +193,7 @@ export default function Home() {
               <main className="flex-1 p-4 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {isLoading
-                    ? Array.from({ length: 6 }).map((_, i) => (
+                    ? Array.from({ length: 15 }).map((_, i) => (
                         <LevelCardSkeleton key={i} />
                       ))
                     : filteredLevels.map((level) => (

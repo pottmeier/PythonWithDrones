@@ -10,7 +10,8 @@ tags:
   - Turning
 
 description: |
-  Great job completing **Level 1!** 
+  Great job completing **Level 1**! 
+
   Moving forward is great, but what if the destination is not directly ahead?
   Now it's time to learn how to **turn** your drone.
   You will need to combine movement with turning to finish this level.
@@ -19,7 +20,7 @@ description: |
 
   ### Mission
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.move()` and `drone.turn_left()`.
+  - Use only `drone.move()` and `drone.turn_left()`
 
 spawn: { x: 2, y: 1, z: 4 }
 
