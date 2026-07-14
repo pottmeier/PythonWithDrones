@@ -1,79 +1,43 @@
 id: 5
 
-title: Level 5
+title: First Delivery
 
-homepage_intro: "Make Decisision with If / Else"
+homepage_intro: "Complete your first delivery mission."
 
 tags:
-  - Medium
-  - Conditionals
-  - Logic
+  - Intro
+  - Easy
+  - Pickup
+  - Deliver
 
 description: |
-  Welcome to **Level 5** - Conditionals!
+  Congratulations, Pilot!
+  Your training is complete. It's time for your first real mission.
+  A customer is waiting for an important package.
 
-  Sometimes your drone needs to **make a decision**.<br>
-  In Python we use `if` and `else` to do different things based on a condition.<br>
-  The if and else works with `True` and `False` values for that, which means if the `if` should check for
-  a number we need to compare that number, look in the example for better understanding.
+  First, fly above the package and collect it using `drone.pickup()`.
+  Then fly to the delivery zone and use `drone.deliver()` to complete the delivery.
 
-  ### Instructions
-  - Use `drone.scan()` together with if to check what's directly ahead of the drone. It returns the block id right in front of you, e.g. `'tree_trunk'`, so compare `drone.scan()` to `'air'` to see whether the path is clear.
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 ">World Border</span> or the tree.
+  ### Mission
+  - Fly to the package.
+  - Pick it up using `drone.pickup()`.
+  - Fly to the delivery zone.
+  - Deliver it using `drone.deliver()`.
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
 
-  ### Example
-  ```code
-  value = 5
-  if (value <= 5):
-    print("value is smaller or equals 5")
-  else:
-    print("value is greater than 5")
-  ```
-
-spawn: { x: 0, y: 1, z: 8}
+spawn: { x: 0, y: 1, z: 4 }
 
 layers:
-  layer_0: 
-    - [grass,empty]
-    - [grass,empty]
-    - [dirt,dirt]
-    - [grass,dirt]
-    - [dirt,dirt]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
+  layer_0:
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [dirt]
 
   layer_1:
-    - [finish_portal,empty]
-    - [air,empty]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-
-  layer_2:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-
-  layer_3:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_leaves,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
+    - [finish_portal]
+    - [delivery_pad]
+    - [air]
+    - [package]
+    - [air]

@@ -1,60 +1,46 @@
 id: 4
 
-title: Level 4
+title: Wings of Freedom
 
-homepage_intro: "Build Your Own Commands"
+homepage_intro: "Learn to fly upwards."
 
 tags:
-  - Medium
-  - Functions
-  - Reusability
+  - Intro
+  - Easy
+  - Vertical Movement
 
 description: |
-  Welcome to **Level 4** - Functions!
+  Congratulations!
+  You have mastered flying on the ground.
+  Real drones can also fly vertically.
 
-  You have learned loops and variables. Now let's take it further with **functions**!
-  A function is a **reusable block of code** you give a name to. You can also use functions with parameters like variables see the example.<br>
-  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
-  ### Instructions:
-  - Define a def function for the repeating path pattern.
-  - Call your function multiple times.
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
+  In this level, you will learn `drone.up()`
 
-  ### Example:
+  Fly vertically to reach the portal.
 
-  ```code
-  def move(steps):
-    for i in range(steps)
-      drone.move()
+  ### Mission
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
+  - Use only `drone.up()`.
 
-  move(1)
-  move(2)
-  ```
-  <br>
-  The path ahead repeats a pattern, define a function to handle it cleanly!  
-
-spawn: { x: 0, y: 1, z: 8}
-orientation: 1
+spawn: { x: 1, y: 1, z: 1 }
 
 layers:
   layer_0:
-    - [grass, grass, grass, grass, grass]
-    - [grass, empty, empty, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, grass, grass, empty, grass]
-    - [empty, empty, empty, empty, grass]
-    - [dirt, grass, grass, grass, grass]
+    - [grass, grass, grass]
+    - [grass, dirt, grass]
+    - [grass, grass, grass]
 
   layer_1:
-    - [air, air, air, air, air]
-    - [air, empty, empty, empty, air]
-    - [air, empty, finish_portal, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, air, air, empty, air]
-    - [empty, empty, empty, empty, air]
-    - [air, air, air, air, air]
+    - [air, air, air]
+    - [air, air, air]
+    - [air, air, air]
+
+  layer_2:
+    - [air, air, air]
+    - [air, air, air]
+    - [air, air, air]
+  
+  layer_3:
+    - [air, air, air]
+    - [air, finish_portal, air]
+    - [air, air, air]

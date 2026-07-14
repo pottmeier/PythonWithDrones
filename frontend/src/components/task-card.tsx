@@ -12,7 +12,7 @@ interface TaskCardProps {
 
 export function TaskCard({ title, description, children }: TaskCardProps) {
   return (
-    <div className="flex-[1] min-h-[50vh] bg-transparent flex flex-col">
+    <div className="flex-[1] bg-transparent flex flex-col">
       <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
         {title}
       </h2>

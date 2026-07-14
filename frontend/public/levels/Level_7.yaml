@@ -1,56 +1,49 @@
-id: 7
+id: 200
 
-title: Level 7
+title: Level 2
 
-homepage_intro: "Push & Collect"
+homepage_intro: "Learn to Turn"
 
 tags:
-  - Hard
-  - Push
-  - Coins
+  - Easy
+  - Basic Movement
+  - Turning
 
 description: |
-  Welcome to **Level 7** - Obstacles & Coins!
+  Welcome to **Level 2** - Turning & Direction!
 
-  A new tool for your toolbox:<br>
-  - `drone.push()` shoves a movable crate one cell forward, then flies the drone into the space it left behind.<br>
-
-  You already know `drone.scan()` from a previous level - combine it with `push()` to detect
-  the crate before shoving it out of the way.
-
-  This level blocks the direct path with a crate, and hides a coin down a side path.
-  You must collect the coin before you're allowed to finish!
+  Great job completing Level 1! Now it's time to learn how to **turn** your drone.<br>
+  Moving forward is great, but what if the path changes direction?<br>
+  <br>
+  You will need to combine movement with turning to navigate the path.<br>
 
   ### Instructions:
-  - There is a crate blocking the way forward. Use `drone.push()` to clear it.
-  - After pushing, the crate is still right in front of you - fly around it using the open lane to its side.
-  - A coin is hidden down a branch off the main path. Collect it before reaching the portal, or the level won't complete.
+  - Use `drone.move()` to fly forward.
+  - Use `drone.turn_left()` or `drone.turn_right()` to change direction.
   - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
   - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
-  ### Example:
-  ```code
-  if drone.scan() == "movable_block":
-      drone.push()
-  ```
-
-spawn: { x: 1, y: 1, z: 6 }
+spawn: { x: 2, y: 1, z: 8 }
 
 layers:
   layer_0:
-    - [empty, grass, empty]
-    - [empty, grass, grass]
-    - [empty, grass, grass]
-    - [empty, grass, grass]
-    - [grass, grass, empty]
-    - [empty, grass, empty]
-    - [empty, grass, empty]
+    - [grass, grass, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, grass]
+    - [empty, empty, dirt]
 
   layer_1:
-    - [empty, finish_portal, empty]
-    - [empty, air, air]
-    - [empty, air, air]
-    - [empty, movable_block, air]
-    - [coin, air, empty]
-    - [empty, air, empty]
-    - [empty, air, empty]
+    - [finish_portal, air, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
+    - [empty, empty, air]
