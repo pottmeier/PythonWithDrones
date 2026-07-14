@@ -21,7 +21,7 @@ description: |
 
   ### Mission
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.move()`, `drone.turn_left()`, and `drone.turn_right()`.
+  - Use only `drone.move()`, `drone.turn_left()`, and `drone.turn_right()`
 
 spawn: { x: 2, y: 1, z: 4 }
 

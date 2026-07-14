@@ -10,16 +10,16 @@ tags:
   - Movement
 
 description: |
-  Welcome to **Drone Academy**!
+  Welcome to **PythonWithDrones**!
 
-  Every great pilot starts with the basics.
+  Every great drone pilot starts with the basics.
   Today you will learn your very first Python command.
 
   `drone.move()` moves the drone **one block forward**.
 
   ### Mission
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.move()`.
+  - Use only `drone.move()`
 
 spawn: { x: 0, y: 1, z: 4 }
 
