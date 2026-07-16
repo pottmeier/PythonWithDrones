@@ -1,58 +1,43 @@
 id: 12
 
-title: Level 6
+title: Cargo Chaos
 
-homepage_intro: "While Loops & Logic"
+homepage_intro: "When the path is blocked, think outside the box."
 
 tags:
-  - Medium
-  - While Loops
-  - Logic
+  - Hard
+  - Push
+  - Delivery
 
 description: |
-  Welcome to **Level 6** - While Loops!
+  Somebody tried to stop you from delivering your package by blocking the path with a crate. But you can push it out of the way!
+  Clear the path and finish your delivery.
 
-  You have used `for` loops with a fixed count.<br>
-  But what if you don't know how many steps you need?<br>
-  That's where the **while loop** comes in!<br>
+  ### Mission:
+  - Deliver the <span class="text-amber-500 font-bold">Package</span>.
+  - Push the <span class="text-white-500 font-bold">Crate</span> out of the way.
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
 
-  ### Instructions:
-  - Use `drone.at_goal()` to check wether the drone is at the finish portal or not.
-  - Use a while loop to keep moving until a condition is met.
-  - Use everything you learned up until this point!
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 font-bold">World</span> <span class="text-purple-500">Border</span>.
 
-  ### Example:
-  ```code
-  while not False:
-    print("This will be printed forever!")
-  ```
-spawn: { x: 1, y: 1, z: 9 }
+spawn: { x: 1, y: 1, z: 7 }
 
 layers:
   layer_0:
-    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
-    - [stone, grass, grass, grass, stone, grass, grass, grass, grass, stone]
-    - [stone, grass, stone, grass, stone, grass, stone, stone, grass, stone]
-    - [stone, grass, stone, grass, grass, grass, stone, grass, grass, stone]
-    - [stone, stone, stone, stone, stone, grass, stone, grass, stone, stone]
-    - [stone, grass, grass, grass, grass, grass, stone, grass, grass, stone]
-    - [stone, grass, stone, stone, stone, stone, stone, stone, grass, stone]
-    - [stone, grass, grass, grass, grass, grass, grass, grass, grass, stone]
-    - [stone, stone, stone, stone, stone, stone, stone, stone, grass, stone]
-    - [stone, dirt, grass, grass, grass, grass, grass, grass, grass, stone]
-    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
+    - [empty, grass, empty]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, empty]
+    - [grass, grass, empty]
+    - [empty, grass, empty]
 
   layer_1:
-    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]
-    - [stone_pillar, air , air, air, stone_pillar, air, air, air, air, stone_pillar]
-    - [stone_pillar, air, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar, air, stone_pillar]
-    - [stone_pillar, finish_portal, stone_pillar, air, air, air, stone_pillar, air, air, stone_pillar]
-    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar]
-    - [stone_pillar, air, air, air, air, air, stone_pillar, air, air, stone_pillar]
-    - [stone_pillar, air, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
-    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
-    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
-    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
-    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]
+    - [empty, finish_portal, empty]
+    - [empty, air, air]
+    - [empty, air, delivery_pad]
+    - [empty, air, air]
+    - [empty, movable_block, air]
+    - [empty, air, empty]
+    - [package, air, empty]
+    - [empty, air, empty]
