@@ -1,43 +1,82 @@
 id: 6
 
-title: First Delivery
+title: Putting it all together
 
-homepage_intro: "Complete your first delivery mission."
+homepage_intro: "Put your new skills to the test."
 
 tags:
   - Intro
-  - Easy
-  - Pickup
-  - Deliver
+  - Medium
 
 description: |
   Congratulations, Pilot!
-  Your basic training is complete. It's time for your first real mission.
-  A customer is waiting for an important package.
-   
-  First, fly above the package and collect it using `drone.pickup()`.
-  Then fly to the delivery zone and use `drone.deliver()` to complete the delivery.
+  Your basic training is complete. Now it's time to put your new skills to the test. 
 
-  ### Mission
-  - Fly to the package.
-  - Pick it up using `drone.pickup()`
-  - Fly to the delivery zone.
-  - Deliver it using `drone.deliver()`
+  In this level, you'll need to use everything you've learned so far to navigate through a series of obstacles and reach the finish portal.
+  If you have trouble remembering the commands, check out the <a href="/documentation" class="underline">**documentation**</a>.
+
+  **Note:** Do you see the coin? You must collect it before reaching the finish portal.
+
+  ### Mission:
+  - Deliver the <span class="text-amber-600 font-bold">Package</span>.
+  - Collect the <span class="text-yellow-500 font-bold">Coin</span>.
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
+  - You may use all the commands you've learned so far.
 
-spawn: { x: 0, y: 1, z: 4 }
+spawn: { x: 3, y: 3, z: 0}
+orientation: 2
 
 layers:
   layer_0:
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [dirt]
+    - [dirt, dirt, dirt, stone, dirt, grass, grass]
+    - [grass, dirt, dirt, grass, grass, grass, dirt]
+    - [grass, grass, grass, grass, grass, dirt, stone]
+    - [dirt, stone, dirt, grass, grass, dirt, dirt]
+    - [grass, dirt, dirt, grass, dirt, grass, dirt]
+    - [grass, grass, grass, dirt, dirt, grass, grass]
+    - [stone, grass, dirt, dirt, dirt, stone, grass]
 
   layer_1:
-    - [finish_portal]
-    - [delivery_pad]
-    - [air]
-    - [package]
-    - [air]
+    - [air, air, air, stone, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, stone]
+    - [air, stone, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [stone, air, air, air, air, stone, air]
+
+  layer_2:
+    - [air, air, air, stone, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, package]
+    - [air, stone, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [stone, air, air, air, air, stone, air]
+
+  layer_3:
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, stone, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [finish_portal, air, air, air, air, stone, air]
+
+  layer_4:
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, coin, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, stone, air]
+
+  layer_5:
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, air, air]
+    - [air, air, air, air, air, delivery_pad, air]

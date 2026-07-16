@@ -1,44 +1,38 @@
 id: 4
 
-title: Wings of Freedom
+title: Clearing the Path
 
-homepage_intro: "Learn to fly upwards."
+homepage_intro: "Sometimes obstacles need a little push."
 
 tags:
   - Intro
   - Easy
-  - Vertical Movement
+  - Push
+  - Obstacles
 
 description: |
-  Congratulations!
-  You have mastered flying on the ground.
-  But real drones can also fly vertically.
+  Not every obstacle can be flown around.
+  But luckily, crates can be moved out of the way.
 
-  In this level, you will learn `drone.up()` to move vertically and reach the portal.
+  Use `drone.push()` while flying next to a movable crate to push it one block forward in the direction the drone is facing.
 
-  ### Mission
+  ### Mission:
+  - Push the <span class="text-white-500 font-bold">Crate</span> out of the way.
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.up()`
 
-spawn: { x: 1, y: 1, z: 1 }
+spawn: { x: 0, y: 1, z: 4 }
 
 layers:
   layer_0:
-    - [grass, grass, grass]
-    - [grass, dirt, grass]
-    - [grass, grass, grass]
+    - [grass, grass]
+    - [grass, grass]
+    - [grass, empty]
+    - [grass, empty]
+    - [dirt, empty]
 
   layer_1:
-    - [air, air, air]
-    - [air, air, air]
-    - [air, air, air]
-
-  layer_2:
-    - [air, air, air]
-    - [air, air, air]
-    - [air, air, air]
-  
-  layer_3:
-    - [air, air, air]
-    - [air, finish_portal, air]
-    - [air, air, air]
+    - [air, finish_portal]
+    - [movable_block, air]
+    - [air, empty]
+    - [air, empty]
+    - [air, empty]

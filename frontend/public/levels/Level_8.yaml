@@ -1,54 +1,58 @@
 id: 8
 
-title: Level 3
+title: Work smarter, not harder
 
-homepage_intro: "Stop Repeating Yourself!"
+homepage_intro: "Build Your Own Commands."
 
 tags:
-  - Easy
-  - Loops
-  - Basic Movement
-  - Variables
+  - Medium
+  - Functions
+  - Reusability
 
 description: |
-  Welcome to **Level 3** - Loops & Variables!
-  Have you noticed yourself typing `drone.move()` over and over? There's a smarter way!
-  Python's **for loop** lets you repeat an action multiple times without rewriting the same line 
-  and with **variables**, you can store values and reuse them. Think of a variable as a labeled box that holds a value.
+  Great, you have learned loops and variables. Now let's take it a step further with **functions**!
 
-  **Note:** Loops require a certain syntax to work. A for loop needs an iterator i and something iterable such as a range(), after that
-  a colon is needed to explain to python that now an idented block is comming and the iterator uses the block. Look at the example for a better understanding.
+  A function is a **reusable block of code**. You can also use functions with parameters like variables see the example.
+  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
 
-  ### Example
+  ### Example:
+
   ```code
-  STEPS = 5
-  for i in range(STEPS):
+  def move(steps):
+    for i in range(steps):
       drone.move()
+
+  move(1)
+  move(2)
   ```
-  Instead of calling `drone.move()` five times, we store the number in `STEPS` and let the loop handle the rest.<br>
-  Now use what you've learned to complete the level!
+
+  ### Mission:
+  - Define a **function** for the repeating path pattern.
+  - Call your **function** multiple times.
+  - Reach the <span class="text-red-500 font-bold">Portal</span>. 
 
 spawn: { x: 0, y: 1, z: 8}
+orientation: 1
 
 layers:
-  layer_0: 
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [grass]
-    - [dirt]
+  layer_0:
+    - [grass, grass, grass, grass, grass]
+    - [grass, empty, empty, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, empty, grass, empty, grass]
+    - [grass, grass, grass, empty, grass]
+    - [empty, empty, empty, empty, grass]
+    - [dirt, grass, grass, grass, grass]
 
   layer_1:
-    - [finish_portal]
-    - [air]
-    - [air]
-    - [air]
-    - [air]
-    - [air]
-    - [air]
-    - [air]
-    - [air]
+    - [air, air, air, air, air]
+    - [air, empty, empty, empty, air]
+    - [air, empty, finish_portal, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, empty, air, empty, air]
+    - [air, air, air, empty, air]
+    - [empty, empty, empty, empty, air]
+    - [air, air, air, air, air]

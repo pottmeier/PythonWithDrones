@@ -1,79 +1,58 @@
 id: 10
 
-title: Level 5
+title: While There's a Way
 
-homepage_intro: "Make Decisision with If / Else"
+homepage_intro: "Don't stop until the mission is complete."
 
 tags:
   - Medium
-  - Conditionals
+  - While Loops
   - Logic
 
 description: |
-  Welcome to **Level 5** - Conditionals!
+  You have used **for loops** with a fixed count.
+  But what if you don't know how many steps you need?
+  That's where the **while loop** comes in!
 
-  Sometimes your drone needs to **make a decision**.<br>
-  In Python we use `if` and `else` to do different things based on a condition.<br>
-  The if and else works with `True` and `False` values for that, which means if the `if` should check for
-  a number we need to compare that number, look in the example for better understanding.
+  A **while loop** will keep running until a condition is met. You can use `drone.at_goal()` to check whether the drone is at the finish portal or not.
+  If the condition is `True`, the code inside the `while` block runs. Otherwise, the loop ends.
 
-  ### Instructions
-  - Use `drone.scan()` together with if to check what's directly ahead of the drone. It returns the block id right in front of you, e.g. `'tree_trunk'`, so compare `drone.scan()` to `'air'` to see whether the path is clear.
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 ">World Border</span> or the tree.
-
-  ### Example
+  ### Example:
   ```code
-  value = 5
-  if (value <= 5):
-    print("value is smaller or equals 5")
-  else:
-    print("value is greater than 5")
+  while not drone.at_goal():
+    drone.move()
   ```
 
-spawn: { x: 0, y: 1, z: 8}
+  ### Mission:
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
+  - Use the **while loop** with everything you learned so far.
+
+spawn: { x: 1, y: 1, z: 9 }
+orientation: 1
 
 layers:
-  layer_0: 
-    - [grass,empty]
-    - [grass,empty]
-    - [dirt,dirt]
-    - [grass,dirt]
-    - [dirt,dirt]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
+  layer_0:
+    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
+    - [stone, grass, grass, grass, stone, grass, grass, grass, grass, stone]
+    - [stone, grass, stone, grass, stone, grass, stone, stone, grass, stone]
+    - [stone, grass, stone, grass, grass, grass, stone, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, grass, stone, grass, stone, stone]
+    - [stone, grass, grass, grass, grass, grass, stone, grass, grass, stone]
+    - [stone, grass, stone, stone, stone, stone, stone, stone, grass, stone]
+    - [stone, grass, grass, grass, grass, grass, grass, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, stone, stone, stone, grass, stone]
+    - [stone, dirt, grass, grass, grass, grass, grass, grass, grass, stone]
+    - [stone, stone, stone, stone, stone, stone, stone, stone, stone, stone]
 
   layer_1:
-    - [finish_portal,empty]
-    - [air,empty]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-
-  layer_2:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-
-  layer_3:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_leaves,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]
+    - [stone_pillar, air , air, air, stone_pillar, air, air, air, air, stone_pillar]
+    - [stone_pillar, air, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, finish_portal, stone_pillar, air, air, air, stone_pillar, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar, air, stone_pillar, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, stone_pillar, air, air, stone_pillar]
+    - [stone_pillar, air, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, air, stone_pillar]
+    - [stone_pillar, air, air, air, air, air, air, air, air, stone_pillar]
+    - [stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar, stone_pillar]

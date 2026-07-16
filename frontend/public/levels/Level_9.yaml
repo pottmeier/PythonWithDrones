@@ -1,60 +1,77 @@
 id: 9
 
-title: Level 4
+title: Decision Time
 
-homepage_intro: "Build Your Own Commands"
+homepage_intro: "Make Decisions with If and Else."
 
 tags:
   - Medium
-  - Functions
-  - Reusability
+  - Conditionals
+  - Logic
 
 description: |
-  Welcome to **Level 4** - Functions!
+  Until now, your drone has followed every command exactly as you wrote it. But what happens when something unexpected blocks the way?
+  In this level, your drone will learn to **make decisions** using `if` and `else`. 
+  
+  First, use `drone.scan()` to check the block directly in front of the drone. Then decide what to do based on the result.
+  A condition always evaluates to either `True` or `False`. If the condition is `True`, the code inside the `if` block runs. Otherwise, the code inside the `else` block is executed.
 
-  You have learned loops and variables. Now let's take it further with **functions**!
-  A function is a **reusable block of code** you give a name to. You can also use functions with parameters like variables see the example.<br>
-  Like loops functions in python rely on identation, blocks you want in that function need to be idented!
-  ### Instructions:
-  - Define a def function for the repeating path pattern.
-  - Call your function multiple times.
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-
-  ### Example:
+  ### Example
 
   ```code
-  def move(steps):
-    for i in range(steps)
-      drone.move()
-
-  move(1)
-  move(2)
+  if drone.scan() == 'air':
+     drone.move()
+  else:
+      drone.turn_right()
   ```
-  <br>
-  The path ahead repeats a pattern, define a function to handle it cleanly!  
+
+  ### Mission:
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
+  - Use `if` and `else` to make decisions based on what the drone sees in front of it.
 
 spawn: { x: 0, y: 1, z: 8}
-orientation: 1
 
 layers:
-  layer_0:
-    - [grass, grass, grass, grass, grass]
-    - [grass, empty, empty, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, empty, grass, empty, grass]
-    - [grass, grass, grass, empty, grass]
-    - [empty, empty, empty, empty, grass]
-    - [dirt, grass, grass, grass, grass]
+  layer_0: 
+    - [grass,empty]
+    - [grass,empty]
+    - [dirt,dirt]
+    - [grass,dirt]
+    - [dirt,dirt]
+    - [grass,empty]
+    - [grass,empty]
+    - [grass,empty]
+    - [grass,empty]
 
   layer_1:
-    - [air, air, air, air, air]
-    - [air, empty, empty, empty, air]
-    - [air, empty, finish_portal, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, empty, air, empty, air]
-    - [air, air, air, empty, air]
-    - [empty, empty, empty, empty, air]
-    - [air, air, air, air, air]
+    - [finish_portal,empty]
+    - [air,empty]
+    - [air,air]
+    - [tree_trunk,air]
+    - [air,air]
+    - [air,empty]
+    - [air,empty]
+    - [air,empty]
+    - [air,empty]
+
+  layer_2:
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [tree_trunk,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+
+  layer_3:
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [tree_leaves,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]
+    - [air,air]

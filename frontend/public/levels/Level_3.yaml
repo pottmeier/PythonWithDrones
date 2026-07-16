@@ -1,41 +1,52 @@
 id: 3
 
-title: Left or Right?
+title: Wings of Freedom
 
-homepage_intro: "Master both directions."
+homepage_intro: "Learn to fly vertically."
 
 tags:
   - Intro
   - Easy
-  - Turning
+  - Vertical Movement
 
 description: |
-  Excellent! 
-  You now know how to turn your drone to the left. 
-  But what if the destination is to the right? 
-  A skilled pilot can turn in both directions.
+  Congratulations!
+  You have mastered flying on the ground.
+  But what if your way ahead is blocked? Real drones can also fly vertically.
 
-  In this level, you will learn `drone.turn_right()` to rotate the drone **90°** to the right.
+  In this level, you will learn `drone.up()` and `drone.down()` to move vertically..
 
-  Combine `drone.turn_left()` and `drone.turn_right()` to reach the portal.
-
-  ### Mission
+  ### Mission:
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.move()`, `drone.turn_left()`, and `drone.turn_right()`
+  - Use only `drone.move()`, `drone.up()` and `drone.down()`
 
-spawn: { x: 2, y: 1, z: 4 }
+spawn: { x: 0, y: 1, z: 4 }
 
 layers:
   layer_0:
-    - [grass, empty, empty]
-    - [grass, empty, empty]
-    - [grass, grass, grass]
-    - [empty, empty, grass]
-    - [empty, empty, dirt]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [grass]
+    - [dirt]
 
   layer_1:
-    - [finish_portal, air, air]
-    - [air, empty, empty]
-    - [air, air, air]
-    - [empty, empty, air]
-    - [empty, empty, air]
+    - [finish_portal]
+    - [air]
+    - [stone]
+    - [air]
+    - [air]
+  
+  layer_2:
+    - [air]
+    - [air]
+    - [stone]
+    - [air]
+    - [air]
+
+  layer_3:
+    - [air]
+    - [air]
+    - [air]
+    - [air]
+    - [air]

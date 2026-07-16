@@ -1,8 +1,8 @@
 id: 2
 
-title: Changing Course
+title: Left or Right?
 
-homepage_intro: "Learn to turn your drone."
+homepage_intro: "Master turning."
 
 tags:
   - Intro
@@ -10,31 +10,32 @@ tags:
   - Turning
 
 description: |
-  Great job completing **Level 1**! 
+  Excellent! 
+  You now know how to move your drone. 
+  But what if the destination is not straight ahead? 
+  A skilled pilot can turn his drone to the left or the right.
 
-  Moving forward is great, but what if the destination is not directly ahead?
-  Now it's time to learn how to **turn** your drone.
-  You will need to combine movement with turning to finish this level.
+  In this level, you will learn `drone.turn_right()` and `drone.turn_left()` to rotate the drone **90°** to the right and left respectively.
 
-  Use `drone.turn_left()` to rotate the drone **90°** to the left.
+  Combine `drone.turn_left()` and `drone.turn_right()` to reach the portal.
 
-  ### Mission
+  ### Mission:
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
-  - Use only `drone.move()` and `drone.turn_left()`
+  - Use only `drone.move()`, `drone.turn_left()`, and `drone.turn_right()`
 
 spawn: { x: 2, y: 1, z: 4 }
 
 layers:
   layer_0:
+    - [grass, empty, empty]
+    - [grass, empty, empty]
     - [grass, grass, grass]
-    - [empty, empty, grass]
-    - [empty, empty, grass]
     - [empty, empty, grass]
     - [empty, empty, dirt]
 
   layer_1:
     - [finish_portal, air, air]
-    - [empty, empty, air]
-    - [empty, empty, air]
+    - [air, empty, empty]
+    - [air, air, air]
     - [empty, empty, air]
     - [empty, empty, air]
