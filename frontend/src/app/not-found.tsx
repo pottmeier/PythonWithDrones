@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function NotFound() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <Image
-        src="/icon.png"
+        src={`${basePath}/images/logo.png`}
         alt="Lost drone"
         width={150}
         height={150}
@@ -33,7 +35,7 @@ export default function NotFound() {
       </div>
 
       <Button className="mt-6 rounded-lg bg-primary px-5 py-3 text-primary-foreground transition hover:opacity-90">
-        <Link href="/editor">Create a Level yourself</Link>
+        <Link href="/editor">Create a level yourself</Link>
       </Button>
     </div>
   );
