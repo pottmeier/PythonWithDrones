@@ -1,79 +1,40 @@
 id: 11
 
-title: Level 5
+title: Push 'n Collect
 
-homepage_intro: "Make Decisision with If / Else"
+homepage_intro: "Move obstacles aside and claim every coin."
 
 tags:
-  - Medium
-  - Conditionals
-  - Logic
+  - Hard
+  - Push
+  - Coins
 
 description: |
-  Welcome to **Level 5** - Conditionals!
+  This level blocks the direct path with a crate, and hides a coin down a side path.
+  You must collect the coin before you're allowed to finish!
 
-  Sometimes your drone needs to **make a decision**.<br>
-  In Python we use `if` and `else` to do different things based on a condition.<br>
-  The if and else works with `True` and `False` values for that, which means if the `if` should check for
-  a number we need to compare that number, look in the example for better understanding.
+  ### Mission:
+  - Push the <span class="text-white-500 font-bold">Crate</span> out of the way.
+  - Collect the <span class="text-yellow-500 font-bold">Coin</span>.
+  - Reach the <span class="text-red-500 font-bold">Portal</span>.
 
-  ### Instructions
-  - Use `drone.scan()` together with if to check what's directly ahead of the drone. It returns the block id right in front of you, e.g. `'tree_trunk'`, so compare `drone.scan()` to `'air'` to see whether the path is clear.
-  - Reach the <span class="text-red-500 font-bold">Portal</span> to end the Level!
-  - Don't crash into the <span class="text-purple-500 ">World Border</span> or the tree.
-
-  ### Example
-  ```code
-  value = 5
-  if (value <= 5):
-    print("value is smaller or equals 5")
-  else:
-    print("value is greater than 5")
-  ```
-
-spawn: { x: 0, y: 1, z: 8}
+spawn: { x: 1, y: 1, z: 6 }
 
 layers:
-  layer_0: 
-    - [grass,empty]
-    - [grass,empty]
-    - [dirt,dirt]
-    - [grass,dirt]
-    - [dirt,dirt]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
-    - [grass,empty]
+  layer_0:
+    - [empty, grass, empty]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [empty, grass, grass]
+    - [grass, grass, empty]
+    - [empty, grass, empty]
+    - [empty, grass, empty]
 
   layer_1:
-    - [finish_portal,empty]
-    - [air,empty]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-    - [air,empty]
-
-  layer_2:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_trunk,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-
-  layer_3:
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [tree_leaves,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
-    - [air,air]
+    - [empty, finish_portal, empty]
+    - [empty, air, air]
+    - [empty, air, air]
+    - [empty, movable_block, air]
+    - [coin, air, empty]
+    - [empty, air, empty]
+    - [empty, air, empty]

@@ -17,7 +17,7 @@ description: |
 
   `drone.move()` moves the drone **one block forward**.
 
-  ### Mission
+  ### Mission:
   - Reach the <span class="text-red-500 font-bold">Portal</span>.
   - Use only `drone.move()`
 
