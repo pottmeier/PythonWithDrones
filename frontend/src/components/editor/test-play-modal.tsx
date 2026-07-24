@@ -44,8 +44,17 @@ export function TestPlayModal({
 function TestPlayInner({ level }: { level: LevelData }) {
   const [code, setCode] = useState("# Test your level here...\n");
   const [isSceneBusy, setIsSceneBusy] = useState(false);
-  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error } =
-    usePyodideWorker();
+  const {
+    isReady,
+    isRunning,
+    runCode,
+    hardReset,
+    loadLevel,
+    hasCrashed,
+    error,
+    output,
+    clearOutput,
+  } = usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
   useEffect(() => {
@@ -82,6 +91,8 @@ function TestPlayInner({ level }: { level: LevelData }) {
           isRunning={isSystemActive}
           stopCode={handleDroneReset}
           error={error}
+          output={output}
+          clearOutput={clearOutput}
         />
       </div>
       <div className="w-full lg:flex-1 h-[400px] lg:h-full min-w-0">

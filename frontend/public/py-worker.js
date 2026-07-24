@@ -10,7 +10,7 @@ async function loadPyodideAndPackages() {
     await self.pyodide.loadPackage(['pyyaml','pydantic'])
 
     // forward user/game print() output to the main thread so it can be
-    // shown as a toast, in addition to the normal devtools console log
+    // shown in the terminal panel, in addition to the devtools console log
     self.pyodide.setStdout({
       batched: (msg) => {
         console.log(msg);
