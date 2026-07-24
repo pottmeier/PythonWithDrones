@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "./code-editor";
 import { toast } from "sonner";
-import { Play } from "lucide-react";
+import { Play, Terminal } from "lucide-react";
 
 interface CodeCardProps {
   code: string;
@@ -14,6 +14,8 @@ interface CodeCardProps {
   isRunning?: boolean;
   stopCode?: () => void;
   error?: string;
+  output?: string[];
+  clearOutput?: () => void;
 }
 
 export function CodeCard({
@@ -24,12 +26,21 @@ export function CodeCard({
   isRunning,
   stopCode,
   error,
+  output = [],
+  clearOutput,
 }: CodeCardProps) {
   const [localCode, setLocalCode] = useState(code);
+  const outputRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setLocalCode(code);
   }, [code]);
+
+  // keep the newest print() line visible
+  useEffect(() => {
+    const el = outputRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [output]);
 
   const handleCodeChange = (newCode: string) => {
     setLocalCode(newCode);
@@ -87,6 +98,39 @@ export function CodeCard({
         <div className="flex-1 min-h-0">
           <CodeEditor code={localCode} setCode={handleCodeChange} />
         </div>
+
+        {output.length > 0 && (
+          <div className="shrink-0 border-t border-gray-300 dark:border-gray-700 bg-gray-900 text-gray-100">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-700">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <Terminal size={13} />
+                Terminal
+              </div>
+              {clearOutput && (
+                <button
+                  type="button"
+                  onClick={clearOutput}
+                  className="cursor-pointer text-xs text-gray-400 hover:text-gray-100"
+                >
+                  Leeren
+                </button>
+              )}
+            </div>
+            <div
+              ref={outputRef}
+              className="max-h-40 overflow-auto px-3 py-2 font-mono text-sm"
+            >
+              {output.map((line, i) => (
+                <pre
+                  key={i}
+                  className="whitespace-pre-wrap break-words leading-relaxed"
+                >
+                  {line.replace(/\n+$/, "")}
+                </pre>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div

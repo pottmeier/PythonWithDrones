@@ -62,8 +62,18 @@ export default function LevelContent({ level }: LevelContentProps) {
     if (!Number.isFinite(idNum)) return;
     levelOpenedAtRef.current = getLevelStartTime(idNum);
   }, [levelId]);
-  const { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error, getRunStats } =
-    usePyodideWorker();
+  const {
+    isReady,
+    isRunning,
+    runCode,
+    hardReset,
+    loadLevel,
+    hasCrashed,
+    error,
+    output,
+    clearOutput,
+    getRunStats,
+  } = usePyodideWorker();
   const isSystemActive = isRunning || isSceneBusy || hasCrashed;
 
   // load the level into the worker
@@ -229,6 +239,8 @@ export default function LevelContent({ level }: LevelContentProps) {
                   isRunning={isSystemActive}
                   stopCode={handleDroneReset}
                   error={error}
+                  output={output}
+                  clearOutput={clearOutput}
                 />
               </div>
             </div>

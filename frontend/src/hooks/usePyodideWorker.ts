@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { toast } from "sonner";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -13,6 +12,8 @@ export function usePyodideWorker() {
   const [isRunning, setIsRunning] = useState(false);
   const [hasCrashed, setHasCrashed] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
+  // collected print() output of the current run, shown in the terminal panel
+  const [output, setOutput] = useState<string[]>([]);
 
   // initialize worker
   const initWorker = useCallback(() => {
@@ -23,6 +24,7 @@ export function usePyodideWorker() {
     workerRef.current = worker;
     setIsReady(false);
     setHasCrashed(false);
+    setOutput([]);
 
     // listen to messages from python
     worker.onmessage = (event) => {
@@ -41,7 +43,7 @@ export function usePyodideWorker() {
           setHasCrashed(true);
         }
       } else if (type === "PRINT") {
-        toast.message(message);
+        setOutput((prev) => [...prev, message]);
       } else if (type === "FINISHED") {
         setIsRunning(false);
         runStatsRef.current = event.data.stats ?? { crashes: 0, distance: 0 };
@@ -93,6 +95,7 @@ export function usePyodideWorker() {
   const runCode = async (userCode: string) => {
     if (!isReady || !workerRef.current) return;
     setError(undefined);
+    setOutput([]);
     setHasCrashed(false);
     setIsRunning(true);
     stepCountRef.current = 0;
@@ -123,5 +126,18 @@ export function usePyodideWorker() {
     initWorker();
   }, [initWorker]);
 
-  return { isReady, isRunning, runCode, hardReset, loadLevel, hasCrashed, error, getRunStats };
+  const clearOutput = useCallback(() => setOutput([]), []);
+
+  return {
+    isReady,
+    isRunning,
+    runCode,
+    hardReset,
+    loadLevel,
+    hasCrashed,
+    error,
+    output,
+    clearOutput,
+    getRunStats,
+  };
 }
