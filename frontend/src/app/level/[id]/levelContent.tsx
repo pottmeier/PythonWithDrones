@@ -50,6 +50,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   const [token, setToken] = useState("");
   const [isSceneBusy, setIsSceneBusy] = useState(false);
   const [completionTimeMs, setCompletionTimeMs] = useState<number | null>(null);
+  const [runStats, setRunStats] = useState<{ crashes: number; distance: number; linesOfCode: number } | null>(null);
   const [coins, setCoins] = useState({ collected: 0, required: 0 });
   const levelOpenedAtRef = useRef<number>(Date.now());
 
@@ -114,6 +115,7 @@ export default function LevelContent({ level }: LevelContentProps) {
   useEffect(() => {
     (window as any).runPython = (...args: Parameters<typeof runCode>) => {
       setCompletionTimeMs(null);
+      setRunStats(null);
       return runCode(...args);
     };
   }, [runCode]);
@@ -124,12 +126,13 @@ export default function LevelContent({ level }: LevelContentProps) {
   const handleLevelComplete = useCallback(() => {
     const elapsed = Date.now() - levelOpenedAtRef.current;
     setCompletionTimeMs(elapsed);
+    const { steps, code: ranCode, crashes, distance } = getRunStats();
+    const linesOfCode = ranCode
+      .split("\n")
+      .filter((line) => line.trim().length > 0).length;
+    setRunStats({ crashes, distance, linesOfCode });
     const currentToken = loadState().user.token;
     if (currentToken && elapsed > 0) {
-      const { steps, code: ranCode } = getRunStats();
-      const linesOfCode = ranCode
-        .split("\n")
-        .filter((line) => line.trim().length > 0).length;
       submitScore(currentToken, Number(levelId), elapsed, steps, linesOfCode);
     }
     const idNum = Number(levelId);
@@ -224,6 +227,7 @@ export default function LevelContent({ level }: LevelContentProps) {
                       onLevelComplete={handleLevelComplete}
                       completionTimeMs={completionTimeMs}
                       onCoinsChange={handleCoinsChange}
+                      runStats={runStats}
                     />
                   </div>
                   {!isReady && (
