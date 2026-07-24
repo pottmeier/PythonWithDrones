@@ -51,6 +51,12 @@ function formatTime(ms: number): string {
     : `${seconds}.${tenths}s`;
 }
 
+function getFlavorText(crashes: number): string {
+  if (crashes === 0) return "Flawless run — not a single crash!";
+  if (crashes <= 2) return "A few bumps, but you made it.";
+  return "The ground really got to know you today.";
+}
+
 function SceneComponent({
   levelId,
   levelData,
@@ -58,6 +64,7 @@ function SceneComponent({
   onLevelComplete,
   completionTimeMs,
   onCoinsChange,
+  runStats,
 }: {
   levelId?: string;
   levelData?: LevelData;
@@ -65,6 +72,7 @@ function SceneComponent({
   onLevelComplete?: () => void;
   completionTimeMs?: number | null;
   onCoinsChange?: (collected: number, required: number) => void;
+  runStats?: { crashes: number; distance: number; linesOfCode: number } | null;
 }) {
   // refs
   const droneRef = useRef<THREE.Group>(new THREE.Group());
@@ -556,9 +564,30 @@ function SceneComponent({
                   : "Good job! Now check out the next level!"}
               </p>
               {completionTimeMs != null && completionTimeMs > 0 && (
-                <p className="text-center text-white/80 text-sm mb-4">
+                <p className="text-center text-white/80 text-sm mb-1">
                   Completed in <span className="font-bold text-white">{formatTime(completionTimeMs)}</span>
                 </p>
+              )}
+              {runStats && (
+                <>
+                  <div className="grid grid-cols-3 gap-3 text-center text-white/90 text-sm my-3">
+                    <div>
+                      <div className="text-lg font-bold">{runStats.crashes}</div>
+                      <div className="text-xs text-white/70">Crashes</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold">{runStats.distance}</div>
+                      <div className="text-xs text-white/70">Fields Flown</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold">{runStats.linesOfCode}</div>
+                      <div className="text-xs text-white/70">Lines of Code</div>
+                    </div>
+                  </div>
+                  <p className="text-center text-white/80 text-sm italic mb-4">
+                    {getFlavorText(runStats.crashes)}
+                  </p>
+                </>
               )}
 
               <div className="flex justify-center">
