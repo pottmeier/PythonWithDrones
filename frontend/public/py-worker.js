@@ -80,7 +80,11 @@ self.onmessage = async (event) => {
         import js
         exec(js.user_code, game.__dict__)
       `);
-      self.postMessage({ type: "FINISHED" });
+      const statsJson = await self.pyodide.runPythonAsync(`
+        import json
+        json.dumps(game.drone.get_stats())
+      `);
+      self.postMessage({ type: "FINISHED", stats: JSON.parse(statsJson) });
     } catch (error) {
       self.postMessage({ type: "ERROR", message: error.message });
     }
