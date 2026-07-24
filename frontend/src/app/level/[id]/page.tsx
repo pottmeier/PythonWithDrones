@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import LevelContent from "./levelContent";
 
 // hardcoded zum testen
@@ -19,7 +20,7 @@ export default async function LevelPage({ params }: LevelPageProps) {
   const level = levels.find((l) => l.id === id);
 
   if (!level) {
-    return <div>Level nicht gefunden</div>;
+    notFound();
   }
 
   return <LevelContent level={level} />;
