@@ -62,6 +62,8 @@ import {
 } from "@/components/editor/editor-scene";
 import { TestPlayModal } from "@/components/editor/test-play-modal";
 import { downloadYaml, levelToYaml } from "@/components/editor/yaml-io";
+import { loadState } from "@/lib/app-state";
+import { UserMenu } from "@/components/user-menu";
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -186,6 +188,14 @@ function EditorContent() {
   const [activeLayer, setActiveLayer] = useState(1);
   const [showTestPlay, setShowTestPlay] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const state = loadState();
+    setUsername(state.user.username ?? "");
+    setToken(state.user.token ?? "");
+  }, []);
 
   const [altHeld, setAltHeld] = useState(false);
   const [xHeld, setXHeld] = useState(false);
@@ -570,6 +580,11 @@ function EditorContent() {
                 <Save className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Save</span>
               </Button>
+              <UserMenu
+                username={username}
+                token={token}
+                onAuthChange={(u, t) => { setUsername(u); setToken(t); }}
+              />
               <DarkModeToggle />
             </div>
           </header>

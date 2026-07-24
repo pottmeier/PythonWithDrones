@@ -26,6 +26,8 @@ import {
 import type { StoredLevel, LevelData } from "@/types/level";
 import { createEmptyLevel } from "@/types/level";
 import { readYamlFile } from "@/components/editor/yaml-io";
+import { loadState } from "@/lib/app-state";
+import { UserMenu } from "@/components/user-menu";
 
 function SidebarBackdrop() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -53,6 +55,14 @@ export default function EditorLibraryPage() {
   const [levels, setLevels] = useState<StoredLevel[]>([]);
   const [loaded, setLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const state = loadState();
+    setUsername(state.user.username ?? "");
+    setToken(state.user.token ?? "");
+  }, []);
 
   const refresh = useCallback(async () => {
     const list = await getLevelStorage().list();
@@ -126,6 +136,11 @@ export default function EditorLibraryPage() {
           <header className="p-4 flex items-center border-b">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-4">
+              <UserMenu
+                username={username}
+                token={token}
+                onAuthChange={(u, t) => { setUsername(u); setToken(t); }}
+              />
               <DarkModeToggle />
             </div>
           </header>
