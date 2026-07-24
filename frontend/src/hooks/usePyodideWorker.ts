@@ -6,6 +6,7 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export function usePyodideWorker() {
   const workerRef = useRef<Worker | null>(null);
   const stepCountRef = useRef(0);
+  const runStatsRef = useRef({ crashes: 0, distance: 0 });
   const lastRunCodeRef = useRef("");
 
   const [isReady, setIsReady] = useState(false);
@@ -43,6 +44,7 @@ export function usePyodideWorker() {
         toast.message(message);
       } else if (type === "FINISHED") {
         setIsRunning(false);
+        runStatsRef.current = event.data.stats ?? { crashes: 0, distance: 0 };
         console.log("Script finished");
       } else if (type === "ERROR") {
         setIsRunning(false);
@@ -94,6 +96,7 @@ export function usePyodideWorker() {
     setHasCrashed(false);
     setIsRunning(true);
     stepCountRef.current = 0;
+    runStatsRef.current = { crashes: 0, distance: 0 };
     lastRunCodeRef.current = userCode;
     workerRef.current.postMessage({
       type: "RUN",
@@ -101,9 +104,14 @@ export function usePyodideWorker() {
     });
   };
 
-  // read the step count and code of the most recently started run
+  // read the step count, stats, and code of the most recently started run
   const getRunStats = useCallback(
-    () => ({ steps: stepCountRef.current, code: lastRunCodeRef.current }),
+    () => ({
+      steps: stepCountRef.current,
+      code: lastRunCodeRef.current,
+      crashes: runStatsRef.current.crashes,
+      distance: runStatsRef.current.distance,
+    }),
     [],
   );
 
