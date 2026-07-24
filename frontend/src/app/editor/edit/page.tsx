@@ -358,34 +358,18 @@ function EditorContent() {
     downloadYaml(level, filename);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!level) return;
     const yamlText = levelToYaml(level);
-    const title = `[Level Submission] ${level.title || "Untitled"}`;
-    const fullParams = new URLSearchParams({
+    const params = new URLSearchParams({
       template: "level-submission.yml",
-      title,
+      title: `[Level Submission] ${level.title || "Untitled"}`,
       "level-yaml": yamlText,
     });
-    const fullUrl = `https://github.com/pottmeier/PythonWithDrones/issues/new?${fullParams.toString()}`;
-
-    if (fullUrl.length <= 8000) {
-      window.open(fullUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    await navigator.clipboard.writeText(yamlText);
-    const fallbackParams = new URLSearchParams({
-      template: "level-submission.yml",
-      title,
-    });
     window.open(
-      `https://github.com/pottmeier/PythonWithDrones/issues/new?${fallbackParams.toString()}`,
+      `https://github.com/pottmeier/PythonWithDrones/issues/new?${params.toString()}`,
       "_blank",
       "noopener,noreferrer",
-    );
-    toast.message(
-      "Your level's YAML was too long for a pre-filled link, so it's been copied to your clipboard — paste it into the \"Level YAML\" field.",
     );
   };
 
