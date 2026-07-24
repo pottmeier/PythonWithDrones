@@ -16,6 +16,8 @@ import { loadState, saveLevelProgress, getLevelStartTime, clearLevelStartTime } 
 import { usePyodideWorker } from "@/hooks/usePyodideWorker";
 import { UserMenu } from "@/components/user-menu";
 import { submitScore } from "@/lib/leaderboard-api";
+import { Button } from "@/components/ui/button";
+import { Flag } from "lucide-react";
 
 type Level = { id: string };
 interface LevelContentProps {
@@ -144,6 +146,23 @@ export default function LevelContent({ level }: LevelContentProps) {
     setCoins({ collected, required });
   }, []);
 
+  const handleFeedback = useCallback(() => {
+    const title = `[Level ${levelId}] Feedback`;
+    const body =
+      "<!-- Please describe your feedback above this line -->\n\n" +
+      `**Level:** ${levelId}\n` +
+      `**Browser:** ${navigator.userAgent}\n\n` +
+      "**Current code:**\n```python\n" +
+      code +
+      "\n```\n";
+    const params = new URLSearchParams({ title, body });
+    window.open(
+      `https://github.com/pottmeier/PythonWithDrones/issues/new?${params.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }, [levelId, code]);
+
   // submit user code
   const submitCode = (submittedCode: string) => {
     const id = Number(levelId);
@@ -175,6 +194,10 @@ export default function LevelContent({ level }: LevelContentProps) {
                   🪙 {coins.collected}/{coins.required}
                 </span>
               )}
+              <Button variant="outline" size="sm" onClick={handleFeedback} title="Report a problem or suggestion for this level">
+                <Flag className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Feedback</span>
+              </Button>
               <UserMenu
                 username={username}
                 token={token}
