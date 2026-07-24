@@ -26,7 +26,7 @@ class Drone:
     DIRECTION_NAMES = ["North", "East", "South", "West"]
 
     def __init__(self,spawn):
-        self.spawn_data = spawn 
+        self.spawn_data = spawn
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
@@ -37,6 +37,8 @@ class Drone:
         self.carrying_package = False
         self.package_delivered = False
         self.push_target_reached = False
+        self.crash_count = 0
+        self.distance = 0
 
     def reset_to_spawn(self):
         """reset the drone to spawn and uppdate variables without deleting the drone"""
@@ -79,25 +81,27 @@ class Drone:
         self.__attempt_move__(0, -1, 0)
 
     def __attempt_move__(self, dx, dy, dz):
-        if self.is_dead: 
+        if self.is_dead:
             return
         target_x = int(self.x + dx)
         target_y = int(self.y + dy)
         target_z = int(self.z + dz)
 
         # check if the next move is possible
-        if self.level_data and not self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry): 
+        if self.level_data and not self.level_data.is_block_collidable(target_x, target_y, target_z, block_registry):
             # possible move
             self.x = target_x
             self.y = target_y
             self.z = target_z
+            self.distance += 1
             self.__send_action__({
-                "type": "move", 
+                "type": "move",
                 "target": [self.x, self.y, self.z]
             })
         else:
             # crash
             self.is_dead = True
+            self.crash_count += 1
             landing_y = self.level_data.get_floor(int(self.x), int(self.y), int(self.z), block_registry)
             self.__send_action__({
                 "type": "crash",
@@ -219,7 +223,11 @@ class Drone:
     def get_position(self):
         """Get current position as dictionary"""
         return {"x": self.x, "y": self.y, "z": self.z}
-    
+
+    def get_stats(self):
+        """Return run stats (crashes, distance) as a plain dict for the JS bridge."""
+        return {"crashes": self.crash_count, "distance": self.distance}
+
     def scan(self, distance: int = 1):
         """Look ahead in the direction the drone is facing.
         With the default distance of 1, returns a single block id (str) for
