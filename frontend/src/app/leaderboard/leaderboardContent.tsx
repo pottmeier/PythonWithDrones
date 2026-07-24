@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, RefreshCw, TrendingUp, WifiOff } from "lucide-react";
+import { Trophy, RefreshCw, TrendingUp, WifiOff, ArrowUp, ArrowDown } from "lucide-react";
 import { getLeaderboard, getHistory, ScoreEntry, AttemptEntry } from "@/lib/leaderboard-api";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -39,6 +39,91 @@ function medalColor(rank: number): string {
   return "text-gray-500 dark:text-gray-400";
 }
 
+type SortKey = "date" | "time" | "steps" | "lines";
+type SortDir = "asc" | "desc";
+type SortState = { key: SortKey; dir: SortDir } | null;
+
+// numeric columns default to "best first" (ascending); date defaults to "newest first"
+const DEFAULT_DIR: Record<SortKey, SortDir> = {
+  date: "desc",
+  time: "asc",
+  steps: "asc",
+  lines: "asc",
+};
+
+function toggleSort(current: SortState, key: SortKey): SortState {
+  if (current?.key === key) {
+    return { key, dir: current.dir === "asc" ? "desc" : "asc" };
+  }
+  return { key, dir: DEFAULT_DIR[key] };
+}
+
+function sortScores(entries: ScoreEntry[], sort: SortState): ScoreEntry[] {
+  if (!sort) return entries;
+  const factor = sort.dir === "asc" ? 1 : -1;
+  return [...entries].sort((a, b) => {
+    switch (sort.key) {
+      case "date":
+        return factor * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      case "time":
+        return factor * (a.firstTimeMs - b.firstTimeMs);
+      case "steps":
+        return factor * ((a.steps ?? Infinity) - (b.steps ?? Infinity));
+      case "lines":
+        return factor * ((a.linesOfCode ?? Infinity) - (b.linesOfCode ?? Infinity));
+    }
+  });
+}
+
+type NumberedAttempt = AttemptEntry & { attemptNumber: number };
+
+function sortAttempts(entries: NumberedAttempt[], sort: SortState): NumberedAttempt[] {
+  if (!sort) return entries;
+  const factor = sort.dir === "asc" ? 1 : -1;
+  return [...entries].sort((a, b) => {
+    switch (sort.key) {
+      case "date":
+        return factor * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      case "time":
+        return factor * (a.timeMs - b.timeMs);
+      case "steps":
+        return factor * (a.steps - b.steps);
+      case "lines":
+        return factor * (a.linesOfCode - b.linesOfCode);
+    }
+  });
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: SortKey;
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sort?.key === sortKey;
+  return (
+    <th
+      className="px-5 py-3 text-right cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200"
+      onClick={() => onSort(sortKey)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active &&
+          (sort!.dir === "asc" ? (
+            <ArrowUp className="w-3 h-3" />
+          ) : (
+            <ArrowDown className="w-3 h-3" />
+          ))}
+      </span>
+    </th>
+  );
+}
+
 export default function LeaderboardContent() {
   const [selectedLevel, setSelectedLevel] = useState(1);
   const [scores, setScores] = useState<ScoreEntry[]>([]);
@@ -49,6 +134,8 @@ export default function LeaderboardContent() {
   const [history, setHistory] = useState<AttemptEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState(false);
+  const [scoreSort, setScoreSort] = useState<SortState>(null);
+  const [historySort, setHistorySort] = useState<SortState>({ key: "date", dir: "desc" });
 
   useEffect(() => {
     const state = loadState();
@@ -87,6 +174,15 @@ export default function LeaderboardContent() {
       setLoading(false);
     });
   };
+
+  const rankByUsername = new Map(scores.map((s, i) => [s.username, i + 1]));
+  const displayedScores = sortScores(scores, scoreSort);
+
+  const numberedHistory: NumberedAttempt[] = history.map((a, i) => ({
+    ...a,
+    attemptNumber: i + 1,
+  }));
+  const displayedHistory = sortAttempts(numberedHistory, historySort);
 
   return (
     <SidebarProvider>
@@ -171,15 +267,15 @@ export default function LeaderboardContent() {
                     <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                       <th className="px-5 py-3 text-left w-12">Rank</th>
                       <th className="px-5 py-3 text-left">Player</th>
-                      <th className="px-5 py-3 text-right">Steps</th>
-                      <th className="px-5 py-3 text-right">Time</th>
-                      <th className="px-5 py-3 text-right">Lines of Code</th>
-                      <th className="px-5 py-3 text-right">When</th>
+                      <SortableHeader label="Steps" sortKey="steps" sort={scoreSort} onSort={(k) => setScoreSort(toggleSort(scoreSort, k))} />
+                      <SortableHeader label="Time" sortKey="time" sort={scoreSort} onSort={(k) => setScoreSort(toggleSort(scoreSort, k))} />
+                      <SortableHeader label="Lines of Code" sortKey="lines" sort={scoreSort} onSort={(k) => setScoreSort(toggleSort(scoreSort, k))} />
+                      <SortableHeader label="When" sortKey="date" sort={scoreSort} onSort={(k) => setScoreSort(toggleSort(scoreSort, k))} />
                     </tr>
                   </thead>
                   <tbody>
-                    {scores.map((entry, idx) => {
-                      const rank = idx + 1;
+                    {displayedScores.map((entry) => {
+                      const rank = rankByUsername.get(entry.username)!;
                       const isMe = entry.username === username;
                       return (
                         <tr
@@ -243,19 +339,19 @@ export default function LeaderboardContent() {
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
                           <th className="px-5 py-3 text-left w-16">Attempt</th>
-                          <th className="px-5 py-3 text-right">Steps</th>
-                          <th className="px-5 py-3 text-right">Time</th>
-                          <th className="px-5 py-3 text-right">Lines of Code</th>
-                          <th className="px-5 py-3 text-right">When</th>
+                          <SortableHeader label="Steps" sortKey="steps" sort={historySort} onSort={(k) => setHistorySort(toggleSort(historySort, k))} />
+                          <SortableHeader label="Time" sortKey="time" sort={historySort} onSort={(k) => setHistorySort(toggleSort(historySort, k))} />
+                          <SortableHeader label="Lines of Code" sortKey="lines" sort={historySort} onSort={(k) => setHistorySort(toggleSort(historySort, k))} />
+                          <SortableHeader label="When" sortKey="date" sort={historySort} onSort={(k) => setHistorySort(toggleSort(historySort, k))} />
                         </tr>
                       </thead>
                       <tbody>
-                        {history.map((attempt, idx) => (
+                        {displayedHistory.map((attempt) => (
                           <tr
-                            key={idx}
+                            key={attempt.attemptNumber}
                             className="border-b border-gray-100 dark:border-gray-700/50 last:border-0"
                           >
-                            <td className="px-5 py-3 font-medium">#{idx + 1}</td>
+                            <td className="px-5 py-3 font-medium">#{attempt.attemptNumber}</td>
                             <td className="px-5 py-3 text-right font-mono">{attempt.steps}</td>
                             <td className="px-5 py-3 text-right font-mono">
                               {formatTime(attempt.timeMs)}
