@@ -507,3 +507,38 @@ class TestInitializeLevel:
         assert game.drone is not None
         assert game.drone.get_position() == {"x": 0.0, "y": 1.0, "z": 0.0}
         assert game.drone.at_goal() is False
+
+
+class TestGetStats:
+    def test_defaults_to_zero(self, make_drone):
+        drone = make_drone({"layer_0": [["grass"]]}, spawn={"x": 0, "y": 0, "z": 0})
+        assert drone.get_stats() == {"crashes": 0, "distance": 0}
+
+    def test_counts_successful_moves_as_distance(self, make_drone):
+        drone = make_drone(
+            {
+                "layer_0": [["grass"], ["grass"], ["grass"]],
+                "layer_1": [["air"], ["air"], ["air"]],
+            },
+            spawn={"x": 0, "y": 1, "z": 2},
+        )
+        drone.move()  # z: 2 -> 1
+        drone.move()  # z: 1 -> 0
+        assert drone.get_stats() == {"crashes": 0, "distance": 2}
+
+    def test_counts_crashes(self, make_drone):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["empty"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+        )
+        drone.move()  # crashes into "empty" ahead
+        assert drone.get_stats() == {"crashes": 1, "distance": 0}
+
+    def test_crash_count_survives_reset_to_spawn(self, make_drone):
+        drone = make_drone(
+            {"layer_0": [["grass"], ["grass"]], "layer_1": [["empty"], ["air"]]},
+            spawn={"x": 0, "y": 1, "z": 1},
+        )
+        drone.move()  # crashes
+        drone.reset_to_spawn()
+        assert drone.get_stats() == {"crashes": 1, "distance": 0}
