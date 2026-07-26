@@ -21,7 +21,7 @@ import {
   SPEED_BTN_ACTIVE,
   SPEED_BTN_INACTIVE,
 } from "@/lib/utils";
-import { loadState, saveLevelProgress } from "@/lib/app-state";
+import { loadState, saveLevelProgress, NUM_LEVELS } from "@/lib/app-state";
 import { useRouter } from "next/navigation";
 import type { LevelData } from "@/types/level";
 import { blockEvents, positionKey } from "@/lib/block-events";
@@ -82,7 +82,6 @@ function SceneComponent({
   const spawnRef = useRef<[number, number, number]>([0, 0, 0]);
   const spawnOrientationRef = useRef(0);
   const compassRef = useRef<HTMLDivElement>(null);
-  const NUM_LEVELS = 9;
 
   // ui states and config
   const [levelSize, setLevelSize] = useState<LevelLoadData["size"] | null>(
