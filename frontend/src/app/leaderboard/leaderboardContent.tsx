@@ -11,9 +11,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import DarkModeToggle from "@/components/ui/darkModeToggle";
 import { UserMenu } from "@/components/user-menu";
-import { loadState } from "@/lib/app-state";
-
-const NUM_LEVELS = 9;
+import { loadState, NUM_LEVELS } from "@/lib/app-state";
 
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
