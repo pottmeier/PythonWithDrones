@@ -199,7 +199,12 @@ Der Beitrag zur Gamifizierung besteht hier nicht in einem Spielelement, sondern 
 
 Die Bestenliste ist der einzige Teil des Projekts, der eine serverseitige Komponente verlangt. Sie besteht aus einem FastAPI-Dienst @fastapi und einer Postgres-Datenbank @postgres, die zusammen mit dem Frontend über Docker Compose gestartet werden. Der Datenbankzugriff läuft asynchron über SQLAlchemy @sqlalchemy. Kennwörter werden mit Argon2 gehasht, die Anmeldung liefert ein JWT, und die Anmelde- und Registrierungsrouten sind ratenbegrenzt. Zugelassene Ursprünge stehen in einer Liste in der Umgebungskonfiguration.
 
-Der Dienst führt drei Tabellen. `users` hält die Konten, wobei die Eindeutigkeit des Namens über einen funktionalen Index auf der kleingeschriebenen Fassung erzwungen wird, sodass sich zwei Konten nicht allein durch Groß- und Kleinschreibung unterscheiden können. `scores` hält je Konto und Level genau einen Eintrag, nämlich die erste Lösung. `attempts` hält jeden einzelnen Versuch.
+Der Dienst führt drei Tabellen. `users` hält die Konten, wobei die Eindeutigkeit des Namens über einen funktionalen Index auf der kleingeschriebenen Fassung erzwungen wird, sodass sich zwei Konten nicht allein durch Groß- und Kleinschreibung unterscheiden können. `scores` hält je Konto und Level genau einen Eintrag, nämlich die erste Lösung. `attempts` hält jeden einzelnen Versuch. @fig:schema zeigt die drei Tabellen mit ihren Spalten und der Beziehung zwischen ihnen.
+
+#figure(
+  image("Images/leaderboard-schema.png", width: 92%),
+  caption: [Datenbankschema der Bestenliste. Jedes Konto in `users` kann beliebig viele Zeilen in `scores` und `attempts` besitzen, jede dieser Zeilen gehört genau einem Konto. `scores` erzwingt zusätzlich Eindeutigkeit je Konto und Level, `attempts` nicht.],
+) <fig:schema>
 
 === Was gewertet wird
 
@@ -266,7 +271,7 @@ Schließlich entstand eine automatisierte Testabdeckung. 118 Testfunktionen prü
 
 == Zuordnung zu den Grundbedürfnissen
 
-Die umgesetzten Elemente lassen sich den drei Grundbedürfnissen zuordnen, wie es die Einzelbetrachtungen in Abschnitt 5 bereits andeuten. Kennzahlen, Abschlussanzeige, Versuchsverlauf, gestufte Levelreihe, Terminal und die Hinweise bei offenen Lösungsbedingungen machen Fortschritt abgestuft statt binär sichtbar und geben einem Fehlschlag eine benennbare Ursache — das bedient die Kompetenz. Beim Level-Editor, bereits in Abschnitt 5 als Antwort auf das Bedürfnis nach Autonomie eingeordnet, kommt hinzu, dass weder die freie Levelwahl noch der Gastmodus ein Konto voraussetzen, sodass kein Lerninhalt an eine Belohnung gebunden ist. Sozial eingebunden wird, wer über die Bestenliste je Level, den sichtbaren Kontonamen oder die Einreichung eigener Level in Bezug zu anderen tritt — der zuvor rein lokale Fortschritt bekommt damit erstmals einen Rahmen außerhalb des eigenen Browsers.
+Die umgesetzten Elemente lassen sich den drei Grundbedürfnissen zuordnen, wie es die Einzelbetrachtungen in Abschnitt 5 bereits andeuten. Kennzahlen, Abschlussanzeige, Versuchsverlauf, gestufte Levelreihe, Terminal und die Hinweise bei offenen Lösungsbedingungen machen Fortschritt abgestuft statt binär sichtbar und geben einem Fehlschlag eine benennbare Ursache, das bedient die Kompetenz. Beim Level-Editor, bereits in Abschnitt 5 als Antwort auf das Bedürfnis nach Autonomie eingeordnet, kommt hinzu, dass weder die freie Levelwahl noch der Gastmodus ein Konto voraussetzen, sodass kein Lerninhalt an eine Belohnung gebunden ist. Sozial eingebunden wird, wer über die Bestenliste je Level, den sichtbaren Kontonamen oder die Einreichung eigener Level in Bezug zu anderen tritt, der zuvor rein lokale Fortschritt bekommt damit erstmals einen Rahmen außerhalb des eigenen Browsers.
 
 Am weitesten ausgebaut ist der Kompetenzstrang, weil er auf jeden einzelnen Lauf unmittelbar zurückwirkt. Die soziale Ebene ist mit Bestenliste und eingereichten Leveln die jüngste der drei und bietet für die weiteren Schritte den größten Spielraum.
 
@@ -278,9 +283,9 @@ Die Wirkungsaussagen dieser Arbeit sind Entwurfsargumente, die sich aus dem geba
 
 Mehrere Entscheidungen im Entwurf hatten Alternativen, die aus guten Gründen nicht gewählt wurden. Sie werden hier zusammengefasst, weil sie den Rahmen abstecken, in dem das Ergebnis zu lesen ist.
 
-Die Kennzahlen werden im Browser gezählt und unverändert vom Dienst übernommen — die Ausführung bleibt vollständig auf der Clientseite, und die Bestenliste braucht dafür keine zusätzliche Rechenlast. Für den Einsatz in einer Lehrveranstaltung reicht dieses Vertrauensmodell aus; in einem offen zugänglichen Wettbewerb müsste stattdessen der Dienst die eingereichte Lösung selbst nachrechnen.
+Die Kennzahlen werden im Browser gezählt und unverändert vom Dienst übernommen. Die Ausführung bleibt damit vollständig auf der Clientseite, und die Bestenliste braucht dafür keine zusätzliche Rechenlast. Für den Einsatz in einer Lehrveranstaltung reicht dieses Vertrauensmodell aus; in einem offen zugänglichen Wettbewerb müsste stattdessen der Dienst die eingereichte Lösung selbst nachrechnen.
 
-Die Bestenliste bringt eine serverseitige Komponente in ein Projekt, das ursprünglich ohne sie auskam — gelöst über eine einzige Umgebungsvariable, die den Dienst bei Bedarf still abschaltet, statt ihn zur Voraussetzung zu machen. Dieselbe Auslieferung bleibt so mit und ohne Dienst vollständig spielbar, und die Anwendung gewinnt den Vergleich, ohne ihre Unabhängigkeit von einem Betrieb aufzugeben.
+Die Bestenliste bringt eine serverseitige Komponente in ein Projekt, das ursprünglich ohne sie auskam. Diese Abhängigkeit ist über eine Umgebungsvariable abgeschwächt, die den Dienst bei Bedarf still abschaltet, statt ihn zur Voraussetzung zu machen. Dieselbe Auslieferung bleibt so mit und ohne Dienst vollständig spielbar, und die Anwendung gewinnt den Vergleich, ohne ihre Unabhängigkeit von einem Betrieb aufzugeben.
 
 Im Editor gebaute Level liegen im `localStorage` des jeweiligen Browsers und verlassen ihn nur über eine YAML-Datei oder ein vorbereitetes GitHub-Issue. Für die Übergabe an das Projektteam genügt das, und der Editor bleibt dabei frei von jeder Kontopflicht.
 
