@@ -76,7 +76,7 @@
 #counter(page).update(1)
 
 // ============================================================
-= Abstrakt
+#heading(numbering: none)[Abstrakt]
 
 #emph[PythonWithDrones] ist eine Lernanwendung, in der Python-Quelltext eine virtuelle Drohne durch dreidimensionale Level steuert. Zum Abschluss des Vorgängermoduls lag ein lauffähiger Prototyp vor, dessen Ablauf mit dem Erreichen des Zielportals endete @vorarbeit. Danach war die Interaktion beendet. Die vorliegende Arbeit beschreibt, wie diese Anwendung zwischen dem 10. April und dem 28. September 2026 zu einem Spiel mit geschlossener Schleife ausgebaut wurde. Hinzugekommen sind ein erweiterter Handlungsraum der Drohne mit Schieben, Aufnehmen, Abliefern und Vorausschauen, eine auf dreizehn Level verlängerte Aufgabenkurve, eine Auswertung jedes Laufs nach Abstürzen, geflogenen Feldern und Codezeilen, eine serverseitige Bestenliste mit Kontoverwaltung und Versuchsverlauf sowie ein dreidimensionaler Level-Editor, mit dem Spielende eigene Aufgaben bauen und einreichen können. Die Auswertung ordnet die umgesetzten Elemente den drei Grundbedürfnissen Kompetenz, Autonomie und soziale Eingebundenheit zu und begründet, wie die einzelnen Entwurfsentscheidungen zusammenwirken.
 
@@ -87,6 +87,11 @@ Zum Abschluss des vorangegangenen Moduls lag eine funktionsfähige Anwendung vor
 Die vorliegende Arbeit hat das Ziel, diese Anwendung um Spielelemente zu erweitern und die dabei getroffenen Entwurfsentscheidungen zu begründen. Untersucht wird, welche Elemente aus dem Spieldesign sich in eine bestehende Lernanwendung einfügen lassen, welche Wirkung strukturell von ihnen zu erwarten ist und welche Kosten sie im Betrieb verursachen. Die Ausführung von Python im Browser ist nicht Gegenstand der Arbeit, da sie im Vorgängermodul entwickelt wurde @vorarbeit. Gamifizierung wird nicht als nachträgliche Ergänzung einer fertigen Anwendung verstanden, sondern als Eingriff in deren Regeln, der verändert, worauf Lernende beim Schreiben ihres Programms achten.
 
 Die Arbeit stützt sich auf den Quelltext des Projekts und seine Versionsgeschichte @repo sowie auf die Ausarbeitung des Vorgängermoduls @vorarbeit. Als Ausgangspunkt dient das Tag `v1.0.0` vom 10. April 2026, das den Stand zum Abschluss des Vorgängermoduls markiert. Der Betrachtungszeitraum umfasst die Änderungen zwischen diesem Stand und dem 28. September 2026.
+
+// ============================================================
+= Stand der Forschung <sec:stand>
+
+Die Umsetzung baut auf einem etablierten Satz an Werkzeugen aus dem Web- und Backend-Bereich auf, ohne selbst neue Technologie einzuführen. Next.js dient als React-Framework für den statischen Seitenexport @nextjs. Pyodide bringt einen zu WebAssembly übersetzten CPython-Interpreter in den Browser und macht damit eine serverseitige Python-Ausführung überflüssig @pyodide. React Three Fiber bindet die 3D-Bibliothek Three.js deklarativ in React-Komponenten ein und trägt die im Browser laufende Drohnenszene @threefiber. Auf der Serverseite stellt FastAPI die asynchrone Web-Schnittstelle der Bestenliste bereit @fastapi, SQLAlchemy vermittelt den objektrelationalen Zugriff darauf @sqlalchemy, und PostgreSQL hält die Daten persistent @postgres. Alle fünf Bausteine sind quelloffen, gut dokumentiert und bereits im Vorgängermodul beziehungsweise im bestehenden Projekt im Einsatz @vorarbeit. Die vorliegende Arbeit erweitert diesen Stack um die in @sec:ausgangslage beschriebenen Fähigkeiten, statt ihn auszutauschen.
 
 // ============================================================
 = Ausgangslage <sec:ausgangslage>
@@ -131,13 +136,13 @@ Eine Aufgabe trägt dann, wenn ihre Anforderung und die Fähigkeit der Lösenden
 Aus dem Zweck der Anwendung ergeben sich zwei Festlegungen, die für jedes eingebaute Spielelement gelten. Die gemessenen Größen sind Eigenschaften der Lösung und nicht des Verhaltens, das zu ihr geführt hat. Eine Wertung, die belohnt, wer am meisten Zeit aufwendet oder am schnellsten tippt, erfasst nicht den vermittelten Inhalt, während eine Wertung nach der Zahl der Schritte das Verständnis des Levels erfasst. Zudem steuert keine Belohnung den Zugang zu Lerninhalten. Jedes Level bleibt ohne Konto, ohne Bestenliste und ohne Serverbetrieb vollständig spielbar. Ein Spielelement darf den Reiz einer Aufgabe erhöhen, ihn aber nicht ersetzen, und es darf niemanden ausschließen.
 
 // ============================================================
-= Umsetzung <sec:umsetzung>
+= Methodik <sec:methodik>
 
 == Überblick
 
 Die Änderungen im Betrachtungszeitraum lassen sich in sechs Arbeitssträngen zusammenfassen, die aufeinander aufbauen. Der erweiterte Handlungsraum ist Voraussetzung für Level, die mehr als einen Weg verlangen, und die erhobenen Kennzahlen sind Voraussetzung für eine sortierbare Bestenliste. Der Handlungsraum der Drohne wurde um die Befehle Schieben, Aufnehmen, Abliefern und Vorausschauen erweitert, wozu fünf neue Blocktypen und Lösungsbedingungen im Levelformat kamen. Darauf aufbauend wuchs die Aufgabenkurve von sechs auf dreizehn Level bei überarbeiteter Einstiegsreihe und Schlagworten als Vorschau. Die Laufauswertung erfasst seither Abstürze, geflogene Felder und Codezeilen je Lauf, zeigt diese Werte nach Abschluss an und gibt `print`-Ausgaben in einem Terminal aus. Auf dieser Grundlage entstand eine Bestenliste als FastAPI-Dienst mit Postgres-Datenbank, Konten, JWT-Anmeldung, Rangfolge und Versuchsverlauf. Parallel dazu wurde ein dreidimensionaler Level-Editor mit Testlauf, YAML-Export und Einreichung über GitHub gebaut. Der sechste Strang fasst Arbeiten am Reibungsabbau zusammen, darunter die Darstellung auf schmalen Bildschirmen, eine eigene Fehlerseite, ein Rückmeldeknopf und eine automatisierte Testabdeckung.
 
-Gemeinsam bilden diese Stränge eine geschlossene Schleife, die zuvor nicht bestand. Vor der Erweiterung endete der Ablauf mit dem Erreichen des Ziels. Seither führt jede Auswertung wieder auf eine mögliche nächste Handlung, sei es das nächste Level, der Vergleich in der Bestenliste, die Verbesserung der eigenen Lösung oder der Bau eines eigenen Levels im Editor.
+Gemeinsam bilden diese Stränge eine geschlossene Schleife, die zuvor nicht bestand. Vor der Erweiterung endete der Ablauf mit dem Erreichen des Ziels. Seither führt jede Auswertung wieder auf eine mögliche nächste Handlung, sei es das nächste Level, der Vergleich in der Bestenliste, die Verbesserung der eigenen Lösung oder der Bau eines eigenen Levels im Editor. @sec:ergebnisse stellt die dabei entstandenen Inhalte vor.
 
 == Erweiterter Handlungsraum der Drohne
 
@@ -145,18 +150,87 @@ Gemeinsam bilden diese Stränge eine geschlossene Schleife, die zuvor nicht best
 
 Der erste Eingriff betraf die Python-Schnittstelle. Solange die Drohne nur fliegen und sich drehen konnte, bestand jedes Ziel darin, eine Position zu erreichen, und die Level unterschieden sich allein in der Geometrie des Weges. Vier neue Befehle veränderten oder prüften seither den Zustand der Welt. Der Befehl `drone.push()` schiebt einen als schiebbar gekennzeichneten Block um ein Feld weiter und rückt anschließend selbst nach. Ist das Feld dahinter belegt, bleibt die Aktion folgenlos und nennt den Grund. Die Befehle `drone.pickup()` und `drone.deliver()` nehmen ein Paket auf und legen es auf einer Ablagefläche wieder ab, wobei beide melden, wenn nichts aufzunehmen oder nichts abzulegen ist. Der Befehl `drone.scan(n)` liefert die Block-Kennungen der nächsten `n` Felder in Blickrichtung und bricht am ersten blockierenden Feld ab. Ohne Argument gibt er stattdessen eine einzelne Kennung zurück.
 
-Der Befehl `scan` ersetzt die frühere Abfrage `is_path_blocked`, die nur einen Wahrheitswert lieferte. Der Unterschied wirkt sich auf die Aufgabengestaltung aus, da eine Zeichenkette oder eine Liste dazu zwingt, das Ergebnis zu vergleichen und in eine Bedingung einzusetzen, während ein Wahrheitswert unmittelbar in eine `if`-Anweisung führt. Damit lassen sich Level bauen, in denen die Drohne unterscheiden muss, worauf sie trifft, und nicht nur, ob sie auf etwas trifft.
+Der Befehl `scan` ersetzt die frühere Abfrage `is_path_blocked`, die nur einen Wahrheitswert lieferte. Das ist eine der Stellen, an denen die Arbeit über den Umfang der Lehrveranstaltung hinausgeht: Der Unterschied wirkt sich auf die Aufgabengestaltung aus, da eine Zeichenkette oder eine Liste dazu zwingt, das Ergebnis zu vergleichen und in eine Bedingung einzusetzen, während ein Wahrheitswert unmittelbar in eine `if`-Anweisung führt. Damit lassen sich Level bauen, in denen die Drohne unterscheiden muss, worauf sie trifft, und nicht nur, ob sie auf etwas trifft.
 
-Insgesamt wuchs die öffentliche Schnittstelle von zehn auf vierzehn Methoden und die Blockregistrierung von neun auf vierzehn Typen. Neu sind Münze, Kiste, Paket, Ablagefläche und Zielmarkierung. @fig:scene zeigt ein Level, das drei dieser Bausteine gleichzeitig verwendet.
+=== Lösungsbedingungen
+
+Damit die neuen Handlungen Bedeutung bekommen, wuchs das Levelformat mit. Ein Level kann nun neben dem Erreichen des Portals verlangen, dass eine bestimmte Zahl Münzen eingesammelt, ein Paket abgeliefert oder eine Kiste auf ein markiertes Feld geschoben wurde. Die Prüfung liegt im Levelmodell und läuft ab, sobald die Drohne das Portal betritt. Ist eine Bedingung noch offen, sendet die Python-Seite eine eigene Nachricht vom Typ `hint`, deren Text die offenen Bedingungen benennt, sodass Lernende unmittelbar erfahren, warum ein scheinbar erreichtes Ziel noch nicht zählt.
+
+== Kennzahlen und Rückmeldung eines Laufs
+
+=== Kennzahlen
+
+Die Python-Seite führt zwei Zähler mit. `distance` steigt bei jedem erfolgreichen Ortswechsel, `crash_count` bei jeder Kollision. Beide werden über `get_stats()` an den Hauptthread gereicht. Die dritte Kennzahl, die Zahl der Codezeilen, ermittelt die Oberfläche selbst aus dem eingegebenen Text.
+
+Diese Auswahl folgt der ersten der beiden Festlegungen aus @sec:einwaende. Alle drei Größen beschreiben das Programm und nicht die Person. Die Zahl der Felder eines Weges, die Häufigkeit einer Kollision und die Kompaktheit der Formulierung sind Eigenschaften des Algorithmus. Die Tippgeschwindigkeit gehört nicht dazu.
+
+=== Terminal
+
+Ursprünglich lief die Ausgabe von `print` ausschließlich in die Entwicklerkonsole des Browsers. Für die Zielgruppe war sie damit praktisch nicht vorhanden, obwohl `print` das erste Werkzeug ist, mit dem Anfänger den Zustand eines Programms untersuchen. Der Worker leitet die Ausgabe jetzt zusätzlich als eigene Nachricht an den Hauptthread weiter, wo sie unter dem Editor in einem Terminalbereich erscheint. Dieselbe Bahn nutzen auch die Hinweistexte der Drohnenbefehle, etwa wenn `pickup` ins Leere greift.
+
+Der Beitrag zur Gamifizierung besteht hier nicht in einem Spielelement, sondern in einer kürzeren Rückmeldeschleife, da ein Fehler mit sichtbarer Ursache eher zu einem weiteren Versuch führt als ein Fehler ohne erkennbare Ursache.
+
+== Bestenliste: Architektur
+
+Die Bestenliste ist der einzige Teil des Projekts, der eine serverseitige Komponente verlangt und damit der größte einzelne Sprung über den Umfang der Lehrveranstaltung hinaus. Sie besteht aus einem FastAPI-Dienst @fastapi und einer Postgres-Datenbank @postgres, die zusammen mit dem Frontend über Docker Compose gestartet werden. Der Datenbankzugriff läuft asynchron über SQLAlchemy @sqlalchemy. Kennwörter werden mit Argon2 gehasht, die Anmeldung liefert ein JWT, und die Anmelde- und Registrierungsrouten sind ratenbegrenzt. Zugelassene Ursprünge stehen in einer Liste in der Umgebungskonfiguration.
+
+Der Dienst führt drei Tabellen. `users` hält die Konten, wobei die Eindeutigkeit des Namens über einen funktionalen Index auf der kleingeschriebenen Fassung erzwungen wird, sodass sich zwei Konten nicht allein durch Groß- und Kleinschreibung unterscheiden können. `scores` hält je Konto und Level genau einen Eintrag, nämlich die erste Lösung. `attempts` hält jeden einzelnen Versuch, damit der Vergleich mit anderen auf der Erstlösung beruht, während der eigene Verlauf trotzdem vollständig bleibt. Die Rangfolge selbst ergibt sich zuerst aus der Zahl der Schritte, dann aus der benötigten Zeit und zuletzt aus der Zahl der Codezeilen, gemessen als Wanduhr im Hauptthread zwischen dem Öffnen des Levels und der ersten erfolgreichen Lösung. @sec:ergebnisse zeigt das resultierende Schema und die Oberfläche, @sec:diskussion begründet die Reihenfolge der Sortierkriterien.
+
+Die Anwendung bleibt weiterhin ohne Server benutzbar, weil sie als statischer Export auf GitHub Pages liegt. Der API-Client liest dazu eine einzige Umgebungsvariable. Ist sie nicht gesetzt, liefert jeder Aufruf `null` zurück, und sämtliche Aufrufe der Bestenliste laufen ins Leere, ohne einen Fehler zu erzeugen. Der Anmeldedialog bietet neben Registrierung und Anmeldung zusätzlich einen Gastmodus an, sodass Anmeldung an keiner Stelle Voraussetzung für das Spielen ist.
+
+== Level-Editor
+
+=== Aufbau
+
+Der Editor ist der umfangreichste Einzelbeitrag des Betrachtungszeitraums und wurde in mehreren Durchgängen ausgebaut. Er läuft vollständig im Browser und arbeitet auf derselben Datenstruktur wie das Spiel selbst.
+
+Die Oberfläche trennt zwei Modi. Im Setzmodus platziert oder löscht ein Klick einen Block auf der aktiven Ebene, im Kameramodus dreht und zoomt derselbe Klick die Ansicht. Da beim Bauen ständig zwischen beidem gewechselt wird, lässt sich der Kameramodus zusätzlich durch Halten der Alt-Taste vorübergehend aktivieren, das Löschen entsprechend über die X-Taste. Neben Setzen und Löschen gibt es ein Werkzeug für den Startpunkt der Drohne.
+
+Die Ebenen werden über einen Schrittwähler durchlaufen. Sichtbar bleiben dabei alle Ebenen, die aktive wird durch ein Gitter hervorgehoben, sodass die Tiefe beim Bauen erhalten bleibt. Ein eigenes Formular legt die Ausdehnung in allen drei Achsen fest, ein weiteres Titel, Beschreibung und Schlagworte.
+
+=== Vom Entwurf zum Level
+
+Drei Wege führen aus dem Editor heraus. Der Testlauf öffnet das gebaute Level in einem Dialog mit vollständiger Spielumgebung, also eigenem Editor, eigener Pyodide-Instanz @pyodide und eigener Szene. Der Dialog baut diese Umgebung erst beim Öffnen auf und wirft sie beim Schließen wieder weg, damit nicht dauerhaft ein zweiter Interpreter mitläuft. Der Export schreibt eine YAML-Datei in den Download-Ordner. Die Einreichung öffnet ein vorbereitetes GitHub-Issue, in dessen Formular das erzeugte YAML bereits eingetragen ist. Ein selbst gebauter Editor mit isoliertem Testlauf ging deutlich über die im Modul vermittelten Inhalte hinaus und war zugleich die größte einzelne Herausforderung des Betrachtungszeitraums, weil Editor und Spiel dieselbe Datenstruktur ohne Umweg über das Dateisystem teilen mussten.
+
+Ursprünglich mussten Autoren die Lösungsbedingungen eines Levels von Hand angeben, also etwa eintragen, dass drei Münzen einzusammeln sind. Seitdem leitet der Editor die Bedingungen aus dem gebauten Level ab. Wer drei Münzen platziert, baut ein Level mit drei einzusammelnden Münzen. Damit können Geometrie und Bedingung nicht mehr auseinanderlaufen, und der Bauvorgang wird um einen Schritt kürzer.
+
+== Reibungsabbau
+
+Der sechste Strang enthält Arbeiten, die für sich genommen keine Spielelemente sind, aber Voraussetzung dafür, dass die anderen fünf wirken.
+
+Die Darstellung auf schmalen Bildschirmen wurde überarbeitet. Betroffen waren unter anderem der Ebenenwähler des Editors, der außerhalb des sichtbaren Bereichs lag, ein Mausradereignis, das nie gebunden wurde, und eine überfüllte Kopfzeile. Da ein erheblicher Teil der Zugriffe von Mobilgeräten erfolgt, beeinflusst diese Ebene, ob die erste Aufgabe überhaupt erreicht wird.
+
+Ein zweiter Punkt betrifft ungültige Adressen. Seit Juli existiert eine eigene Fehlerseite mit animierter Drohne, und die Routenkonfiguration weist unbekannte Parameter sauber ab. Ein Aufruf von `/level/99` landet damit auf der gestalteten Seite des Spiels statt auf einer Fehlermeldung des Servers. Das ist kein Spielelement, verhindert aber, dass eine falsche Adresse wie ein Defekt der Anwendung wirkt.
+
+Schließlich entstand eine automatisierte Testabdeckung, die im Umfang der Lehrveranstaltung nicht angelegt war. 118 Testfunktionen prüfen die Spiellogik in `game.py` und `model.py` sowie den Bestenlisten-Dienst. Die Spieltests täuschen dazu das Brückenmodul zur JavaScript-Seite vor, sodass der unveränderte Quelltext unter normalem CPython läuft, eine Technik, die im Modul nicht behandelt wurde. Die Dienst-Tests sprechen die Anwendung im selben Prozess an und arbeiten je Test gegen eine wegwerfbare SQLite-Datenbank statt gegen Postgres. Damit ist die Spiellogik, die im Browser sonst nur schwer zu prüfen wäre, in einer gewöhnlichen Testumgebung abgesichert.
+
+// ============================================================
+= Ergebnisse <sec:ergebnisse>
+
+Die in @sec:methodik beschriebenen Arbeitsstränge haben eine zuvor nicht vorhandene, geschlossene Spielschleife hervorgebracht. Vor der Erweiterung endete der Ablauf mit dem Erreichen des Ziels. Seither führt jede Auswertung wieder auf eine mögliche nächste Handlung, sei es das nächste Level, der Vergleich in der Bestenliste, die Verbesserung der eigenen Lösung oder der Bau eines eigenen Levels im Editor. @tbl:kennzahlen fasst den quantitativen Zuwachs zwischen dem Ausgangsstand `v1.0.0` und dem Ende des Betrachtungszeitraums zusammen.
+
+#figure(
+  table(
+    columns: (1fr, auto, auto),
+    align: (left, center, center),
+    table.header([Kennzahl], [`v1.0.0`], [28.09.2026]),
+    [Spielbare Level], [6], [13],
+    [Öffentliche Drohnen-Methoden], [10], [14],
+    [Blocktypen], [9], [14],
+  ),
+  caption: [Wachstum der zentralen Kennzahlen zwischen dem Ausgangsstand `v1.0.0` und dem Ende des Betrachtungszeitraums.],
+) <tbl:kennzahlen>
+
+Hinzu kommt eine automatisierte Testabdeckung von 118 Testfunktionen, die zuvor nicht bestand.
+
+== Erweiterter Handlungsraum und neue Bausteine
+
+Neu in der Blockregistrierung sind Münze, Kiste, Paket, Ablagefläche und Zielmarkierung. @fig:scene zeigt ein Level, das drei dieser Bausteine gleichzeitig verwendet.
 
 #figure(
   image("Images/level-scene.png", width: 100%),
   caption: [Das Level #emph[Push ’n Collect] vor dem ersten Lauf. Die Kiste versperrt den direkten Weg, die Münze liegt auf einem Seitenpfad, und der Zähler in der Kopfzeile hält den Stand der Lösungsbedingung fest.],
 ) <fig:scene>
-
-=== Lösungsbedingungen
-
-Damit die neuen Handlungen Bedeutung bekommen, wuchs das Levelformat mit. Ein Level kann nun neben dem Erreichen des Portals verlangen, dass eine bestimmte Zahl Münzen eingesammelt, ein Paket abgeliefert oder eine Kiste auf ein markiertes Feld geschoben wurde. Die Prüfung liegt im Levelmodell und läuft ab, sobald die Drohne das Portal betritt. Ist eine Bedingung noch offen, sendet die Python-Seite eine eigene Nachricht vom Typ `hint`, deren Text die offenen Bedingungen benennt, sodass Lernende unmittelbar erfahren, warum ein scheinbar erreichtes Ziel noch nicht zählt.
 
 == Aufgabenkurve
 
@@ -169,15 +243,7 @@ Jedes Level trägt Schlagworte, die in der Übersicht angezeigt werden. Sie nenn
   caption: [Die Levelübersicht mit dreizehn Einträgen. Freigeschaltete Level tragen ein Abspielsymbol, gesperrte ein Schloss. Die Schlagworte kündigen Schwierigkeit und behandeltes Konzept an.],
 ) <fig:home>
 
-== Auswertung eines Laufs
-
-=== Kennzahlen
-
-Die Python-Seite führt zwei Zähler mit. `distance` steigt bei jedem erfolgreichen Ortswechsel, `crash_count` bei jeder Kollision. Beide werden über `get_stats()` an den Hauptthread gereicht. Die dritte Kennzahl, die Zahl der Codezeilen, ermittelt die Oberfläche selbst aus dem eingegebenen Text.
-
-Diese Auswahl folgt der ersten der beiden Festlegungen. Alle drei Größen beschreiben das Programm und nicht die Person. Die Zahl der Felder eines Weges, die Häufigkeit einer Kollision und die Kompaktheit der Formulierung sind Eigenschaften des Algorithmus. Die Tippgeschwindigkeit gehört nicht dazu.
-
-=== Abschlussanzeige
+== Abschlussanzeige eines Laufs
 
 Beim Erreichen des Ziels erscheint eine Anzeige mit der benötigten Zeit und den drei Kennzahlen, ergänzt um einen kurzen Kommentar, der sich nach der Zahl der Abstürze richtet. Der Kommentar unterscheidet einen Lauf ohne Kollision von einem mit mehreren, ist bewusst knapp gehalten und ordnet die Zahl ein.
 
@@ -186,74 +252,32 @@ Beim Erreichen des Ziels erscheint eine Anzeige mit der benötigten Zeit und den
   caption: [Die Abschlussanzeige nach einem gelösten Level mit Zeit, Abstürzen, geflogenen Feldern und Codezeilen. Unten links zeigt das Terminal die Ausgaben der beiden `print`-Aufrufe.],
 ) <fig:run>
 
-=== Terminal
-
-Ursprünglich lief die Ausgabe von `print` ausschließlich in die Entwicklerkonsole des Browsers. Für die Zielgruppe war sie damit praktisch nicht vorhanden, obwohl `print` das erste Werkzeug ist, mit dem Anfänger den Zustand eines Programms untersuchen. Der Worker leitet die Ausgabe jetzt zusätzlich als eigene Nachricht an den Hauptthread weiter, wo sie unter dem Editor in einem Terminalbereich erscheint. Dieselbe Bahn nutzen auch die Hinweistexte der Drohnenbefehle, etwa wenn `pickup` ins Leere greift.
-
-Der Beitrag zur Gamifizierung besteht hier nicht in einem Spielelement, sondern in einer kürzeren Rückmeldeschleife, da ein Fehler mit sichtbarer Ursache eher zu einem weiteren Versuch führt als ein Fehler ohne erkennbare Ursache.
-
 == Bestenliste
 
-=== Architektur
-
-Die Bestenliste ist der einzige Teil des Projekts, der eine serverseitige Komponente verlangt. Sie besteht aus einem FastAPI-Dienst @fastapi und einer Postgres-Datenbank @postgres, die zusammen mit dem Frontend über Docker Compose gestartet werden. Der Datenbankzugriff läuft asynchron über SQLAlchemy @sqlalchemy. Kennwörter werden mit Argon2 gehasht, die Anmeldung liefert ein JWT, und die Anmelde- und Registrierungsrouten sind ratenbegrenzt. Zugelassene Ursprünge stehen in einer Liste in der Umgebungskonfiguration.
-
-Der Dienst führt drei Tabellen. `users` hält die Konten, wobei die Eindeutigkeit des Namens über einen funktionalen Index auf der kleingeschriebenen Fassung erzwungen wird, sodass sich zwei Konten nicht allein durch Groß- und Kleinschreibung unterscheiden können. `scores` hält je Konto und Level genau einen Eintrag, nämlich die erste Lösung. `attempts` hält jeden einzelnen Versuch. @fig:schema zeigt die drei Tabellen mit ihren Spalten und der Beziehung zwischen ihnen.
+@fig:schema zeigt das resultierende Datenbankschema mit den Tabellen `users`, `scores` und `attempts`. Jedes Konto in `users` kann beliebig viele Zeilen in `scores` und `attempts` besitzen, `scores` erzwingt zusätzlich Eindeutigkeit je Konto und Level, `attempts` nicht. @fig:leaderboard zeigt die daraus gespeiste Bestenliste einer laufenden Instanz, deren Sortierung zuerst der Schrittzahl folgt, wie der Vergleich der ersten drei Ränge zeigt.
 
 #figure(
   image("Images/leaderboard-schema.png", width: 92%),
   caption: [Datenbankschema der Bestenliste. Jedes Konto in `users` kann beliebig viele Zeilen in `scores` und `attempts` besitzen, jede dieser Zeilen gehört genau einem Konto. `scores` erzwingt zusätzlich Eindeutigkeit je Konto und Level, `attempts` nicht.],
 ) <fig:schema>
 
-=== Was gewertet wird
-
-Die Rangfolge ergibt sich zuerst aus der Zahl der Schritte, dann aus der benötigten Zeit und zuletzt aus der Zahl der Codezeilen. Diese Reihenfolge ist die zentrale Entscheidung dieses Strangs. Stünde die Zeit an erster Stelle, würde die Bestenliste vor allem die Tippgeschwindigkeit und die Vorkenntnis der Lösung abbilden. Die Schrittzahl dagegen ist eine Eigenschaft des gefundenen Weges und lässt sich nur verbessern, indem das Level besser verstanden wird.
-
-Gewertet wird die erste Lösung eines Levels. So bleibt die Liste ein Vergleich der Lösungsqualität und wird nicht zu einem Vergleich der aufgewendeten Zeit. Ergänzend hält die Tabelle `attempts` den vollständigen Verlauf, den Angemeldete unter der eigenen Fortschrittsanzeige einsehen können. Der Vergleich mit anderen bezieht sich damit auf die Erstlösung, während der Verlauf den Vergleich mit der eigenen früheren Leistung dauerhaft ermöglicht.
-
-Die Zeitmessung beginnt beim Öffnen des Levels und endet bei der ersten erfolgreichen Lösung. Sie läuft als Wanduhr im Hauptthread und ist damit unabhängig davon, mit welcher Geschwindigkeit die Animation abgespielt wird oder wie lange der Python-Interpreter für die Ausführung braucht.
-
 #figure(
   image("Images/leaderboard.png", width: 100%),
   caption: [Die Bestenliste einer laufenden Instanz. Die Level lassen sich einzeln auswählen, die Spaltenköpfe sind sortierbar. Die Reihenfolge folgt zuerst der Schrittzahl, wie der Vergleich der ersten drei Ränge zeigt.],
 ) <fig:leaderboard>
 
-=== Betrieb ohne Backend
-
-Die Anwendung bleibt weiterhin ohne Server benutzbar, weil sie als statischer Export auf GitHub Pages liegt. Der API-Client liest dazu eine einzige Umgebungsvariable. Ist sie nicht gesetzt, liefert jeder Aufruf `null` zurück, und sämtliche Aufrufe der Bestenliste laufen ins Leere, ohne einen Fehler zu erzeugen. Das Spiel funktioniert dann vollständig, nur ohne Vergleich.
-
-Anmeldung ist an keiner Stelle Voraussetzung für das Spielen. Der Anmeldedialog bietet neben Registrierung und Anmeldung ausdrücklich einen Gastmodus an. Damit ist die zweite Festlegung eingehalten, da kein Lerninhalt an einer Belohnungsmechanik hängt.
-
 == Level-Editor
 
-=== Aufbau
-
-Der Editor ist der umfangreichste Einzelbeitrag des Betrachtungszeitraums. Er wurde in mehreren Durchgängen ausgebaut. Er läuft vollständig im Browser und arbeitet auf derselben Datenstruktur wie das Spiel selbst.
-
-Die Oberfläche trennt zwei Modi. Im Setzmodus platziert oder löscht ein Klick einen Block auf der aktiven Ebene, im Kameramodus dreht und zoomt derselbe Klick die Ansicht. Da beim Bauen ständig zwischen beidem gewechselt wird, lässt sich der Kameramodus zusätzlich durch Halten der Alt-Taste vorübergehend aktivieren, das Löschen entsprechend über die X-Taste. Neben Setzen und Löschen gibt es ein Werkzeug für den Startpunkt der Drohne.
-
-Die Ebenen werden über einen Schrittwähler durchlaufen. Sichtbar bleiben dabei alle Ebenen, die aktive wird durch ein Gitter hervorgehoben, sodass die Tiefe beim Bauen erhalten bleibt. Ein eigenes Formular legt die Ausdehnung in allen drei Achsen fest, ein weiteres Titel, Beschreibung und Schlagworte.
+@fig:editor zeigt den Level-Editor mit einem geladenen Level.
 
 #figure(
   image("Images/editor-3d.png", width: 100%),
   caption: [Der Level-Editor mit einem geladenen Level. Links Modus, Werkzeuge, Blockpalette und Größenangaben, oben rechts der Ebenenwähler und die Rücknahme, oben die Aktionen Export, Einreichung, Testlauf und Speichern.],
 ) <fig:editor>
 
-=== Vom Entwurf zum Level
+== Reibungsabbau: mobile Darstellung
 
-Drei Wege führen aus dem Editor heraus. Der Testlauf öffnet das gebaute Level in einem Dialog mit vollständiger Spielumgebung, also eigenem Editor, eigener Pyodide-Instanz @pyodide und eigener Szene. Der Dialog baut diese Umgebung erst beim Öffnen auf und wirft sie beim Schließen wieder weg, damit nicht dauerhaft ein zweiter Interpreter mitläuft. Der Export schreibt eine YAML-Datei in den Download-Ordner. Die Einreichung öffnet ein vorbereitetes GitHub-Issue, in dessen Formular das erzeugte YAML bereits eingetragen ist.
-
-Ursprünglich mussten Autoren die Lösungsbedingungen eines Levels von Hand angeben, also etwa eintragen, dass drei Münzen einzusammeln sind. Seitdem leitet der Editor die Bedingungen aus dem gebauten Level ab. Wer drei Münzen platziert, baut ein Level mit drei einzusammelnden Münzen. Damit können Geometrie und Bedingung nicht mehr auseinanderlaufen, und der Bauvorgang wird um einen Schritt kürzer.
-
-=== Einordnung
-
-Der Editor adressiert das Bedürfnis nach Autonomie, das von Punkten und Bestenlisten nicht bedient wird. Er verschiebt die Rolle vom Lösen vorgegebener Aufgaben zum Stellen eigener. Für den Lerneffekt ist das insofern bedeutsam, als das Bauen eines lösbaren Levels verlangt, die Regeln der Simulation vollständig verstanden zu haben. Gleichzeitig ist er eine Inhaltsquelle. Der Aufwand für ein neues Level lag zuvor bei handgeschriebenem YAML und mehreren Stellen im Quelltext, die synchron gehalten werden müssen, und liegt nun bei einem Formular und einer Einreichung per Klick.
-
-== Reibungsabbau
-
-Der sechste Strang enthält Arbeiten, die für sich genommen keine Spielelemente sind, aber Voraussetzung dafür, dass die anderen fünf wirken.
-
-Die Darstellung auf schmalen Bildschirmen wurde überarbeitet. Betroffen waren unter anderem der Ebenenwähler des Editors, der außerhalb des sichtbaren Bereichs lag, ein Mausradereignis, das nie gebunden wurde, und eine überfüllte Kopfzeile. Da ein erheblicher Teil der Zugriffe von Mobilgeräten erfolgt, beeinflusst diese Ebene, ob die erste Aufgabe überhaupt erreicht wird.
+@fig:mobile zeigt die Levelansicht auf einem schmalen Bildschirm.
 
 #figure(
   placement: auto,
@@ -261,22 +285,24 @@ Die Darstellung auf schmalen Bildschirmen wurde überarbeitet. Betroffen waren u
   caption: [Die Levelansicht auf einem schmalen Bildschirm. Szene und Editor stehen untereinander statt nebeneinander, der Aufgabentext lässt sich über die Schaltfläche Task ein- und ausblenden.],
 ) <fig:mobile>
 
-Ein zweiter Punkt betrifft ungültige Adressen. Seit Juli existiert eine eigene Fehlerseite mit animierter Drohne, und die Routenkonfiguration weist unbekannte Parameter sauber ab. Ein Aufruf von `/level/99` landet damit auf der gestalteten Seite des Spiels statt auf einer Fehlermeldung des Servers. Das ist kein Spielelement, verhindert aber, dass eine falsche Adresse wie ein Defekt der Anwendung wirkt.
-
-Schließlich entstand eine automatisierte Testabdeckung. 118 Testfunktionen prüfen die Spiellogik in `game.py` und `model.py` sowie den Bestenlisten-Dienst. Die Spieltests täuschen dazu das Brückenmodul zur JavaScript-Seite vor, sodass der unveränderte Quelltext unter normalem CPython läuft. Die Dienst-Tests sprechen die Anwendung im selben Prozess an und arbeiten je Test gegen eine wegwerfbare SQLite-Datenbank statt gegen Postgres. Damit ist die Spiellogik, die im Browser sonst nur schwer zu prüfen wäre, in einer gewöhnlichen Testumgebung abgesichert.
-
 // ============================================================
-= Auswertung und Diskussion <sec:auswertung>
+= Diskussion <sec:diskussion>
 
 == Zuordnung zu den Grundbedürfnissen
 
-Die umgesetzten Elemente lassen sich den drei Grundbedürfnissen zuordnen, wie es die Einzelbetrachtungen in Abschnitt 5 bereits andeuten. Kennzahlen, Abschlussanzeige, Versuchsverlauf, gestufte Levelreihe, Terminal und die Hinweise bei offenen Lösungsbedingungen machen Fortschritt abgestuft statt binär sichtbar und geben einem Fehlschlag eine benennbare Ursache, das bedient die Kompetenz. Beim Level-Editor, bereits in Abschnitt 5 als Antwort auf das Bedürfnis nach Autonomie eingeordnet, kommt hinzu, dass weder die freie Levelwahl noch der Gastmodus ein Konto voraussetzen, sodass kein Lerninhalt an eine Belohnung gebunden ist. Sozial eingebunden wird, wer über die Bestenliste je Level, den sichtbaren Kontonamen oder die Einreichung eigener Level in Bezug zu anderen tritt, der zuvor rein lokale Fortschritt bekommt damit erstmals einen Rahmen außerhalb des eigenen Browsers.
+Die umgesetzten Elemente lassen sich den drei Grundbedürfnissen zuordnen. Kennzahlen, Abschlussanzeige, Versuchsverlauf, gestufte Levelreihe, Terminal und die Hinweise bei offenen Lösungsbedingungen machen Fortschritt abgestuft statt binär sichtbar und geben einem Fehlschlag eine benennbare Ursache, das bedient die Kompetenz. Der Level-Editor adressiert das Bedürfnis nach Autonomie, das von Punkten und Bestenliste nicht bedient wird. Er verschiebt die Rolle vom Lösen vorgegebener Aufgaben zum Stellen eigener, und weder die freie Levelwahl noch der Gastmodus setzen dafür ein Konto voraus, sodass kein Lerninhalt an eine Belohnung gebunden ist. Für den Lerneffekt ist das insofern bedeutsam, als das Bauen eines lösbaren Levels verlangt, die Regeln der Simulation vollständig verstanden zu haben. Gleichzeitig ist der Editor eine Inhaltsquelle, denn der Aufwand für ein neues Level lag zuvor bei handgeschriebenem YAML und mehreren synchron zu haltenden Stellen im Quelltext und liegt nun bei einem Formular und einer Einreichung per Klick. Sozial eingebunden wird, wer über die Bestenliste je Level, den sichtbaren Kontonamen oder die Einreichung eigener Level in Bezug zu anderen tritt. Der zuvor rein lokale Fortschritt bekommt damit erstmals einen Rahmen außerhalb des eigenen Browsers.
 
 Am weitesten ausgebaut ist der Kompetenzstrang, weil er auf jeden einzelnen Lauf unmittelbar zurückwirkt. Die soziale Ebene ist mit Bestenliste und eingereichten Leveln die jüngste der drei und bietet für die weiteren Schritte den größten Spielraum.
 
-== Reichweite der Aussagen
+== Einschränkungen und Reichweite der Aussagen
 
-Die Wirkungsaussagen dieser Arbeit sind Entwurfsargumente, die sich aus dem gebauten System und aus den vorangestellten Festlegungen ergeben. Eine Nutzerstudie war im Zeitrahmen des Moduls nicht vorgesehen. Eine Erhebung mit tatsächlichen Programmieranfängern ist der geeignete Weg, um die hier begründeten Wirkungen zu prüfen, weil die Zielgruppe der Anwendung genau diese Gruppe ist.
+Die Wirkungsaussagen dieser Arbeit sind Entwurfsargumente, die sich aus dem gebauten System und aus den vorangestellten Festlegungen ergeben. Eine Nutzerstudie war im Zeitrahmen des Moduls nicht vorgesehen. Eine Erhebung mit tatsächlichen Programmieranfängern ist der geeignete Weg, um die hier begründeten Wirkungen zu prüfen, weil die Zielgruppe der Anwendung genau diese Gruppe ist. Da keine empirische Erhebung stattfand, liegen auch keine quantitativen Verhaltensdaten vor, die sich auf Plausibilität prüfen ließen. Diese Prüfung ist damit selbst eine Einschränkung der vorliegenden Arbeit und wird in @sec:schluss als nächster Schritt vorgeschlagen.
+
+Darüber hinaus bestehen drei konkrete Einschränkungen:
+
+- *Fehlende Funktionalität:* Abzeichen als dritter Standard-Baustein der Gamifizierung sind zurückgestellt, und eine serverseitige Plausibilitätsprüfung der eingereichten Kennzahlen existiert nicht.
+- *Einschränkungen der verwendeten Mittel:* Im Editor gebaute Level verlassen den Browser nur über einen YAML-Export oder ein vorbereitetes GitHub-Issue. Ohne GitHub-Konto lässt sich ein eigenes Level damit nicht veröffentlichen.
+- *Einschränkungen der Qualität:* Die Bestenliste vertraut den vom Client übermittelten Kennzahlen vollständig. In einem offen zugänglichen Wettbewerb ließe sich dieses Vertrauensmodell ausnutzen.
 
 == Bewusst getroffene Festlegungen
 
@@ -284,22 +310,22 @@ Mehrere Entscheidungen im Entwurf hatten Alternativen, die aus guten Gründen ni
 
 Die Kennzahlen werden im Browser gezählt und unverändert vom Dienst übernommen. Die Ausführung bleibt damit vollständig auf der Clientseite, und die Bestenliste braucht dafür keine zusätzliche Rechenlast. Für den Einsatz in einer Lehrveranstaltung reicht dieses Vertrauensmodell aus. In einem offen zugänglichen Wettbewerb müsste stattdessen der Dienst die eingereichte Lösung selbst nachrechnen.
 
-Die Bestenliste bringt eine serverseitige Komponente in ein Projekt, das ursprünglich ohne sie auskam. Diese Abhängigkeit ist über eine Umgebungsvariable abgeschwächt, die den Dienst bei Bedarf still abschaltet, statt ihn zur Voraussetzung zu machen. Dieselbe Auslieferung bleibt so mit und ohne Dienst vollständig spielbar, und die Anwendung gewinnt den Vergleich, ohne ihre Unabhängigkeit von einem Betrieb aufzugeben.
+Die Bestenliste bringt eine serverseitige Komponente in ein Projekt, das ursprünglich ohne sie auskam. Diese Abhängigkeit ist über eine Umgebungsvariable abgeschwächt, die den Dienst bei Bedarf still abschaltet, statt ihn zur Voraussetzung zu machen. Dieselbe Auslieferung bleibt so mit und ohne Dienst vollständig spielbar, und die Anwendung gewinnt den Vergleich, ohne ihre Unabhängigkeit von einem Betrieb aufzugeben. Der ausdrücklich angebotene Gastmodus hält zusätzlich die zweite Festlegung aus @sec:einwaende ein, wonach kein Lerninhalt an eine Belohnungsmechanik gebunden sein darf.
 
 Im Editor gebaute Level liegen im `localStorage` des jeweiligen Browsers und verlassen ihn nur über eine YAML-Datei oder ein vorbereitetes GitHub-Issue. Für die Übergabe an das Projektteam genügt das, und der Editor bleibt dabei frei von jeder Kontopflicht.
 
-== Wirkung der Wertung auf die Motivation
+== Wertungslogik und Motivation
 
-Eine eingeführte Belohnung kann die ursprüngliche Motivation überlagern, wenn sie auf etwas anderes zeigt als auf das Lernziel @deci2000. Dies war beim Entwurf der Wertung der maßgebliche Prüfpunkt. Zwei Entscheidungen begrenzen dieses Risiko. Die Rangfolge nach Schritten belohnt das Verständnis des Levels, das ohnehin Lernziel ist, und lässt sich nicht durch bloßen Fleiß ersetzen. Die Beschränkung auf die erste Lösung verhindert, dass die Liste allein durch Wiederholung verbessert werden kann. Die Belohnung zeigt damit auf dieselbe Fähigkeit, die die Anwendung vermitteln soll.
+Eine eingeführte Belohnung kann die ursprüngliche Motivation überlagern, wenn sie auf etwas anderes zeigt als auf das Lernziel @deci2000. Dies war beim Entwurf der Rangfolge in der Bestenliste der maßgebliche Prüfpunkt. Stünde die Zeit an erster Stelle, würde die Bestenliste vor allem die Tippgeschwindigkeit und die Vorkenntnis der Lösung abbilden. Die Schrittzahl dagegen ist eine Eigenschaft des gefundenen Weges und lässt sich nur verbessern, indem das Level besser verstanden wird, weshalb sie das erste Sortierkriterium bildet. Die Beschränkung der Wertung auf die erste Lösung eines Levels verhindert zusätzlich, dass sich die Liste allein durch Wiederholung verbessern lässt, sodass sie ein Vergleich der Lösungsqualität bleibt und kein Vergleich der aufgewendeten Zeit. Beide Entscheidungen zusammen richten die Belohnung auf dieselbe Fähigkeit, die die Anwendung vermitteln soll.
 
 // ============================================================
 = Schlussfolgerung <sec:schluss>
 
 == Zusammenfassung
 
-Zu Beginn des Moduls konnte die Anwendung Python im Browser ausführen und eine Drohne animieren, der Ablauf endete jedoch mit dem Erreichen des Ziels. Nach der Erweiterung besteht eine geschlossene Schleife, in der ein Level eine Aufgabe stellt, die Simulation die Folgen des geschriebenen Programms zeigt, eine Auswertung die Lösung nach Schritten, Abstürzen und Codezeilen bewertet, eine Bestenliste sie neben die anderer stellt und ein Editor den Bau der nächsten Aufgabe erlaubt.
+Zu Beginn des Moduls konnte die Anwendung Python im Browser ausführen und eine Drohne animieren, der Ablauf endete jedoch mit dem Erreichen des Ziels. Nach der Erweiterung besteht eine geschlossene Spielschleife: Ein Level stellt eine Aufgabe, die Auswertung eines Laufs macht den Fortschritt sichtbar, die Bestenliste stellt ihn neben andere, und der Editor öffnet den Weg zur nächsten Aufgabe.
 
-Der Umfang der Änderungen zeigt sich in den Kennzahlen des Projekts. Die spielbaren Level wuchsen von sechs auf dreizehn, die Drohnenbefehle von zehn auf vierzehn und die Blocktypen von neun auf vierzehn. Hinzu kamen ein Backend-Dienst mit Kontoverwaltung, ein dreidimensionaler Level-Editor und eine automatisierte Testabdeckung, die die Spiellogik außerhalb des Browsers absichert.
+Der Umfang der Änderungen zeigt sich in den Kennzahlen des Projekts. Die öffentliche Schnittstelle der Drohne wuchs von zehn auf vierzehn Methoden und die Blockregistrierung von neun auf vierzehn Typen, unter anderem durch Schieben, Aufnehmen, Abliefern und Vorausschauen. Der Levelbestand wuchs von sechs auf dreizehn Level mit überarbeiteter Einstiegsreihe und Schlagworten als Schwierigkeits-Vorschau. Jeder Lauf wird seither nach Abstürzen, geflogenen Feldern und Codezeilen bewertet, ergänzt um ein Terminal für `print`-Ausgaben. Hinzu kamen ein FastAPI-Dienst mit Postgres-Datenbank, der Konten, Rangfolge und Versuchsverlauf verwaltet, aber über eine Umgebungsvariable optional bleibt, ein dreidimensionaler Level-Editor mit Testlauf, YAML-Export und Einreichung über GitHub samt automatisch abgeleiteten Lösungsbedingungen, sowie 118 automatisierte Testfunktionen, die die Spiellogik und den Bestenlisten-Dienst außerhalb des Browsers absichern.
 
 Die Auswertung zeigt, dass die umgesetzten Elemente alle drei Grundbedürfnisse erreichen und dabei den beiden vorangestellten Festlegungen folgen. Gemessen wird die Lösung und nicht die Person, und der Zugang zu den Lerninhalten hängt an keiner Belohnung.
 
