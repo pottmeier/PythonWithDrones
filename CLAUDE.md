@@ -75,11 +75,10 @@ Block types are defined in `src/lib/block-registry.tsx`. Adding a new block type
 
 ### Adding a New Level
 
-Four places must be updated in sync:
+Three places must be updated in sync:
 1. Create `public/levels/Level_N.yaml`
-2. Add entry to `INITIAL_LEVELS` in `src/lib/app-state.tsx`
-3. Update `NUM_LEVELS` constant in both `src/components/scene.tsx` and `src/app/leaderboard/leaderboardContent.tsx` — it gates how many level columns the leaderboard renders *and* which level triggers the "you finished the game" celebration in `scene.tsx`. Nothing enforces that it matches the number of YAML files, so it silently drifts.
-4. Add `{ id: "N" }` to the hardcoded `levels` array in `src/app/level/[id]/page.tsx` — this feeds `generateStaticParams`, which under `output: export` is the *only* thing that decides which level pages exist at all.
+2. Add entry to `INITIAL_LEVELS` in `src/lib/app-state.tsx` — `NUM_LEVELS` is derived from it and exported from the same file, so the leaderboard columns and the "you finished the game" celebration in `scene.tsx` follow automatically.
+3. Add `{ id: "N" }` to the hardcoded `levels` array in `src/app/level/[id]/page.tsx` — this feeds `generateStaticParams`, which under `output: export` is the *only* thing that decides which level pages exist at all.
 
 That file also sets `export const dynamicParams = false`. Under `output: export` a dynamic route can only ever render params returned by `generateStaticParams()`, and without this flag the dev server throws a 500 (`Page "/level/[id]/page" is missing param …`) instead of showing the 404 page for e.g. `/level/99`. The `notFound()` call in `LevelPage` is unreachable as a runtime guard — Next rejects the unknown param before the component runs — but keep it, since `notFound()` returns `never` and is what narrows `level` from `{ id: string } | undefined` for TypeScript.
 

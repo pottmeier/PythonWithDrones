@@ -57,6 +57,11 @@ const INITIAL_LEVELS: Record<number, LevelProgress> = {
   },
 };
 
+// Single source of truth for how many levels exist. Derived from INITIAL_LEVELS
+// so the leaderboard columns and the "you finished the game" celebration cannot
+// drift apart from the actual level list.
+export const NUM_LEVELS = Object.keys(INITIAL_LEVELS).length;
+
 export type LevelProgress = {
   status: LevelStatus;
   code: string;
