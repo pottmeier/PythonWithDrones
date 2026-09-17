@@ -78,7 +78,7 @@
 // ============================================================
 #heading(numbering: none)[Abstrakt]
 
-#emph[PythonWithDrones] ist eine Lernanwendung, in der Python-Quelltext eine virtuelle Drohne durch dreidimensionale Level steuert. Zum Abschluss des Vorgängermoduls lag ein lauffähiger Prototyp vor, dessen Ablauf mit dem Erreichen des Zielportals endete @vorarbeit. Danach war die Interaktion beendet. Die vorliegende Arbeit beschreibt, wie diese Anwendung zwischen dem 10. April und dem 28. September 2026 zu einem Spiel mit geschlossener Schleife ausgebaut wurde. Hinzugekommen sind ein erweiterter Handlungsraum der Drohne mit Schieben, Aufnehmen, Abliefern und Vorausschauen, eine auf dreizehn Level verlängerte Aufgabenkurve, eine Auswertung jedes Laufs nach Abstürzen, geflogenen Feldern und Codezeilen, eine serverseitige Bestenliste mit Kontoverwaltung und Versuchsverlauf sowie ein dreidimensionaler Level-Editor, mit dem Spielende eigene Aufgaben bauen und einreichen können. Die Auswertung ordnet die umgesetzten Elemente den drei Grundbedürfnissen Kompetenz, Autonomie und soziale Eingebundenheit zu und begründet, wie die einzelnen Entwurfsentscheidungen zusammenwirken.
+#emph[PythonWithDrones] ist eine Lernanwendung, in der Python-Quelltext eine virtuelle Drohne durch dreidimensionale Level steuert. Zum Abschluss des Vorgängermoduls lag ein lauffähiger Prototyp vor, dessen Ablauf mit dem Erreichen des Zielportals endete @vorarbeit. Danach war die Interaktion beendet. Die vorliegende Arbeit beschreibt, wie diese Anwendung zwischen dem 10. April und dem 28. September 2026 zu einem Spiel mit geschlossener Schleife ausgebaut wurde. Hinzugekommen sind ein erweiterter Handlungsraum der Drohne mit Schieben, Aufnehmen, Abliefern und Vorausschauen, eine auf dreizehn Level verlängerte Aufgabenkurve, eine Auswertung jedes Laufs nach Abstürzen, geflogenen Feldern und Codezeilen, eine serverseitige Bestenliste mit Kontoverwaltung und Versuchsverlauf sowie ein dreidimensionaler Level-Editor, mit dem Spielende eigene Aufgaben bauen und einreichen können. Begleitet wird das von einer überarbeiteten mobilen Darstellung, einer eigenen Fehlerseite und einer automatisierten Testabdeckung. Die Auswertung ordnet die umgesetzten Elemente den drei Grundbedürfnissen Kompetenz, Autonomie und soziale Eingebundenheit zu und begründet, wie die einzelnen Entwurfsentscheidungen zusammenwirken.
 
 = Einleitung
 
@@ -148,11 +148,17 @@ Die Änderungen im Betrachtungszeitraum lassen sich in sechs Arbeitssträngen zu
 
 Solange die Drohne nur fliegen und sich drehen konnte, bestand jedes Ziel darin, eine Position zu erreichen. Level unterschieden sich allein in der Geometrie des Weges. Vier neue Befehle verändern oder prüfen seither den Zustand der Welt. `drone.push()` schiebt einen schiebbaren Block ein Feld weiter und rückt selbst nach. Ist das Zielfeld belegt, bleibt die Aktion folgenlos und nennt den Grund. `drone.pickup()` und `drone.deliver()` nehmen ein Paket auf und legen es wieder ab. Beide melden, wenn nichts aufzunehmen oder abzulegen ist. `drone.scan(n)` liefert die Block-Kennungen der nächsten `n` Felder in Blickrichtung und bricht am ersten blockierenden Feld ab, ohne Argument nur die eine nächste Kennung.
 
-`scan` ersetzt die frühere Abfrage `is_path_blocked`, die nur einen Wahrheitswert lieferte. Damit geht die Arbeit an dieser Stelle über den Modulumfang hinaus. Eine Zeichenkette zwingt zum Vergleichen, ein Wahrheitswert führt direkt in eine `if`-Anweisung. Level können damit verlangen, dass die Drohne unterscheidet, worauf sie trifft, statt nur, ob überhaupt.
+`scan` ersetzt die frühere Abfrage `is_path_blocked`, die nur einen Wahrheitswert lieferte. Eine Zeichenkette zwingt zum Vergleichen, ein Wahrheitswert führt direkt in eine `if`-Anweisung. Level können damit verlangen, dass die Drohne unterscheidet, worauf sie trifft, statt nur, ob überhaupt.
 
 === Lösungsbedingungen
 
 Damit die neuen Handlungen Bedeutung bekommen, wuchs das Levelformat mit. Ein Level kann jetzt zusätzlich zum Portal verlangen, dass Münzen eingesammelt, ein Paket abgeliefert oder eine Kiste auf ein markiertes Feld geschoben wurde. Die Prüfung läuft im Levelmodell, sobald die Drohne das Portal betritt. Ist eine Bedingung offen, meldet die Python-Seite dies über eine `hint`-Nachricht, die benennt, was noch fehlt.
+
+== Aufgabenkurve
+
+Der Levelbestand wuchs von sechs auf dreizehn. Ein Teil davon entstand aus einer Überarbeitung der Einstiegsreihe, bei der die ersten Level neu geordnet und ihre Beschreibungen gestrafft wurden. Die neuen Level greifen die erweiterten Befehle auf, sodass jeder Schritt der Reihe entweder ein Programmierkonzept oder eine Drohnenfähigkeit einführt und möglichst nicht beides gleichzeitig.
+
+Jedes Level trägt seither Schlagworte, die in der Übersicht angezeigt werden und eine grobe Schwierigkeit sowie das behandelte Konzept nennen, etwa Schleifen, Funktionen oder Bedingungen. Diese Vorschau setzt die in @sec:grundlagen beschriebene Passung von Anforderung und Fähigkeit um, weil die Einordnung sichtbar wird, bevor ein Level geöffnet wird. Gesperrte Level bleiben in der Übersicht sichtbar und tragen nur ein Schloss, denn ein sichtbares, aber verschlossenes Ziel wirkt als Anreiz, ein ausgeblendetes nicht. @fig:home zeigt die resultierende Übersicht.
 
 == Kennzahlen und Rückmeldung eines Laufs
 
@@ -170,7 +176,7 @@ Der Beitrag zur Gamifizierung ist hier kein Spielelement, sondern eine kürzere 
 
 == Architektur der Bestenliste
 
-Die Bestenliste ist der einzige Projektteil mit serverseitiger Komponente und damit der größte Sprung über den Modulumfang hinaus. Sie läuft als FastAPI-Dienst @fastapi mit Postgres-Datenbank @postgres, gestartet zusammen mit dem Frontend über Docker Compose. Der Datenbankzugriff läuft asynchron über SQLAlchemy @sqlalchemy. Kennwörter werden mit Argon2 gehasht, die Anmeldung liefert ein JWT, und Anmelde- sowie Registrierungsrouten sind ratenbegrenzt.
+Die Bestenliste ist der einzige Projektteil mit serverseitiger Komponente. Sie läuft als FastAPI-Dienst @fastapi mit Postgres-Datenbank @postgres, gestartet zusammen mit dem Frontend über Docker Compose. Der Datenbankzugriff läuft asynchron über SQLAlchemy @sqlalchemy. Kennwörter werden mit Argon2 gehasht, die Anmeldung liefert ein JWT, und Anmelde- sowie Registrierungsrouten sind ratenbegrenzt.
 
 Drei Tabellen tragen den Dienst. `users` hält die Konten. Ein Index auf der kleingeschriebenen Fassung verhindert Namen, die sich nur in Groß- und Kleinschreibung unterscheiden. `scores` hält je Konto und Level genau die erste Lösung, `attempts` jeden Versuch. Der Vergleich mit anderen beruht damit auf der Erstlösung, während der eigene Verlauf vollständig bleibt. Die Rangfolge selbst richtet sich zuerst nach der Schrittzahl, dann nach der Zeit und zuletzt nach der Codezeilenzahl. Die Zeit läuft als Wanduhr im Hauptthread zwischen Öffnen des Levels und erster Lösung und ist damit unabhängig von Animationsgeschwindigkeit oder Interpreterlaufzeit. @sec:ergebnisse zeigt das resultierende Schema und die Oberfläche.
 
@@ -190,11 +196,11 @@ Die Anwendung bleibt ohne Server benutzbar, weil sie als statischer Export auf G
 
 Der Editor ist der umfangreichste Einzelbeitrag des Betrachtungszeitraums, über mehrere Durchgänge gewachsen. Er läuft vollständig im Browser und arbeitet auf derselben Datenstruktur wie das Spiel selbst.
 
-Die Oberfläche trennt zwei Modi. Im Bearbeitungsmodus platziert oder löscht ein Klick einen Block auf der aktiven Ebene, im Kameramodus dreht und zoomt derselbe Klick die Ansicht. Die Alt-Taste schaltet vorübergehend auf Kamera um, die X-Taste auf Löschen, denn beide Wechsel sind beim Bauen ständig nötig. Ein Werkzeug legt zusätzlich den Startpunkt der Drohne fest. Alle Ebenen bleiben sichtbar, die aktive hebt ein Gitter hervor, damit die Tiefe beim Bauen erhalten bleibt. Zwei Formulare legen die Ausdehnung in allen drei Achsen sowie Titel, Beschreibung und Schlagworte fest.
+Die Oberfläche trennt zwei Modi. Im Bearbeitungsmodus platziert oder löscht ein Klick einen Block auf der aktiven Ebene, im Kameramodus dreht und zoomt derselbe Klick die Ansicht. Die Alt-Taste schaltet vorübergehend auf Kamera um, die X-Taste auf Löschen, denn beide Wechsel sind beim Bauen ständig nötig. Ein Werkzeug legt zusätzlich den Startpunkt der Drohne fest. Alle Ebenen bleiben sichtbar, die aktive hebt ein Gitter hervor, damit die Tiefe beim Bauen erhalten bleibt. Zwei Formulare legen die Ausdehnung in allen drei Achsen sowie Titel, Beschreibung und Schlagworte fest. Der Wechsel per Taste statt per Menüklick hält den Bauprozess nah am Ausprobieren, das auch das Lösen eines Levels prägt.
 
 === Vom Entwurf zum Level
 
-Drei Wege führen aus dem Editor heraus. Der Testlauf öffnet das Level in einem Dialog mit vollständiger Spielumgebung, also eigenem Editor, eigener Pyodide-Instanz @pyodide und eigener Szene, die erst beim Öffnen entsteht und beim Schließen wieder verworfen wird. Der Export schreibt eine YAML-Datei in den Download-Ordner, die Einreichung öffnet ein vorbereitetes GitHub-Issue mit bereits eingetragenem YAML. Ein isolierter Testlauf ging deutlich über die Modulinhalte hinaus, weil Editor und Spiel dieselbe Datenstruktur ohne Umweg über das Dateisystem teilen mussten.
+Drei Wege führen aus dem Editor heraus. Der Testlauf öffnet das Level in einem Dialog mit vollständiger Spielumgebung, also eigenem Editor, eigener Pyodide-Instanz @pyodide und eigener Szene, die erst beim Öffnen entsteht und beim Schließen wieder verworfen wird. Der Export schreibt eine YAML-Datei in den Download-Ordner, die Einreichung öffnet ein vorbereitetes GitHub-Issue mit bereits eingetragenem YAML. Editor und Spiel teilen sich dafür dieselbe Datenstruktur ohne Umweg über das Dateisystem.
 
 Lösungsbedingungen mussten Autoren ursprünglich von Hand eintragen. Der Editor leitet sie inzwischen aus dem gebauten Level ab. Wer drei Münzen platziert, baut ein Level mit drei einzusammelnden Münzen. Geometrie und Bedingung laufen so nicht mehr auseinander, und der Bauvorgang wird kürzer.
 
@@ -206,7 +212,7 @@ Die Darstellung auf schmalen Bildschirmen wurde überarbeitet. Betroffen waren d
 
 Seit Juli fängt eine eigene Fehlerseite mit animierter Drohne ungültige Level-Adressen ab, statt eine Fehlermeldung des Servers zu zeigen. Das ist kein Spielelement, verhindert aber, dass eine falsche Adresse wie ein Defekt wirkt.
 
-Schließlich entstand eine automatisierte Testabdeckung, die der Modulumfang nicht verlangte. Die Spieltests täuschen das Brückenmodul zur JavaScript-Seite vor, sodass der unveränderte Quelltext unter CPython läuft. Das ist eine im Modul nicht behandelte Technik. Die Dienst-Tests laufen im selben Prozess je Test gegen eine wegwerfbare SQLite-Datenbank statt gegen Postgres. So ist die im Browser schwer prüfbare Spiellogik in einer gewöhnlichen Testumgebung abgesichert.
+Schließlich entstand eine automatisierte Testabdeckung. Die Spieltests täuschen das Brückenmodul zur JavaScript-Seite vor, sodass der unveränderte Quelltext unter CPython läuft. Die Dienst-Tests laufen im selben Prozess je Test gegen eine wegwerfbare SQLite-Datenbank statt gegen Postgres. So ist die im Browser schwer prüfbare Spiellogik in einer gewöhnlichen Testumgebung abgesichert.
 
 // ============================================================
 = Ergebnisse <sec:ergebnisse>
@@ -226,9 +232,9 @@ Die in @sec:methodik beschriebenen Arbeitsstränge haben eine zuvor nicht vorhan
   caption: [Wachstum der zentralen Kennzahlen zwischen dem Ausgangsstand `v1.0.0` und dem Ende des Betrachtungszeitraums.],
 ) <tbl:kennzahlen>
 
-== Neue Bausteine und Aufgabenkurve
+== Neue Bausteine und Levelübersicht
 
-Neu in der Blockregistrierung sind Münze, Kiste, Paket, Ablagefläche und Zielmarkierung. @fig:scene zeigt ein Level, das drei davon gleichzeitig nutzt. Der Levelbestand selbst wuchs von sechs auf dreizehn, mit überarbeiteter, gestraffter Einstiegsreihe. Jedes Level trägt in der Übersicht Schlagworte für Schwierigkeit und Konzept (@fig:home). Gesperrte Level bleiben sichtbar und tragen nur ein Schloss, da ein sichtbares Ziel eher Anreiz ist als ein ausgeblendetes.
+Neu in der Blockregistrierung sind Münze, Kiste, Paket, Ablagefläche und Zielmarkierung. @fig:scene zeigt ein Level, das drei davon gleichzeitig nutzt. @fig:home zeigt die in @sec:methodik beschriebene Levelübersicht mit Schwierigkeits- und Konzept-Schlagworten.
 
 #figure(
   image("Images/level-scene.png", width: 100%),
@@ -285,7 +291,7 @@ Am weitesten ausgebaut ist der Kompetenzstrang, weil er auf jeden Lauf unmittelb
 
 == Einschränkungen und Reichweite der Aussagen
 
-Die Wirkungsaussagen dieser Arbeit sind Entwurfsargumente aus dem gebauten System und den vorangestellten Festlegungen, keine empirischen Befunde. Eine Nutzerstudie war im Zeitrahmen nicht vorgesehen. Eine Erhebung mit echten Programmieranfängern wäre der richtige Weg, diese Wirkungen zu prüfen, und wird in @sec:schluss als nächster Schritt vorgeschlagen.
+Die Wirkungsaussagen dieser Arbeit sind Entwurfsargumente aus dem gebauten System und den vorangestellten Festlegungen, keine empirischen Befunde. Eine Nutzerstudie war im Zeitrahmen nicht vorgesehen.
 
 Drei weitere Einschränkungen bestehen.
 
@@ -315,8 +321,6 @@ Eine Belohnung, die auf etwas anderes zeigt als das Lernziel, kann die ursprüng
 Zu Modulbeginn führte die Anwendung Python im Browser aus und animierte eine Drohne, doch der Ablauf endete mit dem Ziel. Jetzt besteht eine geschlossene Schleife. Ein Level stellt eine Aufgabe, eine Auswertung bewertet die Lösung nach Schritten, Abstürzen und Codezeilen, eine Bestenliste stellt sie neben andere, und ein Editor öffnet den Weg zur nächsten Aufgabe.
 
 Die Kennzahlen zeigen den Umfang. Drohnen-Methoden wuchsen von zehn auf vierzehn, Blocktypen von neun auf vierzehn, Level von sechs auf dreizehn. Hinzu kamen ein optionaler FastAPI-Dienst mit Konten, Rangfolge und Versuchsverlauf, ein dreidimensionaler Level-Editor mit Testlauf und GitHub-Einreichung sowie 118 Testfunktionen, die Spiellogik und Bestenlisten-Dienst außerhalb des Browsers absichern.
-
-Die umgesetzten Elemente erreichen damit alle drei Grundbedürfnisse und folgen beiden vorangestellten Festlegungen. Gemessen wird die Lösung, nicht die Person, und kein Lerninhalt hängt an einer Belohnung.
 
 == Nächste Schritte <ausblick>
 
