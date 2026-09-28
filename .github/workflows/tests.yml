@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            tests/requirements.txt
+            leaderboard-api/requirements.txt
+
+      # Both files are needed: the leaderboard-api tests import the app itself
+      - name: Install dependencies
+        run: uv pip install -r tests/requirements.txt -r leaderboard-api/requirements.txt
+
+      - name: Run pytest
+        run: uv run --no-project pytest
