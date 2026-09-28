@@ -27,7 +27,9 @@ jobs:
 
       # Both files are needed: the leaderboard-api tests import the app itself
       - name: Install dependencies
-        run: uv pip install -r tests/requirements.txt -r leaderboard-api/requirements.txt
+        run: |
+          uv venv
+          uv pip install -r tests/requirements.txt -r leaderboard-api/requirements.txt
 
       - name: Run pytest
         run: uv run --no-project pytest
